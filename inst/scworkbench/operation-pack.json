@@ -1,0 +1,984 @@
+{
+  "schema_version": "scworkbench.operation_pack.v3",
+  "pack_abi_version": "3",
+  "identity_scheme": "scworkbench.operation_pack.canonical_json.v1",
+  "namespace": "scwbtrajectory",
+  "package": {
+    "name": "scwbTrajectory",
+    "version": "0.1.0"
+  },
+  "backend": "R",
+  "compatibility": {
+    "scworkbench": {
+      "minimum": "0.1.0",
+      "maximum_exclusive": "0.2.0"
+    },
+    "pack_abi": {
+      "minimum": "3",
+      "maximum": "3"
+    }
+  },
+  "entry_point": "scwbTrajectory::register_operation_pack",
+  "operations": [
+    {
+      "name": "trajectory_branch_compare",
+      "qualified_name": "scwbtrajectory::trajectory_branch_compare",
+      "title": "Trajectory Branch Compare",
+      "description": "Compare two trajectory branches feature-by-feature using authenticated matrix, pseudotime, and branch-membership inputs.",
+      "runner": ".run_trajectory_branch_compare",
+      "inputs": [
+        {
+          "name": "matrix",
+          "kind": "matrix",
+          "required": true,
+          "alignment": "cell_and_feature_ordered"
+        },
+        {
+          "name": "pseudotime",
+          "kind": "cell_vector_family",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "branch_membership",
+          "kind": "relation_family",
+          "required": true,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "branch_a": {
+            "type": ["string", "null"]
+          },
+          "branch_b": {
+            "type": ["string", "null"]
+          },
+          "feature_set": {
+            "type": ["string", "null"]
+          },
+          "features": {
+            "type": ["array", "null"],
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "min_pct": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0,
+            "maximum": 1
+          },
+          "p_adjust_method": {
+            "type": "string",
+            "default": "BH"
+          },
+          "chunk_size": {
+            "type": "integer",
+            "default": 128,
+            "minimum": 1,
+            "maximum": 100000
+          }
+        },
+        "additionalProperties": false
+      },
+      "registry_reads": [
+        {
+          "name": "feature_sets",
+          "category": "authenticated_core_registry_snapshot",
+          "kind": "feature_set_registry",
+          "reader": "read_feature_set_registry",
+          "matrix_input": "matrix",
+          "no_selector_policy": "all_namespaces",
+          "empty_match_policy": "allow"
+        }
+      ],
+      "dimension_policies": [
+        {
+          "output": "branch_de_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "branch_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "branch_de_table",
+          "category": "terminal_artifact",
+          "kind": "feature_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "branch_de_table_id",
+          "required": true,
+          "promotion_group": "branch",
+          "table_type": "trajectory_branch_compare"
+        },
+        {
+          "name": "branch_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "branch_summary_id",
+          "required": true,
+          "promotion_group": "branch",
+          "table_type": "trajectory_branch_compare_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_feature_table"
+        }
+      ],
+      "promotion_closure": {
+        "branch_de_table": [
+          "branch_de_table",
+          "branch_summary"
+        ],
+        "branch_summary": [
+          "branch_de_table",
+          "branch_summary"
+        ]
+      },
+      "replay_equivalence": {
+        "branch_de_table": "exact_canonical_value",
+        "branch_summary": "exact_canonical_value"
+      },
+      "typed_slice_reads": [
+        {
+          "name": "matrix_chunks",
+          "input": "matrix",
+          "reader": "read_typed_slices",
+          "kind": "matrix",
+          "supported_axes": [
+            "features"
+          ],
+          "chunk_axis": "features",
+          "chunk_size_parameter": "chunk_size",
+          "call_discipline": "ordered_partition_exactly_once",
+          "empty_selection_policy": "reject",
+          "duplicate_policy": "reject",
+          "selection": {
+            "cells": {
+              "policy": "effective_input_axis_v1"
+            },
+            "features": {
+              "policy": "effective_input_axis_v1"
+            }
+          }
+        }
+      ],
+      "retained_parameters": [
+        {
+          "name": "matrix_id",
+          "source": "output_meta",
+          "output": "branch_de_table",
+          "field": "matrix_id"
+        },
+        {
+          "name": "branch_a",
+          "source": "parameter_value",
+          "required": true,
+          "parameter": "branch_a"
+        },
+        {
+          "name": "branch_b",
+          "source": "parameter_value",
+          "required": true,
+          "parameter": "branch_b"
+        },
+        {
+          "name": "n_cells_a",
+          "source": "output_first_row",
+          "output": "branch_summary",
+          "field": "n_cells_a"
+        },
+        {
+          "name": "n_cells_b",
+          "source": "output_first_row",
+          "output": "branch_summary",
+          "field": "n_cells_b"
+        },
+        {
+          "name": "n_overlap_dropped",
+          "source": "output_first_row",
+          "output": "branch_summary",
+          "field": "n_overlap_dropped"
+        },
+        {
+          "name": "n_features",
+          "source": "output_first_row",
+          "output": "branch_summary",
+          "field": "n_features_tested"
+        },
+        {
+          "name": "min_pct",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "min_pct"
+        },
+        {
+          "name": "p_adjust_method",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "p_adjust_method"
+        }
+      ],
+      "public_interface": {
+        "intent": [
+          "trajectory",
+          "comparison",
+          "statistics"
+        ],
+        "inputs": [
+          {
+            "name": "matrix",
+            "label": "matrix",
+            "help": "Typed matrix input."
+          },
+          {
+            "name": "pseudotime",
+            "label": "pseudotime",
+            "help": "Typed pseudotime input."
+          },
+          {
+            "name": "branch_membership",
+            "label": "branch_membership",
+            "help": "Typed branch_membership input."
+          }
+        ],
+        "parameters": [
+          {
+            "name": "branch_a",
+            "type": "string",
+            "help": "Branch/lineage key A."
+          },
+          {
+            "name": "branch_b",
+            "type": "string",
+            "help": "Branch/lineage key B."
+          },
+          {
+            "name": "feature_set",
+            "type": "string",
+            "help": "Optional matrix feature-set name."
+          },
+          {
+            "name": "features",
+            "type": "string_vec",
+            "help": "Optional explicit feature IDs."
+          },
+          {
+            "name": "min_pct",
+            "type": "dbl",
+            "help": "Minimum detection fraction."
+          },
+          {
+            "name": "p_adjust_method",
+            "type": "string",
+            "help": "P-value adjustment method."
+          },
+          {
+            "name": "chunk_size",
+            "type": "int",
+            "help": "Authenticated feature chunk size."
+          }
+        ],
+        "outputs": [
+          {
+            "name": "branch_de_table",
+            "description": "Declared branch_de_table terminal."
+          },
+          {
+            "name": "branch_summary",
+            "description": "Declared branch_summary terminal."
+          }
+        ]
+      }
+    },
+    {
+      "name": "trajectory_route_smooth",
+      "qualified_name": "scwbtrajectory::trajectory_route_smooth",
+      "title": "Trajectory Route Smoothing",
+      "description": "Summarize feature expression along an authenticated pseudotime route.",
+      "runner": ".run_trajectory_route_smooth",
+      "inputs": [
+        {
+          "name": "matrix",
+          "kind": "matrix",
+          "required": true,
+          "alignment": "cell_and_feature_ordered"
+        },
+        {
+          "name": "pseudotime",
+          "kind": "cell_vector",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "branch_membership",
+          "kind": "relation_family",
+          "required": true,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "route_key": {
+            "type": ["string", "null"]
+          },
+          "feature_set": {
+            "type": ["string", "null"]
+          },
+          "features": {
+            "type": ["array", "null"],
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "n_bins": {
+            "type": "integer",
+            "default": 50,
+            "minimum": 5,
+            "maximum": 1000
+          },
+          "summary_fun": {
+            "type": "string",
+            "default": "mean",
+            "enum": [
+              "mean",
+              "median"
+            ]
+          },
+          "min_cells_per_bin": {
+            "type": "integer",
+            "default": 5,
+            "minimum": 1,
+            "maximum": 100000
+          },
+          "weight_mode": {
+            "type": "string",
+            "default": "probability",
+            "enum": [
+              "probability",
+              "binary_threshold"
+            ]
+          },
+          "prob_min": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0,
+            "maximum": 1
+          },
+          "chunk_size": {
+            "type": "integer",
+            "default": 128,
+            "minimum": 1,
+            "maximum": 100000
+          }
+        },
+        "additionalProperties": false
+      },
+      "registry_reads": [
+        {
+          "name": "feature_sets",
+          "category": "authenticated_core_registry_snapshot",
+          "kind": "feature_set_registry",
+          "reader": "read_feature_set_registry",
+          "matrix_input": "matrix",
+          "no_selector_policy": "all_namespaces",
+          "empty_match_policy": "allow"
+        }
+      ],
+      "dimension_policies": [
+        {
+          "output": "trend_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "fit_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "trend_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "trend_table_id",
+          "required": true,
+          "promotion_group": "route",
+          "table_type": "trajectory_route_smooth"
+        },
+        {
+          "name": "fit_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "fit_summary_id",
+          "required": true,
+          "promotion_group": "route",
+          "table_type": "trajectory_route_smooth_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_obs_table"
+        }
+      ],
+      "promotion_closure": {
+        "trend_table": [
+          "fit_summary",
+          "trend_table"
+        ],
+        "fit_summary": [
+          "fit_summary",
+          "trend_table"
+        ]
+      },
+      "replay_equivalence": {
+        "trend_table": "exact_canonical_value",
+        "fit_summary": "exact_canonical_value"
+      },
+      "typed_slice_reads": [
+        {
+          "name": "matrix_chunks",
+          "input": "matrix",
+          "reader": "read_typed_slices",
+          "kind": "matrix",
+          "supported_axes": [
+            "features"
+          ],
+          "chunk_axis": "features",
+          "chunk_size_parameter": "chunk_size",
+          "call_discipline": "ordered_partition_exactly_once",
+          "empty_selection_policy": "reject",
+          "duplicate_policy": "reject",
+          "selection": {
+            "cells": {
+              "policy": "effective_input_axis_v1"
+            },
+            "features": {
+              "policy": "effective_input_axis_v1"
+            }
+          }
+        }
+      ],
+      "retained_parameters": [
+        {
+          "name": "matrix_id",
+          "source": "output_first_row",
+          "output": "fit_summary",
+          "field": "matrix_id"
+        },
+        {
+          "name": "route_key",
+          "source": "parameter_value",
+          "required": true,
+          "parameter": "route_key"
+        },
+        {
+          "name": "feature_set",
+          "source": "parameter_value",
+          "required": false,
+          "parameter": "feature_set"
+        },
+        {
+          "name": "n_features_input",
+          "source": "output_first_row",
+          "output": "fit_summary",
+          "field": "n_features_input"
+        },
+        {
+          "name": "n_cells_route",
+          "source": "output_first_row",
+          "output": "fit_summary",
+          "field": "n_cells_route"
+        },
+        {
+          "name": "n_bins",
+          "source": "output_first_row",
+          "output": "fit_summary",
+          "field": "n_bins"
+        },
+        {
+          "name": "summary_fun",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "summary_fun"
+        },
+        {
+          "name": "min_cells_per_bin",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "min_cells_per_bin"
+        },
+        {
+          "name": "weight_mode",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "weight_mode"
+        },
+        {
+          "name": "prob_min",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "prob_min"
+        }
+      ],
+      "public_interface": {
+        "intent": [
+          "trajectory",
+          "summary",
+          "route"
+        ],
+        "inputs": [
+          {
+            "name": "matrix",
+            "label": "matrix",
+            "help": "Typed matrix input."
+          },
+          {
+            "name": "pseudotime",
+            "label": "pseudotime",
+            "help": "Typed pseudotime input."
+          },
+          {
+            "name": "branch_membership",
+            "label": "branch_membership",
+            "help": "Typed branch_membership input."
+          }
+        ],
+        "parameters": [
+          {
+            "name": "route_key",
+            "type": "string",
+            "help": "Route key in branch membership."
+          },
+          {
+            "name": "feature_set",
+            "type": "string",
+            "help": "Optional matrix feature-set name."
+          },
+          {
+            "name": "features",
+            "type": "string_vec",
+            "help": "Optional explicit feature IDs."
+          },
+          {
+            "name": "n_bins",
+            "type": "int",
+            "help": "Number of pseudotime bins."
+          },
+          {
+            "name": "summary_fun",
+            "type": "choice",
+            "help": "Mean or median summary."
+          },
+          {
+            "name": "min_cells_per_bin",
+            "type": "int",
+            "help": "Minimum cells per bin."
+          },
+          {
+            "name": "weight_mode",
+            "type": "choice",
+            "help": "Probability or binary weights."
+          },
+          {
+            "name": "prob_min",
+            "type": "dbl",
+            "help": "Minimum route probability."
+          },
+          {
+            "name": "chunk_size",
+            "type": "int",
+            "help": "Authenticated feature chunk size."
+          }
+        ],
+        "outputs": [
+          {
+            "name": "trend_table",
+            "description": "Declared trend_table terminal."
+          },
+          {
+            "name": "fit_summary",
+            "description": "Declared fit_summary terminal."
+          }
+        ]
+      }
+    },
+    {
+      "name": "space_path_score",
+      "qualified_name": "scwbtrajectory::space_path_score",
+      "title": "Score cells against analytical path",
+      "description": "Score authenticated space cells by projection onto an analytical path.",
+      "runner": ".run_space_path_score",
+      "inputs": [
+        {
+          "name": "space",
+          "kind": "space",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "path",
+          "kind": "space_path_family",
+          "required": true,
+          "alignment": "associated_space"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "score_mode": {
+            "type": "string",
+            "default": "orthogonal_projection",
+            "enum": [
+              "orthogonal_projection"
+            ]
+          },
+          "distance_metric": {
+            "type": "string",
+            "default": "euclidean",
+            "enum": [
+              "euclidean"
+            ]
+          },
+          "score_prefix": {
+            "type": ["string", "null"]
+          }
+        },
+        "additionalProperties": false
+      },
+      "dimension_policies": [
+        {
+          "output": "path_scores",
+          "policy": "authenticated_output_axes_v1",
+          "shape": "cell_key_cartesian",
+          "cell_axis": {
+            "source": "effective_cells_v1",
+            "input": "space"
+          },
+          "key_axis": {
+            "source": "declared_keys_with_optional_prefix_v1",
+            "keys": [
+              "progress",
+              "distance",
+              "nearest_segment",
+              "nearest_anchor"
+            ],
+            "prefix_parameter": "score_prefix"
+          },
+          "row_order": "key_major_then_cell_v1",
+          "missing_values": "forbidden"
+        },
+        {
+          "output": "fit_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "path_scores",
+          "category": "terminal_artifact",
+          "kind": "cell_vector_family",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "path_scores_id",
+          "required": true,
+          "promotion_group": "score",
+          "value_kind": "continuous"
+        },
+        {
+          "name": "fit_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "fit_summary_id",
+          "required": true,
+          "promotion_group": "score",
+          "table_type": "space_path_score_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_cell_vector_family"
+        }
+      ],
+      "promotion_closure": {
+        "path_scores": [
+          "fit_summary",
+          "path_scores"
+        ],
+        "fit_summary": [
+          "fit_summary",
+          "path_scores"
+        ]
+      },
+      "replay_equivalence": {
+        "path_scores": "exact_canonical_value",
+        "fit_summary": "exact_canonical_value"
+      },
+      "retained_parameters": [
+        {
+          "name": "space_id",
+          "source": "output_first_row",
+          "output": "fit_summary",
+          "field": "space_id"
+        },
+        {
+          "name": "path_id",
+          "source": "output_first_row",
+          "output": "fit_summary",
+          "field": "path_id"
+        },
+        {
+          "name": "score_mode",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "score_mode"
+        },
+        {
+          "name": "distance_metric",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "distance_metric"
+        },
+        {
+          "name": "n_cells",
+          "source": "output_first_row",
+          "output": "fit_summary",
+          "field": "cells_scored"
+        }
+      ],
+      "public_interface": {
+        "intent": [
+          "trajectory",
+          "geometry",
+          "path"
+        ],
+        "inputs": [
+          {
+            "name": "space",
+            "label": "space",
+            "help": "Typed space input."
+          },
+          {
+            "name": "path",
+            "label": "path",
+            "help": "Typed path input."
+          }
+        ],
+        "parameters": [
+          {
+            "name": "score_mode",
+            "type": "choice",
+            "help": "Orthogonal-projection scoring mode."
+          },
+          {
+            "name": "distance_metric",
+            "type": "choice",
+            "help": "Euclidean distance metric."
+          },
+          {
+            "name": "score_prefix",
+            "type": "string",
+            "help": "Optional prefix for score keys."
+          }
+        ],
+        "outputs": [
+          {
+            "name": "path_scores",
+            "description": "Declared path_scores terminal."
+          },
+          {
+            "name": "fit_summary",
+            "description": "Declared fit_summary terminal."
+          }
+        ]
+      }
+    },
+    {
+      "name": "space_path_project_2d",
+      "qualified_name": "scwbtrajectory::space_path_project_2d",
+      "title": "Project analytical path into 2D",
+      "description": "Project an analytical path from its authenticated source space into an authenticated 2D display space.",
+      "runner": ".run_space_path_project_2d",
+      "inputs": [
+        {
+          "name": "path",
+          "kind": "space_path_family",
+          "required": true,
+          "alignment": "associated_space"
+        },
+        {
+          "name": "source_space",
+          "kind": "space",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "plot_space",
+          "kind": "space_2d",
+          "required": true,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "project_mode": {
+            "type": "string",
+            "default": "local_interpolation",
+            "enum": [
+              "local_interpolation"
+            ]
+          },
+          "approx_points": {
+            "type": ["integer", "null"],
+            "minimum": 2,
+            "maximum": 50000
+          }
+        },
+        "additionalProperties": false
+      },
+      "dimension_policies": [
+        {
+          "output": "curves",
+          "policy": "data_dependent_family_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "curves",
+          "category": "terminal_artifact",
+          "kind": "path_2d_family",
+          "storage_profile": "path_2d_family_v1",
+          "allocated_id_key": "curves_id",
+          "required": true,
+          "promotion_group": "projection"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_path_2d_family"
+        },
+        {
+          "requirement_id": "rann_runtime",
+          "kind": "r_package",
+          "name": "RANN",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=2.6.0,<3.0.0"
+          },
+          "disposition": "required",
+          "import_probe": "nn2"
+        }
+      ],
+      "promotion_closure": {
+        "curves": [
+          "curves"
+        ]
+      },
+      "replay_equivalence": {
+        "curves": "exact_canonical_value"
+      },
+      "retained_parameters": [
+        {
+          "name": "project_mode",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "project_mode"
+        },
+        {
+          "name": "approx_points",
+          "source": "effective_parameter_value",
+          "required": false,
+          "parameter": "approx_points"
+        }
+      ],
+      "public_interface": {
+        "intent": [
+          "trajectory",
+          "geometry",
+          "path",
+          "display"
+        ],
+        "inputs": [
+          {
+            "name": "path",
+            "label": "path",
+            "help": "Typed path input."
+          },
+          {
+            "name": "source_space",
+            "label": "source_space",
+            "help": "Typed source_space input."
+          },
+          {
+            "name": "plot_space",
+            "label": "plot_space",
+            "help": "Typed plot_space input."
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_mode",
+            "type": "choice",
+            "help": "Local-interpolation projection mode."
+          },
+          {
+            "name": "approx_points",
+            "type": "int",
+            "help": "Optional display point count."
+          }
+        ],
+        "outputs": [
+          {
+            "name": "curves",
+            "description": "Declared curves terminal."
+          }
+        ]
+      }
+    }
+  ]
+}

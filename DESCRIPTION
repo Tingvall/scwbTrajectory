@@ -1,0 +1,15 @@
+Package: scwbTrajectory
+Type: Package
+Title: Provisional Trajectory Operations for scworkbench
+Version: 0.1.0
+Authors@R: person("Hendrik A.", "de Weerd", role = c("aut", "cre"), email = "dirkdeweerd.work@gmail.com")
+Description: Explicitly activated provisional ABI v3 operation pack containing
+    branch comparison, route smoothing, analytical path scoring, and analytical
+    path projection operations for scworkbench. It is not the complete
+    Trajectory pack or a standard-profile dependency.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Depends: R (>= 4.1.0)
+Imports: scworkbench, RANN, stats, utils
+Suggests: DBI, digest, fs, jsonlite, Matrix
+RoxygenNote: 7.3.3

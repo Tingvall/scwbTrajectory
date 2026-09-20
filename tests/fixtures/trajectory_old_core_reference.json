@@ -1,0 +1,26 @@
+{
+  "core_commit": "909b246d81b5c5b6322be99c1e9f2f69a2615f8b",
+  "outputs": {
+    "trajectory_branch_compare": {
+      "branch_de_table": {"structural_fingerprint": "73751df48776c5ad85f577d852049a8b5778ed72eac8be56b78d91d5226eff1c", "content_sha256": "d73fdf7c0350d407d7ba0f9df37d2dfb1bfa401f1b2463e2549d545e40aae14c", "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1", "verification_level": "content", "verification_status": "content_verified"},
+      "branch_summary": {"structural_fingerprint": "4c7b933cd5bc143887abb910d6132f15ead1802e4d12930b62da9fb09165c92a", "content_sha256": "40af47739065f10152419cb8696f55fe2ae06b8e64bdc36dec421544a42682fa", "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1", "verification_level": "content", "verification_status": "content_verified"}
+    },
+    "trajectory_route_smooth": {
+      "trend_table": {"structural_fingerprint": "e7aeeece81b359327a236526b0d555244d07be0bdea42fa92e071096a56da68c", "content_sha256": "8cc916187dbbf505520c25389b8a775fffe29552b0e6800b73a25f325e6ad4a1", "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1", "verification_level": "content", "verification_status": "content_verified"},
+      "fit_summary": {"structural_fingerprint": "bab54307d669b2345d43b93b636a09b14eeb69c2f0b8886fdf31942e67bea7f7", "content_sha256": "dc6adc74da0f8a1ef3350c6fcf19fcf57e227914a84fec7e6fd09ed297463629", "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1", "verification_level": "content", "verification_status": "content_verified"}
+    },
+    "space_path_score": {
+      "path_scores": {"structural_fingerprint": "eaa8f5777405de3d9e15ec643f584572b4cf4177af929c766f2f4a72a3ea45ef", "content_sha256": "f584b5bd4c03ab925da92c990b1bd4d085a39669d2cacc9fa7f3663dc023af31", "content_identity_scheme": "scworkbench.content.object.canonical-json.v1", "verification_level": "content", "verification_status": "content_verified"},
+      "fit_summary": {"structural_fingerprint": "f4ac49d7dca0c5626242f03e0278cb1c27c0723b2c34ad0ed1c0bb5f47939d46", "content_sha256": "28dee243b46d38cf26c388f526b34c1b3f3c22d4860487c64ea098c0fcffc29e", "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1", "verification_level": "content", "verification_status": "content_verified"}
+    },
+    "space_path_project_2d": {
+      "curves": {"structural_fingerprint": "87f7102cb7a72f024a20f477fa089ab339366eee88f45b4d15abfc9dd3066fc0", "content_sha256": "2cee2f457b73e7097e551e9a5db768587cea916479a5e350362c05d86ccf3fcb", "content_identity_scheme": "scworkbench.content.object.canonical-json.v1", "verification_level": "content", "verification_status": "content_verified"}
+    }
+  },
+  "params": {
+    "trajectory_branch_compare": {"matrix_id": "RNA", "branch_a": "A", "branch_b": "B", "n_cells_a": 12, "n_cells_b": 12, "n_overlap_dropped": 0, "n_features": 6, "min_pct": 0, "p_adjust_method": "BH"},
+    "trajectory_route_smooth": {"matrix_id": "RNA", "route_key": "A", "feature_set": null, "n_features_input": 2, "n_cells_route": 24, "n_bins": 5, "summary_fun": "mean", "min_cells_per_bin": 1, "weight_mode": "probability", "prob_min": 0},
+    "space_path_score": {"space_id": "latent", "path_id": "p", "score_mode": "orthogonal_projection", "distance_metric": "euclidean", "n_cells": 24},
+    "space_path_project_2d": {"space_id": "latent", "plot_space_id": "plot", "path_id": "p", "project_mode": "local_interpolation", "approx_points": 3}
+  }
+}
