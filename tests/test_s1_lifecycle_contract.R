@@ -66,22 +66,29 @@ test_trajectory_publication_fault_rollback_and_retry_contract <- function() {
   x <- trajectory_fixture(); b <- x$bundle
   on.exit({options(scworkbench.promotion_workspace_publish_hook = NULL)
     trajectory_close(x)}, add = TRUE)
-  run <- wb_session_run_op(wb_session_new(), b,
-    "scwbtrajectory::space_path_score", inputs = list(space = "latent",
-      path = x$path, min_cells = 1L))
-  before <- wb_art_list(b)
-  options(scworkbench.promotion_workspace_publish_hook = function(...)
-    stop("injected trajectory publication failure"))
-  failure <- try(wb_session_promote_current(b, run$session,
-    outputs = names(run$run$outputs)), silent = TRUE)
-  options(scworkbench.promotion_workspace_publish_hook = NULL)
-  stopifnot(inherits(failure, "try-error"),
-    identical(before, wb_art_list(b)))
-  retry <- wb_session_promote_current(b, run$session,
-    outputs = names(run$run$outputs))
-  stopifnot(setequal(retry$promoted$output,
-      c("path_scores", "fit_summary")),
-    all(retry$promoted$status == "ok"))
+  operations <- c("trajectory_branch_compare", "trajectory_route_smooth",
+    "space_path_score", "space_path_project_2d")
+  for (operation in operations) {
+    result <- trajectory_execute_one(x, operation)
+    outputs <- names(result$run$outputs)
+    before <- wb_art_list(b)
+    before_state <- utils::getFromNamespace(".wb_session_source_identity",
+      "scworkbench")(b)$scientific_state_fingerprint
+    options(scworkbench.promotion_workspace_publish_hook = function(...)
+      stop("injected trajectory publication failure"))
+    failure <- try(wb_session_promote_current(b, result$session,
+      outputs = outputs), silent = TRUE)
+    options(scworkbench.promotion_workspace_publish_hook = NULL)
+    stopifnot(inherits(failure, "try-error"),
+      identical(before, wb_art_list(b)),
+      identical(before_state, utils::getFromNamespace(
+        ".wb_session_source_identity",
+        "scworkbench")(b)$scientific_state_fingerprint))
+    retry <- wb_session_promote_current(b, result$session,
+      outputs = outputs)
+    stopifnot(setequal(retry$promoted$output, outputs),
+      all(retry$promoted$status == "ok"))
+  }
   TRUE
 }
 
