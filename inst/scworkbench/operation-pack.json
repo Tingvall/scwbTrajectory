@@ -5,7 +5,7 @@
   "namespace": "scwbtrajectory",
   "package": {
     "name": "scwbTrajectory",
-    "version": "0.1.0"
+    "version": "0.1.1"
   },
   "backend": "R",
   "compatibility": {
@@ -1228,7 +1228,7 @@
       "name": "trajectory_segment_from_artifacts",
       "qualified_name": "scwbtrajectory::trajectory_segment_from_artifacts",
       "title": "Trajectory fitted-artifact segment",
-      "description": "Materialize one fitted-model segment from authenticated trajectory primitives.",
+      "description": "Materialize one fitted-model segment from authenticated trajectory primitives. Output metadata contract canonical_value_semantics_v2.",
       "runner": ".run_trajectory_segment_from_artifacts",
       "inputs": [
         {
@@ -1626,7 +1626,7 @@
       "name": "trajectory_space_path_segment",
       "qualified_name": "scwbtrajectory::trajectory_space_path_segment",
       "title": "Trajectory space-path segment",
-      "description": "Convert analytical path scores into a segment and optionally authenticate display endpoint QC.",
+      "description": "Convert analytical path scores into a segment and optionally authenticate display endpoint QC. Output metadata contract canonical_value_semantics_v2.",
       "runner": ".run_trajectory_space_path_segment",
       "inputs": [
         {
@@ -2117,7 +2117,7 @@
       "name": "trajectory_segment_join",
       "qualified_name": "scwbtrajectory::trajectory_segment_join",
       "title": "Trajectory segment join",
-      "description": "Join ordered authenticated segments without merging parent fitted models.",
+      "description": "Join ordered authenticated segments without merging parent fitted models. Output metadata contract canonical_value_semantics_v2.",
       "runner": ".run_trajectory_segment_join",
       "inputs": [],
       "params_schema": {

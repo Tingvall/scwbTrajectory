@@ -304,6 +304,9 @@
     normalization_rule = "segment-local min-max pseudotime scaled to [0,1]",
     boundary_policy = "exact_boundary_collapse"
   )
+  confidence_meta <- meta
+  confidence_meta$value_semantics <-
+    "segment_confidence_or_membership_weight"
 
   list(
     outputs = list(
@@ -320,8 +323,7 @@
         cell_id = conf_df$cell_id,
         value = suppressWarnings(as.numeric(conf_df$value)),
         value_type = "continuous",
-        meta = c(meta, list(
-          value_semantics = "segment_confidence_or_membership_weight"))
+        meta = confidence_meta
       ),
       segment_manifest = scworkbench::wb_prim_obs_table(
         manifest,
@@ -471,6 +473,8 @@
     boundary_policy = "exact_boundary_collapse",
     membership_rule = membership_rule
   )
+  confidence_meta <- meta
+  confidence_meta$value_semantics <- "distance_derived_segment_confidence"
   outputs <- list(
     pseudotime = scworkbench::wb_prim_cell_vector_family(
       key = rep(pt_key, nrow(score)),
@@ -488,8 +492,7 @@
       cell_id = score$cell_id,
       value = confidence,
       value_type = "continuous",
-      meta = c(meta, list(
-        value_semantics = "distance_derived_segment_confidence"))
+      meta = confidence_meta
     ),
     segment_manifest = scworkbench::wb_prim_obs_table(
       manifest,
@@ -859,6 +862,12 @@
   ), drop = FALSE]
 
   membership <- setNames(as.character(comp$composite_segment_assignment), as.character(comp$cell_id))
+  unit_segment_meta <- meta
+  unit_segment_meta$value_semantics <-
+    "composite_pseudotime_unit_segment"
+  weighted_meta <- meta
+  weighted_meta$value_semantics <-
+    "composite_pseudotime_cell_weighted_0_1"
 
   list(
     outputs = list(
@@ -867,16 +876,14 @@
         cell_id = comp$cell_id,
         value = comp$composite_pseudotime_unit_segment,
         value_type = "continuous",
-        meta = c(meta, list(
-          value_semantics = "composite_pseudotime_unit_segment"))
+        meta = unit_segment_meta
       ),
       composite_pseudotime_cell_weighted_0_1 = scworkbench::wb_prim_cell_vector_family(
         key = rep(composite_key, nrow(comp)),
         cell_id = comp$cell_id,
         value = comp$composite_pseudotime_cell_weighted_0_1,
         value_type = "continuous",
-        meta = c(meta, list(
-          value_semantics = "composite_pseudotime_cell_weighted_0_1"))
+        meta = weighted_meta
       ),
       segment_local_table = scworkbench::wb_prim_obs_table(
         local,
