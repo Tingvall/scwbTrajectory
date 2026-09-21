@@ -790,7 +790,7 @@
   segment_weight[!is.finite(segment_weight)] <- 0
   if (sum(segment_weight) <= 0) segment_weight[] <- 1 / length(segment_weight)
   segment_weight <- segment_weight / sum(segment_weight)
-  weighted_start <- c(0, head(cumsum(segment_weight), -1L))
+  weighted_start <- c(0, utils::head(cumsum(segment_weight), -1L))
   weighted_boundary <- cumsum(segment_weight)
   weight_df <- data.frame(
     segment_index = seq_along(segment_weight),
@@ -861,7 +861,8 @@
     "segment_role", "composite_candidate"
   ), drop = FALSE]
 
-  membership <- setNames(as.character(comp$composite_segment_assignment), as.character(comp$cell_id))
+  membership <- stats::setNames(as.character(comp$composite_segment_assignment),
+    as.character(comp$cell_id))
   unit_segment_meta <- meta
   unit_segment_meta$value_semantics <-
     "composite_pseudotime_unit_segment"

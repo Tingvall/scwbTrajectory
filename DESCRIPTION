@@ -11,5 +11,5 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Depends: R (>= 4.1.0)
 Imports: digest, scworkbench, RANN, stats, utils
-Suggests: DBI, digest, fs, jsonlite, Matrix
+Suggests: DBI, fs, jsonlite, Matrix
 RoxygenNote: 7.3.3

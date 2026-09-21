@@ -395,7 +395,10 @@
 }
 
 .wb_space_path_project_local_interpolation <- function(source_coords, target_xy, path_points, k = 20L) {
-  .wb_require_pkg("RANN", "space_path_project_2d local interpolation")
+  if (!requireNamespace("RANN", quietly = TRUE)) {
+    stop("Missing required package 'RANN'. Needed for: space_path_project_2d local interpolation",
+      call. = FALSE)
+  }
   S <- as.matrix(source_coords)
   Y <- as.matrix(target_xy[, c("x", "y"), drop = FALSE])
   Q <- as.matrix(path_points)
