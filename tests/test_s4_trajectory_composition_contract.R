@@ -299,3 +299,200 @@ test_trajectory_s4_g7_lifecycle_and_rollback_contract <- function() {
   wb_close_bundle(b); b <- NULL
   TRUE
 }
+
+test_trajectory_s4_assembled_composite_contract <- function() {
+  x <- trajectory_fixture(); b <- x$bundle
+  on.exit({
+    options(scworkbench.promotion_workspace_publish_hook = NULL)
+    trajectory_close(x)
+  }, add = TRUE)
+  wb_cell_set_replace(b, "set:start", x$cells[1:4], source = "s4-composite")
+  wb_cell_set_replace(b, "set:end", x$cells[21:24], source = "s4-composite")
+
+  promote_all <- function(result) wb_session_promote_current(b,
+    result$session, outputs = names(result$run$outputs),
+    created_by = "s4-composite")
+  artifact_id <- function(promotion, operation, output) {
+    rows <- promotion$promoted$op_name == operation &
+      promotion$promoted$output == output &
+      promotion$promoted$status == "ok"
+    stopifnot(sum(rows) == 1L)
+    promotion$promoted$artifact_id[rows][[1L]]
+  }
+
+  path <- wb_session_run_op(wb_session_new(), b,
+    "scwbtrajectory::space_path_define", inputs = list(space = "latent",
+      checkpoint_sets = c("set:start", "set:end"), n_path_points = 8L,
+      path_id_out = "s4_path", min_cells = 1L))
+  path_promotion <- promote_all(path)
+  path_id <- artifact_id(path_promotion,
+    "scwbtrajectory::space_path_define", "path")
+  projected_1 <- wb_session_run_op(wb_session_new(), b,
+    "scwbtrajectory::space_path_project_2d", inputs = list(
+      path = wb_ref_artifact(path_id, "path"), source_space = "latent",
+      plot_space = "plot", approx_points = 4L, min_cells = 1L))
+  projection_1_promotion <- promote_all(projected_1)
+  display_1_id <- artifact_id(projection_1_promotion,
+    "scwbtrajectory::space_path_project_2d", "curves")
+
+  projected_2 <- wb_session_run_op(wb_session_new(), b,
+    "scwbtrajectory::space_path_project_2d", inputs = list(
+      path = wb_ref_artifact(path_id, "path"), source_space = "latent",
+      plot_space = "plot", approx_points = 5L, min_cells = 1L))
+  display_2_promotion <- promote_all(projected_2)
+  display_2_id <- artifact_id(display_2_promotion,
+    "scwbtrajectory::space_path_project_2d", "curves")
+  scored <- wb_session_run_op(wb_session_new(), b,
+    "scwbtrajectory::space_path_score", inputs = list(space = "latent",
+      path = wb_ref_artifact(path_id, "path"), min_cells = 1L))
+  score_promotion <- promote_all(scored)
+  score_id <- artifact_id(score_promotion,
+    "scwbtrajectory::space_path_score", "path_scores")
+
+  fitted_1 <- wb_session_run_op(wb_session_new(), b,
+    "scwbtrajectory::trajectory_segment_from_artifacts", inputs = list(
+      pseudotime = .trajectory_s4_pt(x$cells[1:8],
+        seq(0, 1, length.out = 8L), "fit_s1"), lineage = "L1",
+      segment_id = "fitted_1", segment_order = 1L,
+      source_engine = "slingshot",
+      start_label = "root", end_label = "bridge", min_cells = 1L))
+  fitted_1_promotion <- promote_all(fitted_1)
+  bridge <- wb_session_run_op(wb_session_new(), b,
+    "scwbtrajectory::trajectory_space_path_segment", inputs = list(
+      path_scores = wb_ref_artifact(score_id, "path_scores"),
+      path = wb_ref_artifact(display_1_id, "curves"),
+      display_path = wb_ref_artifact(display_1_id, "curves"),
+      segment_id = "bridge", segment_order = 2L,
+      candidate_cells = x$cells[8:17], distance_quantile = 1,
+      display_space_id = "plot", start_endpoint = "set:start",
+      end_endpoint = "set:end", endpoint_qc_action = "none",
+      start_label = "bridge", end_label = "terminal",
+      min_cells = 1L))
+  bridge_promotion <- promote_all(bridge)
+  fitted_3 <- wb_session_run_op(wb_session_new(), b,
+    "scwbtrajectory::trajectory_segment_from_artifacts", inputs = list(
+      pseudotime = .trajectory_s4_pt(x$cells[17:24],
+        seq(0, 1, length.out = 8L), "fit_s3"), lineage = "L1",
+      segment_id = "fitted_3", segment_order = 3L,
+      source_engine = "slingshot",
+      start_label = "bridge", end_label = "terminal", min_cells = 1L))
+  fitted_3_promotion <- promote_all(fitted_3)
+
+  segment_spec <- function(promotion, id, order, lineage, source_kind,
+      source_engine) list(segment_id = id, order = order,
+    source_kind = source_kind, source_engine = source_engine,
+    lineage = lineage,
+    pseudotime = wb_ref_artifact(artifact_id(promotion,
+      if (identical(source_kind, "space_path_bridge"))
+        "scwbtrajectory::trajectory_space_path_segment" else
+        "scwbtrajectory::trajectory_segment_from_artifacts", "pseudotime"),
+      "pseudotime"),
+    membership = wb_ref_artifact(artifact_id(promotion,
+      if (identical(source_kind, "space_path_bridge"))
+        "scwbtrajectory::trajectory_space_path_segment" else
+        "scwbtrajectory::trajectory_segment_from_artifacts", "membership"),
+      "membership"),
+    confidence = wb_ref_artifact(artifact_id(promotion,
+      if (identical(source_kind, "space_path_bridge"))
+        "scwbtrajectory::trajectory_space_path_segment" else
+        "scwbtrajectory::trajectory_segment_from_artifacts", "confidence"),
+      "confidence"),
+    segment_manifest = wb_ref_artifact(artifact_id(promotion,
+      if (identical(source_kind, "space_path_bridge"))
+        "scwbtrajectory::trajectory_space_path_segment" else
+        "scwbtrajectory::trajectory_segment_from_artifacts",
+      "segment_manifest"), "segment_manifest"))
+  joined <- wb_session_run_op(wb_session_new(), b,
+    "scwbtrajectory::trajectory_segment_join", inputs = list(segments = list(
+      segment_spec(fitted_1_promotion, "fitted_1", 1L, "L1", "fitted_model",
+        "slingshot"),
+      segment_spec(bridge_promotion, "bridge", 2L, "bridge", "space_path_bridge",
+        "space_path"),
+      segment_spec(fitted_3_promotion, "fitted_3", 3L, "L1", "fitted_model",
+        "slingshot")), composite_id = "s4_composite",
+      composite_key = "s4_composite", min_cells = 1L))
+  path_spec <- function(artifact, id, order, points) list(segment_id = id,
+    order = order, source_kind = "space_path_bridge",
+    source_engine = "space_path", lineage = "s4_path",
+    path = wb_ref_artifact(artifact, "curves"),
+    display_space_id = "plot", start_endpoint = "set:start",
+    end_endpoint = "set:end", endpoint_qc_action = "none",
+    start_label = paste0("path_", points, "_start"),
+    end_label = paste0("path_", points, "_end"))
+  path_joined <- wb_session_run_op(wb_session_new(), b,
+    "scwbtrajectory::trajectory_segment_path_join", inputs = list(
+      paths = list(path_spec(display_1_id, "display_1", 1L, 4L),
+        path_spec(display_2_id, "display_2", 2L, 5L)),
+      composite_id = "s4_display", composite_key = "s4_display",
+      display_space_id = "plot", endpoint_qc_action = "none",
+      min_cells = 1L))
+
+  stopifnot(identical(names(joined$run$outputs), c(
+      "composite_pseudotime_unit_segment",
+      "composite_pseudotime_cell_weighted_0_1", "segment_local_table",
+      "composite_manifest", "composite_membership")),
+    identical(joined$run$outputs$composite_membership$cell_id,
+      sort(x$cells, method = "radix")),
+    identical(as.character(
+      joined$run$outputs$composite_manifest$table$segment_id),
+      c("fitted_1", "bridge", "fitted_3")),
+    identical(unique(as.character(
+      joined$run$outputs$composite_manifest$table$trajectory_fit_id)[
+        nzchar(as.character(joined$run$outputs$composite_manifest$table$
+          trajectory_fit_id))]),
+      c("fit_s1", "fit_s3")),
+    nrow(bridge$run$outputs$display_endpoint_qc$table) == 2L,
+    nrow(path_joined$run$outputs$endpoint_qc$table) == 4L,
+    is.null(path_joined$run$outputs$curves$meta$trajectory_fit_id),
+    grepl("not a merged fitted model",
+      path_joined$run$outputs$curves$meta$caveat, fixed = TRUE))
+
+  transition_root <- function(result) file.path(
+    getFromNamespace(".wb_operation_pack_v2_store", "scworkbench")(
+      result$session$staging_bundle),
+    result$run$operation_pack_transition$transition_id, "receipt.json")
+  join_receipt <- jsonlite::read_json(transition_root(joined),
+    simplifyVector = FALSE)
+  path_receipt <- jsonlite::read_json(transition_root(path_joined),
+    simplifyVector = FALSE)
+  stopifnot(length(join_receipt$derived_cell_output_axis_observations) == 1L,
+    identical(join_receipt$derived_cell_output_axis_observations[[1L]]$
+      derivation_mode, "declared_ordered_unique_union_v1"),
+    length(path_receipt$derived_cell_output_axis_observations) == 0L)
+
+  before <- wb_art_list(b)
+  before_state <- getFromNamespace(".wb_session_source_identity",
+    "scworkbench")(b)$scientific_state_fingerprint
+  options(scworkbench.promotion_workspace_publish_hook = function(...)
+    stop("injected S4 composite publication failure"))
+  failed <- try(wb_session_promote_current(b, path_joined$session,
+    outputs = names(path_joined$run$outputs), created_by = "s4-composite"),
+    silent = TRUE)
+  options(scworkbench.promotion_workspace_publish_hook = NULL)
+  stopifnot(inherits(failed, "try-error"), identical(before, wb_art_list(b)),
+    identical(before_state, getFromNamespace(".wb_session_source_identity",
+      "scworkbench")(b)$scientific_state_fingerprint))
+  path_join_promotion <- wb_session_promote_current(b, path_joined$session,
+    outputs = names(path_joined$run$outputs), created_by = "s4-composite")
+  join_promotion <- promote_all(joined)
+  stopifnot(all(path_join_promotion$promoted$status == "ok"),
+    all(join_promotion$promoted$status == "ok"))
+  artifact_ids <- wb_art_list(b)$artifact_id
+  stopifnot(isTRUE(wb_finalize_recipient_bundle(b)$ready))
+
+  registry <- getFromNamespace(".wb_operation_pack_registry", "scworkbench")
+  saved_pack <- registry$packs$scwbtrajectory
+  saved_operations <- registry$operations[saved_pack$operation_names]
+  on.exit({registry$packs$scwbtrajectory <- saved_pack
+    registry$operations[names(saved_operations)] <- saved_operations},
+    add = TRUE)
+  wb_close_bundle(b); x$bundle <- NULL
+  for (name in saved_pack$operation_names) registry$operations[[name]] <- NULL
+  registry$packs$scwbtrajectory <- NULL
+  b <- wb_open_bundle(x$root, read_only = TRUE); x$bundle <- b
+  recipient_report <- wb_bundle_validation_report(x$root, "recipient")
+  stopifnot(all(vapply(artifact_ids, function(id)
+    inherits(wb_art_load(b, id), "wb_primitive"), logical(1))),
+    isTRUE(recipient_report$ok))
+  TRUE
+}
