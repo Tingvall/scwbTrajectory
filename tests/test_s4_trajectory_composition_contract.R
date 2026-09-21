@@ -34,7 +34,7 @@
   utils::read.csv(path, stringsAsFactors = FALSE, check.names = FALSE)
 }
 
-test_trajectory_s4_old_core_payload_equivalence_contract <- function() {
+test_trajectory_s4_scientific_equivalence_with_metadata_identity_exception_contract <- function() {
   trajectory_activate_pack()
   root <- tempfile("scwb-trajectory-s4-equivalence-")
   b <- wb_init_bundle(root, overwrite = TRUE)
@@ -187,6 +187,16 @@ test_trajectory_s4_metadata_identity_change_ledger_contract <- function() {
     identical(unique(ledger$new_pack_version), "0.1.1"),
     all(grepl("Duplicate-named value_semantics metadata was normalized",
       ledger$reason, fixed = TRUE)))
+  stopifnot(identical(ledger$old_content_sha256, c(
+      "5d122dc574449369e4f8df52826132ef79aea563f6bdae850fea3c2dbff61e5f",
+      "5e1aff4fcaa5aaf228f0bf2a8c5ad233b20e9503f25d7be68aab7df22181caa6",
+      "4d66bf32b9d75d9d3184212651941ccd85a99a280c19fb76ab42865c54b582e0",
+      "a776c36f80e825d4621de2803ec3d37b9e603fc6c3a33400dc91a22fe326dce0")),
+    identical(ledger$new_content_sha256, c(
+      "131b91351453b4a8ca7d76733815906391025be0c78c3ca23f1a72111e95acd1",
+      "ad339b4be4b727c393512cd7e61dda75a88a1595cffe624febfa3bcfcda92bcc",
+      "e56ed73cca558739fe825a92a9512dec64e35c2097919d718ed93886c54dc3d4",
+      "6c4e433bab08ce0494884a45737b5c423075bb76c3c1a23f215f828d59e37a7b")))
   manifest_path <- system.file("scworkbench", "operation-pack.json",
     package = "scwbTrajectory")
   manifest <- jsonlite::read_json(manifest_path, simplifyVector = FALSE)
