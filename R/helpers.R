@@ -5,10 +5,10 @@
   invisible(TRUE)
 }
 
-.trajectory_kind <- function(value, kind) {
+.trajectory_kind <- function(value, kind, where = "") {
   .trajectory_assert(inherits(value, "wb_primitive") &&
       identical(as.character(value$kind)[1L], kind),
-    paste0("Expected a ", kind, " primitive."))
+    paste0("Expected a ", kind, " primitive", where, "."))
   invisible(TRUE)
 }
 

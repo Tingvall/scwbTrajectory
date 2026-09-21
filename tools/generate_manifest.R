@@ -24,16 +24,22 @@ integer <- function(default, minimum = NULL, maximum = NULL,
 }
 strings <- function() list(type = c("array", "null"), uniqueItems = TRUE,
   items = list(type = "string", minLength = 1L))
+boolean <- function(default = FALSE) list(type = "boolean", default = default)
+endpoint <- function() list(type = c("object", "string", "null"))
+artifact_ref <- function() list(type = c("object", "string", "null"))
 input <- function(name, kind, required = TRUE) list(name = name, kind = kind,
   required = required, alignment = switch(kind,
     matrix = "cell_and_feature_ordered", space = "cell_ordered",
     space_2d = "cell_ordered", cell_vector = "cell_ordered",
     cell_vector_family = "cell_ordered", relation_family = "cell_ordered",
-    space_path_family = "associated_space"))
+    space_path_family = "associated_space",
+    path_2d_family = "canonical_row_ordered",
+    model_ref = "model_linked", obs_table = "none"))
 output <- function(name, kind, group, table_type = NULL) {
   value <- list(name = name, category = "terminal_artifact", kind = kind,
     storage_profile = if (kind == "path_2d_family") "path_2d_family_v1" else
-      "terminal_primitive_v1", allocated_id_key = paste0(name, "_id"),
+      if (kind == "space_path_family") "space_path_family_v1" else
+        "terminal_primitive_v1", allocated_id_key = paste0(name, "_id"),
     required = TRUE, promotion_group = group)
   if (!is.null(table_type)) value$table_type <- table_type
   if (kind == "cell_vector_family") value$value_kind <- "continuous"
@@ -245,6 +251,8 @@ project <- list(name = "space_path_project_2d",
       c("project_mode", "choice", "Local-interpolation projection mode."),
       c("approx_points", "int", "Optional display point count.")), "curves"))
 
+source(file.path(root, "tools", "s4_manifest.R"), local = TRUE)
+
 manifest <- list(schema_version = "scworkbench.operation_pack.v3",
   pack_abi_version = "3",
   identity_scheme = "scworkbench.operation_pack.canonical_json.v1",
@@ -253,7 +261,7 @@ manifest <- list(schema_version = "scworkbench.operation_pack.v3",
   compatibility = list(scworkbench = list(minimum = "0.1.0",
     maximum_exclusive = "0.2.0"), pack_abi = list(minimum = "3", maximum = "3")),
   entry_point = "scwbTrajectory::register_operation_pack",
-  operations = list(branch, route, score, project))
+  operations = c(list(branch, route, score, project), s4_operations))
 
 path <- file.path(root, "inst", "scworkbench", "operation-pack.json")
 dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)

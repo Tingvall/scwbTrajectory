@@ -15,7 +15,16 @@ register_operation_pack <- function() {
       `scwbtrajectory::trajectory_route_smooth` =
         .run_trajectory_route_smooth,
       `scwbtrajectory::space_path_score` = .run_space_path_score,
-      `scwbtrajectory::space_path_project_2d` = .run_space_path_project_2d
+      `scwbtrajectory::space_path_project_2d` = .run_space_path_project_2d,
+      `scwbtrajectory::space_path_define` = .run_space_path_define,
+      `scwbtrajectory::trajectory_segment_from_artifacts` =
+        .run_trajectory_segment_from_artifacts,
+      `scwbtrajectory::trajectory_space_path_segment` =
+        .run_trajectory_space_path_segment,
+      `scwbtrajectory::trajectory_segment_join` =
+        .run_trajectory_segment_join,
+      `scwbtrajectory::trajectory_segment_path_join` =
+        .run_trajectory_segment_path_join
     )
   )
 }
