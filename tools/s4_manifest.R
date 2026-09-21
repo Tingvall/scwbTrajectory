@@ -10,6 +10,35 @@ nullable_number <- function(minimum = NULL, maximum = NULL) {
 }
 family_policy <- function(name) list(output = name,
   policy = "data_dependent_family_v1")
+g7_vector_link <- function(name) list(name = name, shape = "one_per_cell",
+  row_order = "sealed_cell_axis_order_v1", missing_values = "forbidden")
+g7_family_link <- function(name, candidates, override = NULL) {
+  key_axis <- list(source = "resolved_effective_parameter_key_v1",
+    parameter_candidates = as.list(candidates),
+    null_policy = "first_non_null_v1", invalid_value_policy = "error")
+  if (!is.null(override)) key_axis$input_presence_override <- override
+  list(name = name, shape = "cell_key_cartesian",
+    row_order = "key_major_then_sealed_cell_v1", missing_values = "forbidden",
+    key_axis = key_axis)
+}
+g7_axis <- function(name, mode, source, linked, maximum_axes = 1L) {
+  value <- list(schema =
+      "scworkbench.operation_pack.derived_cell_output_axis.v1",
+    name = name, derivation_mode = mode, source = source,
+    linked_outputs = linked, limits = list(minimum_cells = 1L,
+      maximum_cells = 10000000L, maximum_source_axes = maximum_axes,
+      maximum_source_memberships = 20000000L,
+      maximum_linked_outputs = length(linked)),
+    call_discipline = "declare_once_seal_before_linked_output_v1",
+    closure_policy =
+      "all_linked_outputs_and_axis_observation_required_v1")
+  value$declaration_identity <- getFromNamespace(
+    ".wb_operation_pack_v2_identity_scoped", "scworkbench")(
+      value$schema,
+      "derived cell output axis declaration excluding declaration_identity",
+      value)
+  value
+}
 
 define_names <- "path"
 define <- list(
@@ -100,6 +129,16 @@ segment_from <- list(
     "wb_prim_cell_vector_family")),
   promotion_closure = closure(segment_names),
   replay_equivalence = equivalence(segment_names),
+  derived_cell_output_axes = list(g7_axis("segment_cells",
+    "ordered_unique_subset_v1", list(mode = "static_input_axis",
+      input = "pseudotime", projection = "family_key_cell_axis_v1",
+      family_key_selector = list(mode = "operation_parameter",
+        parameter = "lineage")), list(
+      g7_family_link("pseudotime", "lineage"),
+      g7_vector_link("membership"),
+      g7_family_link("confidence", c("confidence_key", "lineage"),
+        list(present = "lineage_weights", absent = "confidence",
+          use_parameter = "lineage"))))),
   retained_parameters = list(
     retained_row("segment_id", "segment_manifest", "segment_id"),
     retained_row("segment_order", "segment_manifest", "segment_order"),
@@ -161,6 +200,15 @@ bridge <- list(
     "wb_prim_cell_vector_family")),
   promotion_closure = closure(bridge_names),
   replay_equivalence = equivalence(bridge_names),
+  derived_cell_output_axes = list(g7_axis("segment_cells",
+    "ordered_unique_subset_v1", list(mode = "static_input_axis",
+      input = "path_scores", projection = "family_key_cell_axis_v1",
+      family_key_selector = list(mode =
+        "parameter_prefix_plus_literal_suffix",
+        prefix_parameter = "score_prefix", literal_suffix = "progress")),
+    list(g7_family_link("pseudotime", c("pseudotime_key", "segment_id")),
+      g7_vector_link("membership"),
+      g7_family_link("confidence", c("confidence_key", "segment_id"))))),
   optional_display_axis_groups = list(list(
     name = "display_endpoint_qc", scope = "operation",
     collection_read = NULL,
@@ -251,6 +299,15 @@ join <- list(
     "wb_prim_cell_vector_family")),
   promotion_closure = closure(join_names),
   replay_equivalence = equivalence(join_names),
+  derived_cell_output_axes = list(g7_axis("composite_cells",
+    "declared_ordered_unique_union_v1", list(mode =
+      "g4_collection_member_axis", collection = "segments",
+      slot = "pseudotime", projection = "family_key_cell_axis_v1",
+      family_key_selector = list(mode = "collection_item_field",
+        field = "lineage")), list(
+      g7_family_link("composite_pseudotime_unit_segment", "composite_key"),
+      g7_family_link("composite_pseudotime_cell_weighted_0_1",
+        "composite_key"), g7_vector_link("composite_membership")), 64L)),
   artifact_collection_reads = list(artifact_collection("segments", "segments",
     list(artifact_slot("pseudotime", "cell_vector_family", TRUE),
       artifact_slot("model", "model_ref"),

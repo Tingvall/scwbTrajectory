@@ -320,7 +320,7 @@
         cell_id = conf_df$cell_id,
         value = suppressWarnings(as.numeric(conf_df$value)),
         value_type = "continuous",
-        meta = utils::modifyList(meta, list(
+        meta = c(meta, list(
           value_semantics = "segment_confidence_or_membership_weight"))
       ),
       segment_manifest = scworkbench::wb_prim_obs_table(
@@ -488,7 +488,7 @@
       cell_id = score$cell_id,
       value = confidence,
       value_type = "continuous",
-      meta = utils::modifyList(meta, list(
+      meta = c(meta, list(
         value_semantics = "distance_derived_segment_confidence"))
     ),
     segment_manifest = scworkbench::wb_prim_obs_table(
@@ -867,7 +867,7 @@
         cell_id = comp$cell_id,
         value = comp$composite_pseudotime_unit_segment,
         value_type = "continuous",
-        meta = utils::modifyList(meta, list(
+        meta = c(meta, list(
           value_semantics = "composite_pseudotime_unit_segment"))
       ),
       composite_pseudotime_cell_weighted_0_1 = scworkbench::wb_prim_cell_vector_family(
@@ -875,7 +875,7 @@
         cell_id = comp$cell_id,
         value = comp$composite_pseudotime_cell_weighted_0_1,
         value_type = "continuous",
-        meta = utils::modifyList(meta, list(
+        meta = c(meta, list(
           value_semantics = "composite_pseudotime_cell_weighted_0_1"))
       ),
       segment_local_table = scworkbench::wb_prim_obs_table(
@@ -1381,7 +1381,11 @@
     composite_id = params$composite_id %||% NULL,
     allow_legacy = params$allow_legacy %||% FALSE)
   .trajectory_write_outputs(writers, result$outputs)
-  invisible(list(status = "ok"))
+  declaration <- scworkbench::wb_derived_cell_output_axis_declaration(
+    context$derived_cell_output_axis_grants[[1L]],
+    result$outputs$pseudotime$cell_id)
+  list(status = "ok",
+    derived_cell_output_axis_declarations = list(declaration))
 }
 
 .run_trajectory_space_path_segment <- function(readers, writers, params,
@@ -1416,7 +1420,11 @@
     display = display$display,
     endpoint_axes = display$endpoint_axes)
   .trajectory_write_outputs(writers, result$outputs)
-  invisible(list(status = "ok"))
+  declaration <- scworkbench::wb_derived_cell_output_axis_declaration(
+    context$derived_cell_output_axis_grants[[1L]],
+    result$outputs$pseudotime$cell_id)
+  list(status = "ok",
+    derived_cell_output_axis_declarations = list(declaration))
 }
 
 .run_trajectory_segment_join <- function(readers, writers, params, context) {
@@ -1431,7 +1439,17 @@
     min_weight = params$min_weight %||% NULL,
     allow_legacy = params$allow_legacy %||% FALSE)
   .trajectory_write_outputs(writers, result$outputs)
-  invisible(list(status = "ok"))
+  local <- result$outputs$segment_local_table$table
+  member_selections <- lapply(segments, function(segment) {
+    segment_id <- gsub("[^A-Za-z0-9_.:-]+", "_",
+      as.character(segment$segment_id)[1L])
+    as.character(local$cell_id[local$segment_id == segment_id])
+  })
+  declaration <- scworkbench::wb_derived_cell_output_axis_declaration(
+    context$derived_cell_output_axis_grants[[1L]],
+    result$outputs$composite_membership$cell_id, member_selections)
+  list(status = "ok",
+    derived_cell_output_axis_declarations = list(declaration))
 }
 
 .run_trajectory_segment_path_join <- function(readers, writers, params,

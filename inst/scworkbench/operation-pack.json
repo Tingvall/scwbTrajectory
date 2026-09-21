@@ -1395,6 +1395,78 @@
         "confidence": "exact_canonical_value",
         "segment_manifest": "exact_canonical_value"
       },
+      "derived_cell_output_axes": [
+        {
+          "schema": "scworkbench.operation_pack.derived_cell_output_axis.v1",
+          "name": "segment_cells",
+          "derivation_mode": "ordered_unique_subset_v1",
+          "source": {
+            "mode": "static_input_axis",
+            "input": "pseudotime",
+            "projection": "family_key_cell_axis_v1",
+            "family_key_selector": {
+              "mode": "operation_parameter",
+              "parameter": "lineage"
+            }
+          },
+          "linked_outputs": [
+            {
+              "name": "pseudotime",
+              "shape": "cell_key_cartesian",
+              "row_order": "key_major_then_sealed_cell_v1",
+              "missing_values": "forbidden",
+              "key_axis": {
+                "source": "resolved_effective_parameter_key_v1",
+                "parameter_candidates": [
+                  "lineage"
+                ],
+                "null_policy": "first_non_null_v1",
+                "invalid_value_policy": "error"
+              }
+            },
+            {
+              "name": "membership",
+              "shape": "one_per_cell",
+              "row_order": "sealed_cell_axis_order_v1",
+              "missing_values": "forbidden"
+            },
+            {
+              "name": "confidence",
+              "shape": "cell_key_cartesian",
+              "row_order": "key_major_then_sealed_cell_v1",
+              "missing_values": "forbidden",
+              "key_axis": {
+                "source": "resolved_effective_parameter_key_v1",
+                "parameter_candidates": [
+                  "confidence_key",
+                  "lineage"
+                ],
+                "null_policy": "first_non_null_v1",
+                "invalid_value_policy": "error",
+                "input_presence_override": {
+                  "present": "lineage_weights",
+                  "absent": "confidence",
+                  "use_parameter": "lineage"
+                }
+              }
+            }
+          ],
+          "limits": {
+            "minimum_cells": 1,
+            "maximum_cells": 10000000,
+            "maximum_source_axes": 1,
+            "maximum_source_memberships": 20000000,
+            "maximum_linked_outputs": 3
+          },
+          "call_discipline": "declare_once_seal_before_linked_output_v1",
+          "closure_policy": "all_linked_outputs_and_axis_observation_required_v1",
+          "declaration_identity": {
+            "scheme": "scworkbench.operation_pack.derived_cell_output_axis.v1",
+            "scope": "derived cell output axis declaration excluding declaration_identity",
+            "sha256": "0f8adfa316df560334ede431ae4fab23a2e5d30f57cd2211f66a5699fb920e8b"
+          }
+        }
+      ],
       "retained_parameters": [
         {
           "name": "segment_id",
@@ -1780,6 +1852,75 @@
         "segment_manifest": "exact_canonical_value",
         "display_endpoint_qc": "exact_canonical_value"
       },
+      "derived_cell_output_axes": [
+        {
+          "schema": "scworkbench.operation_pack.derived_cell_output_axis.v1",
+          "name": "segment_cells",
+          "derivation_mode": "ordered_unique_subset_v1",
+          "source": {
+            "mode": "static_input_axis",
+            "input": "path_scores",
+            "projection": "family_key_cell_axis_v1",
+            "family_key_selector": {
+              "mode": "parameter_prefix_plus_literal_suffix",
+              "prefix_parameter": "score_prefix",
+              "literal_suffix": "progress"
+            }
+          },
+          "linked_outputs": [
+            {
+              "name": "pseudotime",
+              "shape": "cell_key_cartesian",
+              "row_order": "key_major_then_sealed_cell_v1",
+              "missing_values": "forbidden",
+              "key_axis": {
+                "source": "resolved_effective_parameter_key_v1",
+                "parameter_candidates": [
+                  "pseudotime_key",
+                  "segment_id"
+                ],
+                "null_policy": "first_non_null_v1",
+                "invalid_value_policy": "error"
+              }
+            },
+            {
+              "name": "membership",
+              "shape": "one_per_cell",
+              "row_order": "sealed_cell_axis_order_v1",
+              "missing_values": "forbidden"
+            },
+            {
+              "name": "confidence",
+              "shape": "cell_key_cartesian",
+              "row_order": "key_major_then_sealed_cell_v1",
+              "missing_values": "forbidden",
+              "key_axis": {
+                "source": "resolved_effective_parameter_key_v1",
+                "parameter_candidates": [
+                  "confidence_key",
+                  "segment_id"
+                ],
+                "null_policy": "first_non_null_v1",
+                "invalid_value_policy": "error"
+              }
+            }
+          ],
+          "limits": {
+            "minimum_cells": 1,
+            "maximum_cells": 10000000,
+            "maximum_source_axes": 1,
+            "maximum_source_memberships": 20000000,
+            "maximum_linked_outputs": 3
+          },
+          "call_discipline": "declare_once_seal_before_linked_output_v1",
+          "closure_policy": "all_linked_outputs_and_axis_observation_required_v1",
+          "declaration_identity": {
+            "scheme": "scworkbench.operation_pack.derived_cell_output_axis.v1",
+            "scope": "derived cell output axis declaration excluding declaration_identity",
+            "sha256": "f7a5d068258588ee2e0a081d725444d6244e98e2097d4c62bf23c1927ad18521"
+          }
+        }
+      ],
       "optional_display_axis_groups": [
         {
           "name": "display_endpoint_qc",
@@ -2137,6 +2278,73 @@
         "composite_manifest": "exact_canonical_value",
         "composite_membership": "exact_canonical_value"
       },
+      "derived_cell_output_axes": [
+        {
+          "schema": "scworkbench.operation_pack.derived_cell_output_axis.v1",
+          "name": "composite_cells",
+          "derivation_mode": "declared_ordered_unique_union_v1",
+          "source": {
+            "mode": "g4_collection_member_axis",
+            "collection": "segments",
+            "slot": "pseudotime",
+            "projection": "family_key_cell_axis_v1",
+            "family_key_selector": {
+              "mode": "collection_item_field",
+              "field": "lineage"
+            }
+          },
+          "linked_outputs": [
+            {
+              "name": "composite_pseudotime_unit_segment",
+              "shape": "cell_key_cartesian",
+              "row_order": "key_major_then_sealed_cell_v1",
+              "missing_values": "forbidden",
+              "key_axis": {
+                "source": "resolved_effective_parameter_key_v1",
+                "parameter_candidates": [
+                  "composite_key"
+                ],
+                "null_policy": "first_non_null_v1",
+                "invalid_value_policy": "error"
+              }
+            },
+            {
+              "name": "composite_pseudotime_cell_weighted_0_1",
+              "shape": "cell_key_cartesian",
+              "row_order": "key_major_then_sealed_cell_v1",
+              "missing_values": "forbidden",
+              "key_axis": {
+                "source": "resolved_effective_parameter_key_v1",
+                "parameter_candidates": [
+                  "composite_key"
+                ],
+                "null_policy": "first_non_null_v1",
+                "invalid_value_policy": "error"
+              }
+            },
+            {
+              "name": "composite_membership",
+              "shape": "one_per_cell",
+              "row_order": "sealed_cell_axis_order_v1",
+              "missing_values": "forbidden"
+            }
+          ],
+          "limits": {
+            "minimum_cells": 1,
+            "maximum_cells": 10000000,
+            "maximum_source_axes": 64,
+            "maximum_source_memberships": 20000000,
+            "maximum_linked_outputs": 3
+          },
+          "call_discipline": "declare_once_seal_before_linked_output_v1",
+          "closure_policy": "all_linked_outputs_and_axis_observation_required_v1",
+          "declaration_identity": {
+            "scheme": "scworkbench.operation_pack.derived_cell_output_axis.v1",
+            "scope": "derived cell output axis declaration excluding declaration_identity",
+            "sha256": "d73ccffdd547a7f6734df5e883c1788953a84318ba4db4c661ea0f6b8c766b1b"
+          }
+        }
+      ],
       "artifact_collection_reads": [
         {
           "name": "segments",

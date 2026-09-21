@@ -96,12 +96,17 @@ test_trajectory_pack_ownership_contract <- function() {
   trajectory_activate_pack()
   qualified <- paste0("scwbtrajectory::", c("trajectory_branch_compare",
     "trajectory_route_smooth", "space_path_score",
-    "space_path_project_2d"))
+    "space_path_project_2d", "space_path_define",
+    "trajectory_segment_from_artifacts", "trajectory_space_path_segment",
+    "trajectory_segment_join", "trajectory_segment_path_join"))
   stopifnot(all(qualified %in% wb_list_ops()),
     !any(sub("^scwbtrajectory::", "", qualified) %in% wb_list_ops()),
     all(!vapply(c("wb_op_trajectory_branch_compare",
       "wb_op_trajectory_route_smooth", "wb_op_space_path_score",
-      "wb_op_space_path_project_2d"), exists, logical(1),
+      "wb_op_space_path_project_2d", "wb_op_space_path_define",
+      "wb_op_trajectory_segment_from_artifacts",
+      "wb_op_trajectory_space_path_segment", "wb_op_trajectory_segment_join",
+      "wb_op_trajectory_segment_path_join"), exists, logical(1),
       envir = asNamespace("scworkbench"), inherits = FALSE)))
   TRUE
 }
