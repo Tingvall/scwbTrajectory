@@ -28,7 +28,7 @@
       "trajectory dynamics: explicit pseudotime has multiple keys; provide pseudotime_key or lineage.")
   } else {
     key <- unique(as.character(unlist(key, use.names = FALSE)))
-    key <- key[nzchar(key)]
+    key <- key[!is.na(key) & nzchar(key)]
     .trajectory_assert(length(key) > 0L,
       "trajectory dynamics: pseudotime_key/lineage is empty.")
     .trajectory_assert(!length(setdiff(key, table$lineage_id)),
@@ -48,4 +48,36 @@
   .trajectory_assert(nrow(table) > 0L,
     "trajectory dynamics: no explicit pseudotime rows remain after filters.")
   split(table, table$lineage_id)
+}
+
+.trajectory_s2_explicit_source <- function(pseudotime, pseudotime_key = NULL,
+                                           lineage = NULL, cells,
+                                           membership = NULL,
+                                           pseudotime_artifact_id = "",
+                                           membership_artifact_id = "") {
+  lineages <- .trajectory_s2_explicit_lineages(pseudotime,
+    pseudotime_key = pseudotime_key, lineage = lineage, cells = cells,
+    membership = membership)
+  all_time <- scworkbench::wb_primitive_to_table(pseudotime,
+    include_context = FALSE)
+  membership_cells <- NULL
+  if (!is.null(membership)) {
+    value <- as.character(membership$value)
+    membership_cells <- unique(as.character(membership$cell_id)[
+      !is.na(value) & nzchar(value)])
+  }
+  source_key <- pseudotime_key %||% lineage %||% names(lineages)
+  source_key <- as.character(unlist(source_key, use.names = FALSE))
+  list(lineages = lineages, meta = list(
+    pseudotime_source_kind = "cell_vector_family",
+    pseudotime_artifact_id = as.character(pseudotime_artifact_id %||% "")[1L],
+    pseudotime_key = paste(unique(source_key[!is.na(source_key) &
+      nzchar(source_key)]),
+      collapse = ","),
+    membership_artifact_id = as.character(membership_artifact_id %||% "")[1L],
+    n_pseudotime_cells = as.integer(length(unique(as.character(
+      all_time$cell_id[is.finite(suppressWarnings(as.numeric(
+        all_time$value)))])))),
+    n_membership_cells = if (is.null(membership_cells)) NA_integer_ else
+      as.integer(length(membership_cells))))
 }

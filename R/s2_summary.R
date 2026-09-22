@@ -1,5 +1,13 @@
 # Shared S2 method equations. These consume ordinary vectors reconstructed
 # from authenticated typed inputs; no bundle or model-state handle is needed.
+.trajectory_s2_summary_fun <- function(summary_fun) {
+  value <- as.character(summary_fun %||% "mean")[1L]
+  if (!nzchar(value)) value <- "mean"
+  .trajectory_assert(value %in% c("mean", "median"),
+    "trajectory_smooth: summary_fun must be 'mean' or 'median'.")
+  value
+}
+
 .trajectory_s2_bins <- function(pseudotime, n_bins) {
   n_bins <- suppressWarnings(as.integer(n_bins))
   if (!is.finite(n_bins) || n_bins < 5L) n_bins <- 50L
@@ -11,15 +19,15 @@
   list(bins = bins, n_bins = as.integer(n_bins))
 }
 
-.trajectory_s2_aggregate_one <- function(entity_id, lineage_id, pseudotime,
+.trajectory_s2_aggregate_one <- function(entity_id, lineage_id, pt,
                                           values, bins, min_cells_per_bin,
                                           value_col = "expr",
                                           summary_fun = "mean") {
   .trajectory_assert(summary_fun %in% c("mean", "median"),
     "trajectory_smooth: summary_fun must be 'mean' or 'median'.")
   data <- data.frame(entity_id = rep(as.character(entity_id),
-    length(pseudotime)), lineage_id = rep(as.character(lineage_id),
-    length(pseudotime)), pseudotime = as.numeric(pseudotime),
+    length(pt)), lineage_id = rep(as.character(lineage_id),
+    length(pt)), pseudotime = as.numeric(pt),
     value = as.numeric(values), bin = as.integer(bins),
     stringsAsFactors = FALSE)
   data <- data[is.finite(data$pseudotime) & is.finite(data$value) &

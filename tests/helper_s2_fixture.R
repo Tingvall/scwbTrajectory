@@ -111,3 +111,45 @@ trajectory_s2_reference <- function() {
   jsonlite::read_json(file.path(directory, "fixtures",
     "trajectory_s2_core_reference.json"), simplifyVector = FALSE)
 }
+
+trajectory_s2_mock_boundary <- function(x, fault_terminal = NULL) {
+  declaration <- list(matrix_input = "matrix",
+    no_selector_policy = "all_namespaces", empty_match_policy = "allow")
+  snapshot <- getFromNamespace(
+    ".wb_operation_pack_v2_feature_set_registry_snapshot",
+    "scworkbench")(x$bundle, declaration,
+      list(matrix = wb_prim_matrix("RNA")), list())
+  state <- new.env(parent = emptyenv())
+  state$calls <- list()
+  state$writes <- list()
+  read_once <- function(name, value) {
+    force(name); force(value)
+    function() {
+      state$calls[[name]] <- as.integer(state$calls[[name]] %||% 0L) + 1L
+      if (state$calls[[name]] != 1L)
+        stop("Typed reader called more than once: ", name)
+      value
+    }
+  }
+  read_matrix <- function(features, cells) {
+    stopifnot(identical(as.character(cells), x$cells),
+      all(features %in% x$features))
+    state$calls$matrix_chunks <- c(state$calls$matrix_chunks,
+      as.character(features))
+    list(values = x$values[features, cells, drop = FALSE])
+  }
+  readers <- list(pseudotime = read_once("pseudotime", x$explicit),
+    membership = read_once("membership", x$membership),
+    signal = read_once("signal", x$signal),
+    feature_sets = read_once("feature_sets", snapshot),
+    matrix_chunks = read_matrix)
+  writers <- list(write_terminal_primitive = function(name, value) {
+    if (identical(name, fault_terminal)) stop("injected terminal fault")
+    state$writes[[name]] <- value
+    invisible(TRUE)
+  })
+  context <- list(effective_cells = x$cells,
+    typed_slice_reads = list(matrix_chunks = list(features = x$features)))
+  list(readers = readers, writers = writers, context = context,
+    state = state, snapshot = snapshot)
+}

@@ -15,26 +15,37 @@ output closure, including empty driver terminals. The dynamics cases pin
 bootstrap and permutation seeds and check the source kind separately.
 The pack also owns an explicit-family selector and shared bin/aggregate
 equations, with focused comparisons against the old-core method helpers.
-The current focused test executes the old-core operations to verify that the
-frozen fixture can be reproduced. At S2 integration, replace that caller with
-the namespaced pack runner and retain the frozen comparator; the test must not
-continue to depend on removed core method functions.
+One focused test executes the old-core operations to verify that the frozen
+fixture can be reproduced. A separate test executes the two direct pack
+runners against the same frozen comparator. At S2 integration, replace the
+old-core caller with the namespaced pack runner; the test must not continue to
+depend on removed core method functions.
 
 | Operation | Prepared now | Remaining for S2 integration |
 |---|---|
 | `trajectory_de` | Model method oracle for `de_table` and `fit_summary`, feature chunks of two. | Pack runner using bounded matrix and feature-set grants; actual G1 reopened S3/S5 model; derived fitted-axis acceptance for subset fits. |
 | `trajectory_smooth` | Model method oracle for `trend_table` and `fit_summary`, five bins and bounded feature chunks. | Pack runner and actual G1 reopened model; derived fitted-axis acceptance for subset fits. |
 | `trajectory_signature_smooth` | Model method oracle for `signature_table` and `fit_summary` against an authenticated feature-set name. | Pack runner using registry snapshot and bounded matrix; actual G1 reopened model and subset-axis support. |
-| `trajectory_geneset_dynamics` | Separate model and explicit-pseudotime six-terminal oracles. The pack-side explicit selector consumes a typed family and typed membership without bundle state. | Pack scoring, smoothing, driver, bootstrap/permutation runner; registration; actual G1 model fixture and subset-axis support for model mode. |
+| `trajectory_geneset_dynamics` | Separate model and explicit-pseudotime six-terminal oracles. An unregistered ABI-v3-shaped runner executes explicit mode through typed pseudotime, optional membership, feature-set snapshot, and bounded matrix chunks. All six output identities match the frozen oracle. | Integration-owned registration and manifest; atomic publication audit; actual G1 model fixture and subset-axis support for model mode. |
 | `trajectory_vector_smooth` | Model method oracle for `signal_table` and `fit_summary`, selected signal key. | Pack runner and actual G1 reopened model; derived fitted-axis acceptance for subset fits. |
-| `trajectory_signal_dynamics` | Separate model and explicit-pseudotime four-terminal oracles, including selected key and source-kind checks. The same pack-side explicit selector applies. | Pack curve/classification/bootstrap runner; registration; actual G1 model fixture and subset-axis support for model mode. |
+| `trajectory_signal_dynamics` | Separate model and explicit-pseudotime four-terminal oracles. An unregistered ABI-v3-shaped runner executes explicit mode through typed signal/pseudotime inputs and optional membership. All four output identities match the frozen oracle. | Integration-owned registration and manifest; atomic publication audit; actual G1 model fixture and subset-axis support for model mode. |
 
 The explicit-pseudotime inputs are complete-axis `cell_vector_family`
-primitives. Their method selection works with accepted typed-input ABI
-capabilities; it does not need model reading. The remaining pack operations
-are deliberately unregistered because shared registration and manifest files
-belong to the integration owner. This preparation does not remove any core
-operation or assert migration completion.
+primitives. The direct runners consume only the accepted typed readers and
+return declared primitives to terminal writers; they do not receive a bundle,
+database, registry handle, or committed path. They remain deliberately
+unregistered because shared registration and manifest files belong to the
+integration owner. The focused writer-fault test checks that a failed staged
+write propagates and leaves the durable bundle unchanged. A full ABI atomic
+rollback test requires integration-owned registration. This preparation does
+not remove any core operation or assert migration completion.
+
+The explicit runner tests compare all ten terminal identities against the
+frozen core oracle, reject absent or unknown pseudotime and method keys and
+insufficient or wrong-kind membership, and repeat seeded bootstrap and
+permutation calculations. Seed changes alter the expected stochastic fields;
+the runners restore the caller's RNG state, including an initially absent
+seed.
 
 ## Smallest generic dependency exposed by model-backed S2
 
