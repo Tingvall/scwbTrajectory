@@ -18,9 +18,6 @@
     is.finite(table$pseudotime), , drop = FALSE]
   .trajectory_assert(nrow(table) > 0L,
     "trajectory dynamics: explicit pseudotime has no finite rows.")
-  .trajectory_assert(!anyDuplicated(table[c("lineage_id", "cell_id")]),
-    "trajectory dynamics: explicit pseudotime repeats a key/cell pair.")
-
   key <- pseudotime_key %||% lineage
   if (is.null(key)) {
     key <- sort(unique(table$lineage_id))

@@ -108,6 +108,14 @@ test_trajectory_s2_explicit_runners_rejection_and_rollback_contract <- function(
       bad_selector)
     stopifnot(inherits(missing_method_key$value, "error"),
       length(missing_method_key$outputs) == 0L)
+    mixed_selector <- .trajectory_s2_explicit_params(operation)
+    if (identical(operation, "geneset"))
+      mixed_selector$feature_sets <- c("selected", "missing") else
+      mixed_selector$signal_keys <- c("rising", "missing")
+    mixed <- .trajectory_s2_run_direct(x, operation, mixed_selector)
+    stopifnot(inherits(mixed$value, "error"),
+      grepl("requested .* not found", conditionMessage(mixed$value)),
+      length(mixed$outputs) == 0L)
     bad_membership <- .trajectory_s2_run_direct(x, operation,
       membership = few)
     stopifnot(inherits(bad_membership$value, "error"),
@@ -130,5 +138,53 @@ test_trajectory_s2_explicit_runners_rejection_and_rollback_contract <- function(
       paste0("trajectory_", operation, "_dynamics_explicit"),
       list(outputs = retry$outputs), reference)
   }
+  TRUE
+}
+
+test_trajectory_s2_authenticated_reader_boundary_contract <- function() {
+  x <- trajectory_s2_fixture(); on.exit(trajectory_close(x), add = TRUE)
+  coverage <- getFromNamespace(".wb_typed_effective_cells", "scworkbench")
+  bind <- getFromNamespace(".wb_operation_pack_v2_bind_inputs", "scworkbench")
+  check <- function(name, primitive, kind, pattern) {
+    rejected <- tryCatch(coverage(x$bundle, "all", list(),
+      stats::setNames(list(primitive), name),
+      stats::setNames(list(kind), name),
+      "trajectory_signal_dynamics", 1L), error = identity)
+    stopifnot(inherits(rejected, "error"),
+      grepl(pattern, conditionMessage(rejected), fixed = TRUE))
+  }
+  for (name in c("pseudotime", "signal")) {
+    family <- if (identical(name, "pseudotime")) x$explicit else x$signal
+    foreign <- family
+    foreign$key <- c(foreign$key, foreign$key[[1L]])
+    foreign$cell_id <- c(foreign$cell_id, "foreign_cell")
+    foreign$value <- c(foreign$value, 0.5)
+    check(name, foreign, "cell_vector_family", "unknown cell IDs")
+    duplicate <- family
+    duplicate$cell_id[[2L]] <- duplicate$cell_id[[1L]]
+    check(name, duplicate, "cell_vector_family", "duplicate key/cell rows")
+  }
+  foreign_membership <- x$membership
+  foreign_membership$cell_id[[1L]] <- "foreign_cell"
+  check("membership", foreign_membership, "cell_vector", "unknown cell IDs")
+  duplicate_membership <- x$membership
+  duplicate_membership$cell_id[[2L]] <- duplicate_membership$cell_id[[1L]]
+  check("membership", duplicate_membership, "cell_vector", "duplicate cell IDs")
+
+  # A source row outside the requested session subset is valid at this stage.
+  subset <- x$cells[1:12]
+  accepted <- coverage(x$bundle, "all", list(cell_ids = subset),
+    list(pseudotime = x$explicit, signal = x$signal,
+      membership = x$membership),
+    list(pseudotime = "cell_vector_family",
+      signal = "cell_vector_family", membership = "cell_vector"),
+    "trajectory_signal_dynamics", 1L)
+  stopifnot(identical(accepted$cells, subset))
+  bound <- bind(x$bundle, list(pseudotime = x$explicit,
+    membership = x$membership), subset)
+  stopifnot(identical(bound$pseudotime$cell_id, rep(subset, each = 2L)),
+    identical(bound$pseudotime$key, rep(c("L1", "L2"), length(subset))),
+    identical(bound$membership$cell_id, subset))
+
   TRUE
 }

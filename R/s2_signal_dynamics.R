@@ -84,8 +84,10 @@
 
   if (!is.null(signal_keys)) {
     signal_keys <- unique(as.character(signal_keys))
-    signal_keys <- signal_keys[nzchar(signal_keys)]
+    signal_keys <- signal_keys[!is.na(signal_keys) & nzchar(signal_keys)]
     .trajectory_assert(length(signal_keys) > 0L, "trajectory_signal_dynamics: signal_keys is empty after cleaning.")
+    .trajectory_assert(!length(setdiff(signal_keys, unique(sig_tbl$key))),
+      "trajectory_signal_dynamics: requested signal_key not found.")
     sig_tbl <- sig_tbl[sig_tbl$key %in% signal_keys, , drop = FALSE]
     .trajectory_assert(nrow(sig_tbl) > 0L, "trajectory_signal_dynamics: no signal rows remain after signal_keys filtering.")
   }

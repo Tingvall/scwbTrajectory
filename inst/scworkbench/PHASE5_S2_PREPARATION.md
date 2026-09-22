@@ -47,6 +47,48 @@ permutation calculations. Seed changes alter the expected stochastic fields;
 the runners restore the caller's RNG state, including an initially absent
 seed.
 
+### Authenticated typed-reader boundary at the core pin
+
+At scworkbench `ba24635611756240f21f6817044883b832f12701`, the
+`wb_session_run_op()` path resolves required and present optional inputs and
+checks their declared kinds in `R/session_context.R:434-456` and `:308`.
+Before invoking any operation runner, it calls `.wb_typed_effective_cells()`
+at `R/session_context.R:458-479`. That function validates each complete
+resolved input **before** intersecting it with the requested session cells
+(`R/getters_coverage.R:231-259`). For `cell_vector_family` pseudotime and
+signal, it rejects invalid or foreign bundle cell IDs and repeated key/cell
+pairs (`R/getters_coverage.R:131-139,204-208`). For `cell_vector` membership,
+it rejects foreign and duplicate cell IDs (`:201-203`). The parent axis for
+these primitive kinds is the canonical bundle cell universe from
+`wb_cells(bundle, "all")` at `:172-173`; it is not the effective session
+subset. A row inside that bundle axis but outside the requested subset is
+valid source data and is filtered during binding.
+
+The ABI-v3 runner binds these primitives through the v2 binder at
+`R/operation_pack_v3_transition.R:3009-3012`. The binder filters membership
+while retaining its source row order, and orders family rows by effective
+cell order with original row order as a stable tie break
+(`R/operation_pack_v2_transition.R:121-125,155-162`). The bound payload's
+kind, content, and cell-order identities enter the input descriptor at
+`R/operation_pack_v2_transition.R:224-245`; the manifest closure and kinds
+are checked again at `:1356-1364`. The native primitive reader returns a
+deep copy of that bound input at `:808-816`. These identity checks bind the
+delivered payload and its order; a direct primitive supplied by a caller is
+not a durable artifact with an independently verified source identity.
+
+`tests/test_s2_explicit_execution_contract.R` exercises the core coverage
+function against foreign pseudotime, signal, and membership cells and against
+duplicate family key/cell and membership cell rows. All fail at core coverage
+before dispatch. The same test accepts a complete-axis source with a 12-cell
+session subset and checks the bound row order. The existing core contract in
+`tests/test_typed_effective_cell_coverage_contract.R:77-108` checks subset
+ordering and duplicate vector rejection. Direct-runner mocks bypass core
+coverage, so only method-owned malformed values are asserted there: mixed
+known/unknown feature-set and signal-key selectors fail before the first
+writer. Repeated pseudotime key/cell rows belong to the core coverage check.
+The staged-writer fault and seed/oracle checks remain direct-runner tests;
+they do not claim a full ABI transaction guarantee.
+
 ## Smallest generic dependency exposed by model-backed S2
 
 G1 exists at the oracle core pin, but its self-linked reader recomputes
