@@ -1,0 +1,113 @@
+# A small, dependency-free method corpus. The model_ref carries a synthetic
+# pseudotime table for the old-core numerical oracle; it is not a G1 reopen
+# fixture. A retained S3/S5 model will replace it at integration.
+trajectory_s2_fixture <- function() {
+  x <- trajectory_fixture()
+  x$model <- wb_prim_model_ref(model_space_id = "latent",
+    in_space_id = "latent", engine = "slingshot")
+  x$model$pseudotime_table <- data.frame(
+    lineage_id = rep(c("L1", "L2"), each = length(x$cells)),
+    cell_id = rep(x$cells, 2L),
+    pseudotime = c(seq(0, 1, length.out = length(x$cells)),
+      seq(1, 0, length.out = length(x$cells))),
+    stringsAsFactors = FALSE)
+  x$explicit <- wb_prim_cell_vector_family(
+    rep(c("L1", "L2"), each = length(x$cells)),
+    rep(x$cells, 2L), x$model$pseudotime_table$pseudotime,
+    value_type = "continuous")
+  x$membership <- wb_prim_cell_vector(
+    stats::setNames(rep("selected", length(x$cells)), x$cells),
+    value_type = "categorical")
+  x$signal <- wb_prim_cell_vector_family(
+    rep(c("rising", "falling"), each = length(x$cells)),
+    rep(x$cells, 2L),
+    c(seq(0, 1, length.out = length(x$cells)),
+      seq(1, 0, length.out = length(x$cells))),
+    value_type = "continuous")
+  x
+}
+
+trajectory_s2_cases <- function(x) {
+  list(
+    trajectory_de = function() wb_op_trajectory_de(x$bundle, "RNA", x$model,
+      lineage = "L1", features = x$features[1:3], chunk_size = 2L),
+    trajectory_smooth = function() wb_op_trajectory_smooth(x$bundle, "RNA",
+      x$model, lineage = "L1", features = x$features[1:3], n_bins = 5L,
+      min_cells_per_bin = 1L, chunk_size = 2L),
+    trajectory_signature_smooth = function()
+      wb_op_trajectory_signature_smooth(x$bundle, "RNA", x$model,
+        feature_set = "selected", lineage = "L1", n_bins = 5L,
+        min_cells_per_bin = 1L),
+    trajectory_geneset_dynamics_model = function()
+      wb_op_trajectory_geneset_dynamics(x$bundle, "RNA", model = x$model,
+        namespace = "trajectory", lineage = "L1", min_set_size = 1L,
+        n_bins = 5L, min_cells_per_bin = 1L, min_bins_observed = 2L,
+        bootstrap_n = 8L, bootstrap_seed = 17L, n_permutations = 8L,
+        permutation_seed = 19L),
+    trajectory_geneset_dynamics_explicit = function()
+      wb_op_trajectory_geneset_dynamics(x$bundle, "RNA",
+        pseudotime = x$explicit, pseudotime_key = "L1",
+        membership = x$membership, namespace = "trajectory",
+        min_set_size = 1L, n_bins = 5L, min_cells_per_bin = 1L,
+        min_bins_observed = 2L, bootstrap_n = 8L, bootstrap_seed = 17L,
+        n_permutations = 8L, permutation_seed = 19L),
+    trajectory_vector_smooth = function()
+      wb_op_trajectory_vector_smooth(x$bundle, x$signal, x$model,
+        lineage = "L1", signal_keys = "rising", n_bins = 5L,
+        min_cells_per_bin = 1L),
+    trajectory_signal_dynamics_model = function()
+      wb_op_trajectory_signal_dynamics(x$bundle, x$signal, model = x$model,
+        lineage = "L1", n_bins = 5L, min_cells_per_bin = 1L,
+        min_bins_observed = 2L, bootstrap_n = 8L, bootstrap_seed = 17L),
+    trajectory_signal_dynamics_explicit = function()
+      wb_op_trajectory_signal_dynamics(x$bundle, x$signal,
+        pseudotime = x$explicit, pseudotime_key = "L1",
+        membership = x$membership, n_bins = 5L, min_cells_per_bin = 1L,
+        min_bins_observed = 2L, bootstrap_n = 8L, bootstrap_seed = 17L)
+  )
+}
+
+trajectory_s2_result_record <- function(bundle, result) {
+  stopifnot(is.list(result), is.list(result$outputs),
+    is.list(result$params), length(result$outputs) > 0L)
+  list(outputs = lapply(result$outputs, function(value) {
+    stopifnot(inherits(value, "wb_primitive"))
+    list(kind = as.character(value$kind),
+      table_type = as.character(value$table_type %||% ""),
+      rows = if (is.data.frame(value$table)) nrow(value$table) else NA_integer_,
+      identity = trajectory_identity(bundle, value))
+  }), params = result$params)
+}
+
+trajectory_s2_compare_outputs <- function(bundle, operation, result, reference) {
+  expected <- reference$cases[[operation]]$outputs
+  if (is.null(expected)) stop("Unknown S2 reference case: ", operation)
+  actual <- result$outputs
+  if (!setequal(names(actual), names(expected)) ||
+      length(actual) != length(expected))
+    stop(operation, ": terminal closure differs from the reference")
+  for (name in names(expected)) {
+    value <- actual[[name]]
+    want <- expected[[name]]
+    if (!inherits(value, "wb_primitive") ||
+        !identical(as.character(value$kind), want$kind) ||
+        !identical(as.character(value$table_type %||% ""), want$table_type) ||
+        !identical(nrow(value$table), as.integer(want$rows)))
+      stop(operation, "/", name, ": terminal shape differs")
+    observed <- trajectory_identity(bundle, value)
+    for (field in c("structural_fingerprint", "content_sha256",
+        "content_identity_scheme", "verification_level",
+        "verification_status")) {
+      if (!identical(as.character(observed[[field]]), want$identity[[field]]))
+        stop(operation, "/", name, ": ", field, " differs")
+    }
+  }
+  invisible(TRUE)
+}
+
+trajectory_s2_reference <- function() {
+  directory <- if (exists("test_dir", inherits = TRUE))
+    get("test_dir", inherits = TRUE) else "tests"
+  jsonlite::read_json(file.path(directory, "fixtures",
+    "trajectory_s2_core_reference.json"), simplifyVector = FALSE)
+}
