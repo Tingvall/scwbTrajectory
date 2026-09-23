@@ -2863,6 +2863,1876 @@
           }
         ]
       }
+    },
+    {
+      "name": "trajectory_de",
+      "qualified_name": "scwbtrajectory::trajectory_de",
+      "title": "Trajectory De",
+      "description": "Grouped S2 model trajectory consumer with authenticated typed inputs.",
+      "runner": ".run_trajectory_de_model",
+      "inputs": [
+        {
+          "name": "matrix",
+          "kind": "matrix",
+          "required": true,
+          "alignment": "cell_and_feature_ordered"
+        },
+        {
+          "name": "model",
+          "kind": "model_ref",
+          "required": true,
+          "alignment": "model_linked"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "chunk_size": {
+            "type": "integer",
+            "default": 128,
+            "minimum": 1,
+            "maximum": 100000
+          },
+          "feature_set": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "features": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "lineage": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "min_pct_nonzero": {
+            "type": "number"
+          },
+          "min_sd": {
+            "type": "number"
+          },
+          "p_adjust_method": {
+            "type": "string"
+          },
+          "test": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "registry_reads": [
+        {
+          "name": "feature_sets",
+          "category": "authenticated_core_registry_snapshot",
+          "kind": "feature_set_registry",
+          "reader": "read_feature_set_registry",
+          "matrix_input": "matrix",
+          "no_selector_policy": "all_namespaces",
+          "empty_match_policy": "allow"
+        }
+      ],
+      "typed_slice_reads": [
+        {
+          "name": "matrix_chunks",
+          "input": "matrix",
+          "reader": "read_typed_slices",
+          "kind": "matrix",
+          "supported_axes": [
+            "features"
+          ],
+          "chunk_axis": "features",
+          "chunk_size_parameter": "chunk_size",
+          "call_discipline": "ordered_partition_exactly_once",
+          "empty_selection_policy": "reject",
+          "duplicate_policy": "reject",
+          "selection": {
+            "cells": {
+              "policy": "effective_input_axis_v1"
+            },
+            "features": {
+              "policy": "effective_input_axis_v1"
+            }
+          }
+        }
+      ],
+      "self_linked_contained_model_reads": [
+        {
+          "name": "model_payload",
+          "input": "model",
+          "reader": "read_self_linked_contained_model_payload",
+          "allowed_models": [
+            {
+              "engine": "slingshot",
+              "model_type": "slingshot"
+            },
+            {
+              "engine": "monocle3",
+              "model_type": "monocle3_cds"
+            }
+          ],
+          "linkage_policy": "authenticated_existing_source_and_cell_linkage_v1",
+          "maximum_file_count": 32,
+          "maximum_total_bytes": 1073741824,
+          "call_discipline": "exactly_once"
+        }
+      ],
+      "dimension_policies": [
+        {
+          "output": "de_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "fit_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "de_table",
+          "category": "terminal_artifact",
+          "kind": "feature_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "de_table_id",
+          "required": true,
+          "promotion_group": "trajectory_de",
+          "table_type": "trajectory_de"
+        },
+        {
+          "name": "fit_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "fit_summary_id",
+          "required": true,
+          "promotion_group": "trajectory_de",
+          "table_type": "trajectory_de_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_feature_table"
+        }
+      ],
+      "promotion_closure": {
+        "de_table": [
+          "de_table",
+          "fit_summary"
+        ],
+        "fit_summary": [
+          "de_table",
+          "fit_summary"
+        ]
+      },
+      "replay_equivalence": {
+        "de_table": "exact_canonical_value",
+        "fit_summary": "exact_canonical_value"
+      }
+    },
+    {
+      "name": "trajectory_smooth",
+      "qualified_name": "scwbtrajectory::trajectory_smooth",
+      "title": "Trajectory Smooth",
+      "description": "Grouped S2 model trajectory consumer with authenticated typed inputs.",
+      "runner": ".run_trajectory_smooth_model",
+      "inputs": [
+        {
+          "name": "matrix",
+          "kind": "matrix",
+          "required": true,
+          "alignment": "cell_and_feature_ordered"
+        },
+        {
+          "name": "model",
+          "kind": "model_ref",
+          "required": true,
+          "alignment": "model_linked"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "chunk_size": {
+            "type": "integer",
+            "default": 128,
+            "minimum": 1,
+            "maximum": 100000
+          },
+          "feature_set": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "features": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "lineage": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "min_cells_per_bin": {
+            "type": "integer"
+          },
+          "n_bins": {
+            "type": "integer"
+          },
+          "summary_fun": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "registry_reads": [
+        {
+          "name": "feature_sets",
+          "category": "authenticated_core_registry_snapshot",
+          "kind": "feature_set_registry",
+          "reader": "read_feature_set_registry",
+          "matrix_input": "matrix",
+          "no_selector_policy": "all_namespaces",
+          "empty_match_policy": "allow"
+        }
+      ],
+      "typed_slice_reads": [
+        {
+          "name": "matrix_chunks",
+          "input": "matrix",
+          "reader": "read_typed_slices",
+          "kind": "matrix",
+          "supported_axes": [
+            "features"
+          ],
+          "chunk_axis": "features",
+          "chunk_size_parameter": "chunk_size",
+          "call_discipline": "ordered_partition_exactly_once",
+          "empty_selection_policy": "reject",
+          "duplicate_policy": "reject",
+          "selection": {
+            "cells": {
+              "policy": "effective_input_axis_v1"
+            },
+            "features": {
+              "policy": "effective_input_axis_v1"
+            }
+          }
+        }
+      ],
+      "self_linked_contained_model_reads": [
+        {
+          "name": "model_payload",
+          "input": "model",
+          "reader": "read_self_linked_contained_model_payload",
+          "allowed_models": [
+            {
+              "engine": "slingshot",
+              "model_type": "slingshot"
+            },
+            {
+              "engine": "monocle3",
+              "model_type": "monocle3_cds"
+            }
+          ],
+          "linkage_policy": "authenticated_existing_source_and_cell_linkage_v1",
+          "maximum_file_count": 32,
+          "maximum_total_bytes": 1073741824,
+          "call_discipline": "exactly_once"
+        }
+      ],
+      "dimension_policies": [
+        {
+          "output": "trend_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "fit_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "trend_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "trend_table_id",
+          "required": true,
+          "promotion_group": "trajectory_smooth",
+          "table_type": "trajectory_smooth"
+        },
+        {
+          "name": "fit_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "fit_summary_id",
+          "required": true,
+          "promotion_group": "trajectory_smooth",
+          "table_type": "trajectory_smooth_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_feature_table"
+        }
+      ],
+      "promotion_closure": {
+        "trend_table": [
+          "fit_summary",
+          "trend_table"
+        ],
+        "fit_summary": [
+          "fit_summary",
+          "trend_table"
+        ]
+      },
+      "replay_equivalence": {
+        "trend_table": "exact_canonical_value",
+        "fit_summary": "exact_canonical_value"
+      }
+    },
+    {
+      "name": "trajectory_signature_smooth",
+      "qualified_name": "scwbtrajectory::trajectory_signature_smooth",
+      "title": "Trajectory Signature Smooth",
+      "description": "Grouped S2 model trajectory consumer with authenticated typed inputs.",
+      "runner": ".run_trajectory_signature_smooth_model",
+      "inputs": [
+        {
+          "name": "matrix",
+          "kind": "matrix",
+          "required": true,
+          "alignment": "cell_and_feature_ordered"
+        },
+        {
+          "name": "model",
+          "kind": "model_ref",
+          "required": true,
+          "alignment": "model_linked"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "chunk_size": {
+            "type": "integer",
+            "default": 128,
+            "minimum": 1,
+            "maximum": 100000
+          },
+          "feature_set": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "features": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "lineage": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "min_cells_per_bin": {
+            "type": "integer"
+          },
+          "n_bins": {
+            "type": "integer"
+          },
+          "score_method": {
+            "type": "string"
+          },
+          "summary_fun": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "feature_set"
+        ]
+      },
+      "registry_reads": [
+        {
+          "name": "feature_sets",
+          "category": "authenticated_core_registry_snapshot",
+          "kind": "feature_set_registry",
+          "reader": "read_feature_set_registry",
+          "matrix_input": "matrix",
+          "no_selector_policy": "all_namespaces",
+          "empty_match_policy": "allow"
+        }
+      ],
+      "typed_slice_reads": [
+        {
+          "name": "matrix_chunks",
+          "input": "matrix",
+          "reader": "read_typed_slices",
+          "kind": "matrix",
+          "supported_axes": [
+            "features"
+          ],
+          "chunk_axis": "features",
+          "chunk_size_parameter": "chunk_size",
+          "call_discipline": "ordered_partition_exactly_once",
+          "empty_selection_policy": "reject",
+          "duplicate_policy": "reject",
+          "selection": {
+            "cells": {
+              "policy": "effective_input_axis_v1"
+            },
+            "features": {
+              "policy": "effective_input_axis_v1"
+            }
+          }
+        }
+      ],
+      "self_linked_contained_model_reads": [
+        {
+          "name": "model_payload",
+          "input": "model",
+          "reader": "read_self_linked_contained_model_payload",
+          "allowed_models": [
+            {
+              "engine": "slingshot",
+              "model_type": "slingshot"
+            },
+            {
+              "engine": "monocle3",
+              "model_type": "monocle3_cds"
+            }
+          ],
+          "linkage_policy": "authenticated_existing_source_and_cell_linkage_v1",
+          "maximum_file_count": 32,
+          "maximum_total_bytes": 1073741824,
+          "call_discipline": "exactly_once"
+        }
+      ],
+      "dimension_policies": [
+        {
+          "output": "signature_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "fit_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "signature_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "signature_table_id",
+          "required": true,
+          "promotion_group": "trajectory_signature_smooth",
+          "table_type": "trajectory_signature_smooth"
+        },
+        {
+          "name": "fit_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "fit_summary_id",
+          "required": true,
+          "promotion_group": "trajectory_signature_smooth",
+          "table_type": "trajectory_signature_smooth_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_feature_table"
+        }
+      ],
+      "promotion_closure": {
+        "signature_table": [
+          "fit_summary",
+          "signature_table"
+        ],
+        "fit_summary": [
+          "fit_summary",
+          "signature_table"
+        ]
+      },
+      "replay_equivalence": {
+        "signature_table": "exact_canonical_value",
+        "fit_summary": "exact_canonical_value"
+      }
+    },
+    {
+      "name": "trajectory_geneset_dynamics",
+      "qualified_name": "scwbtrajectory::trajectory_geneset_dynamics",
+      "title": "Trajectory Geneset Dynamics",
+      "description": "Grouped S2 model trajectory consumer with authenticated typed inputs.",
+      "runner": ".run_trajectory_geneset_dynamics_model",
+      "inputs": [
+        {
+          "name": "matrix",
+          "kind": "matrix",
+          "required": true,
+          "alignment": "cell_and_feature_ordered"
+        },
+        {
+          "name": "model",
+          "kind": "model_ref",
+          "required": true,
+          "alignment": "model_linked"
+        },
+        {
+          "name": "membership",
+          "kind": "cell_vector",
+          "required": false,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "bootstrap_n": {
+            "type": "integer"
+          },
+          "bootstrap_seed": {
+            "type": "integer"
+          },
+          "chunk_size": {
+            "type": "integer",
+            "default": 128,
+            "minimum": 1,
+            "maximum": 100000
+          },
+          "ci_level": {
+            "type": "number"
+          },
+          "class_min_amplitude": {
+            "type": "number"
+          },
+          "end_label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "feature_sets": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "lineage": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "loess_span": {
+            "type": "number"
+          },
+          "low_abundance_max_score": {
+            "type": "number"
+          },
+          "max_set_size": {
+            "type": "integer"
+          },
+          "min_amplitude": {
+            "type": "number"
+          },
+          "min_bins_observed": {
+            "type": "integer"
+          },
+          "min_cells_per_bin": {
+            "type": "integer"
+          },
+          "min_detected_fraction": {
+            "type": "number"
+          },
+          "min_features_detected": {
+            "type": "integer"
+          },
+          "min_max_score": {
+            "type": "number"
+          },
+          "min_mean_score": {
+            "type": "number"
+          },
+          "min_set_size": {
+            "type": "integer"
+          },
+          "min_signal_to_noise": {
+            "type": "number"
+          },
+          "monotonic_min_abs_rho": {
+            "type": "number"
+          },
+          "n_bins": {
+            "type": "integer"
+          },
+          "n_permutations": {
+            "type": "integer"
+          },
+          "namespace": {
+            "type": "string",
+            "minLength": 1
+          },
+          "on_off_min_delta": {
+            "type": "number"
+          },
+          "p_adjust_method": {
+            "type": "string"
+          },
+          "permutation_seed": {
+            "type": "integer"
+          },
+          "pseudotime_direction": {
+            "type": "string"
+          },
+          "score_method": {
+            "type": "string"
+          },
+          "smooth_method": {
+            "type": "string"
+          },
+          "start_label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "summary_fun": {
+            "type": "string"
+          },
+          "top_driver_genes": {
+            "type": "integer"
+          },
+          "top_n": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "namespace"
+        ]
+      },
+      "registry_reads": [
+        {
+          "name": "feature_sets",
+          "category": "authenticated_core_registry_snapshot",
+          "kind": "feature_set_registry",
+          "reader": "read_feature_set_registry",
+          "matrix_input": "matrix",
+          "no_selector_policy": "all_namespaces",
+          "empty_match_policy": "allow"
+        }
+      ],
+      "typed_slice_reads": [
+        {
+          "name": "matrix_chunks",
+          "input": "matrix",
+          "reader": "read_typed_slices",
+          "kind": "matrix",
+          "supported_axes": [
+            "features"
+          ],
+          "chunk_axis": "features",
+          "chunk_size_parameter": "chunk_size",
+          "call_discipline": "ordered_partition_exactly_once",
+          "empty_selection_policy": "reject",
+          "duplicate_policy": "reject",
+          "selection": {
+            "cells": {
+              "policy": "effective_input_axis_v1"
+            },
+            "features": {
+              "policy": "effective_input_axis_v1"
+            }
+          }
+        }
+      ],
+      "self_linked_contained_model_reads": [
+        {
+          "name": "model_payload",
+          "input": "model",
+          "reader": "read_self_linked_contained_model_payload",
+          "allowed_models": [
+            {
+              "engine": "slingshot",
+              "model_type": "slingshot"
+            },
+            {
+              "engine": "monocle3",
+              "model_type": "monocle3_cds"
+            }
+          ],
+          "linkage_policy": "authenticated_existing_source_and_cell_linkage_v1",
+          "maximum_file_count": 32,
+          "maximum_total_bytes": 1073741824,
+          "call_discipline": "exactly_once"
+        }
+      ],
+      "dimension_policies": [
+        {
+          "output": "signature_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "dynamics_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "top_sets",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "driver_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "driver_curve_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "fit_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "signature_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "signature_table_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "table_type": "trajectory_geneset_dynamics_curve"
+        },
+        {
+          "name": "dynamics_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "dynamics_table_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "table_type": "trajectory_geneset_dynamics"
+        },
+        {
+          "name": "top_sets",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "top_sets_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "table_type": "trajectory_geneset_dynamics_top"
+        },
+        {
+          "name": "driver_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "driver_table_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "table_type": "trajectory_geneset_dynamics_drivers"
+        },
+        {
+          "name": "driver_curve_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "driver_curve_table_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "table_type": "trajectory_geneset_dynamics_driver_curve"
+        },
+        {
+          "name": "fit_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "fit_summary_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "table_type": "trajectory_geneset_dynamics_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_feature_table"
+        }
+      ],
+      "promotion_closure": {
+        "signature_table": [
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ],
+        "dynamics_table": [
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ],
+        "top_sets": [
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ],
+        "driver_table": [
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ],
+        "driver_curve_table": [
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ],
+        "fit_summary": [
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ]
+      },
+      "replay_equivalence": {
+        "signature_table": "exact_canonical_value",
+        "dynamics_table": "exact_canonical_value",
+        "top_sets": "exact_canonical_value",
+        "driver_table": "exact_canonical_value",
+        "driver_curve_table": "exact_canonical_value",
+        "fit_summary": "exact_canonical_value"
+      }
+    },
+    {
+      "name": "trajectory_vector_smooth",
+      "qualified_name": "scwbtrajectory::trajectory_vector_smooth",
+      "title": "Trajectory Vector Smooth",
+      "description": "Grouped S2 model trajectory consumer with authenticated typed inputs.",
+      "runner": ".run_trajectory_vector_smooth_model",
+      "inputs": [
+        {
+          "name": "signal",
+          "kind": "cell_vector_family",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "model",
+          "kind": "model_ref",
+          "required": true,
+          "alignment": "model_linked"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "lineage": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "min_cells_per_bin": {
+            "type": "integer"
+          },
+          "n_bins": {
+            "type": "integer"
+          },
+          "signal_keys": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "summary_fun": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "self_linked_contained_model_reads": [
+        {
+          "name": "model_payload",
+          "input": "model",
+          "reader": "read_self_linked_contained_model_payload",
+          "allowed_models": [
+            {
+              "engine": "slingshot",
+              "model_type": "slingshot"
+            },
+            {
+              "engine": "monocle3",
+              "model_type": "monocle3_cds"
+            }
+          ],
+          "linkage_policy": "authenticated_existing_source_and_cell_linkage_v1",
+          "maximum_file_count": 32,
+          "maximum_total_bytes": 1073741824,
+          "call_discipline": "exactly_once"
+        }
+      ],
+      "dimension_policies": [
+        {
+          "output": "signal_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "fit_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "signal_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "signal_table_id",
+          "required": true,
+          "promotion_group": "trajectory_vector_smooth",
+          "table_type": "trajectory_vector_smooth"
+        },
+        {
+          "name": "fit_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "fit_summary_id",
+          "required": true,
+          "promotion_group": "trajectory_vector_smooth",
+          "table_type": "trajectory_vector_smooth_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_feature_table"
+        }
+      ],
+      "promotion_closure": {
+        "signal_table": [
+          "fit_summary",
+          "signal_table"
+        ],
+        "fit_summary": [
+          "fit_summary",
+          "signal_table"
+        ]
+      },
+      "replay_equivalence": {
+        "signal_table": "exact_canonical_value",
+        "fit_summary": "exact_canonical_value"
+      }
+    },
+    {
+      "name": "trajectory_signal_dynamics",
+      "qualified_name": "scwbtrajectory::trajectory_signal_dynamics",
+      "title": "Trajectory Signal Dynamics",
+      "description": "Grouped S2 model trajectory consumer with authenticated typed inputs.",
+      "runner": ".run_trajectory_signal_dynamics_model",
+      "inputs": [
+        {
+          "name": "signal",
+          "kind": "cell_vector_family",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "model",
+          "kind": "model_ref",
+          "required": true,
+          "alignment": "model_linked"
+        },
+        {
+          "name": "membership",
+          "kind": "cell_vector",
+          "required": false,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "bootstrap_n": {
+            "type": "integer"
+          },
+          "bootstrap_seed": {
+            "type": "integer"
+          },
+          "ci_level": {
+            "type": "number"
+          },
+          "class_min_amplitude": {
+            "type": "number"
+          },
+          "end_label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lineage": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "loess_span": {
+            "type": "number"
+          },
+          "min_amplitude": {
+            "type": "number"
+          },
+          "min_bins_observed": {
+            "type": "integer"
+          },
+          "min_cells_per_bin": {
+            "type": "integer"
+          },
+          "monotonic_min_abs_rho": {
+            "type": "number"
+          },
+          "n_bins": {
+            "type": "integer"
+          },
+          "on_off_min_delta": {
+            "type": "number"
+          },
+          "pseudotime_direction": {
+            "type": "string"
+          },
+          "signal_keys": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "smooth_method": {
+            "type": "string"
+          },
+          "start_label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "summary_fun": {
+            "type": "string"
+          },
+          "top_n": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      },
+      "self_linked_contained_model_reads": [
+        {
+          "name": "model_payload",
+          "input": "model",
+          "reader": "read_self_linked_contained_model_payload",
+          "allowed_models": [
+            {
+              "engine": "slingshot",
+              "model_type": "slingshot"
+            },
+            {
+              "engine": "monocle3",
+              "model_type": "monocle3_cds"
+            }
+          ],
+          "linkage_policy": "authenticated_existing_source_and_cell_linkage_v1",
+          "maximum_file_count": 32,
+          "maximum_total_bytes": 1073741824,
+          "call_discipline": "exactly_once"
+        }
+      ],
+      "dimension_policies": [
+        {
+          "output": "signal_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "dynamics_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "top_signals",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "fit_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "signal_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "signal_table_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_dynamics",
+          "table_type": "trajectory_signal_dynamics_curve"
+        },
+        {
+          "name": "dynamics_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "dynamics_table_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_dynamics",
+          "table_type": "trajectory_signal_dynamics"
+        },
+        {
+          "name": "top_signals",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "top_signals_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_dynamics",
+          "table_type": "trajectory_signal_dynamics_top"
+        },
+        {
+          "name": "fit_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "fit_summary_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_dynamics",
+          "table_type": "trajectory_signal_dynamics_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_feature_table"
+        }
+      ],
+      "promotion_closure": {
+        "signal_table": [
+          "dynamics_table",
+          "fit_summary",
+          "signal_table",
+          "top_signals"
+        ],
+        "dynamics_table": [
+          "dynamics_table",
+          "fit_summary",
+          "signal_table",
+          "top_signals"
+        ],
+        "top_signals": [
+          "dynamics_table",
+          "fit_summary",
+          "signal_table",
+          "top_signals"
+        ],
+        "fit_summary": [
+          "dynamics_table",
+          "fit_summary",
+          "signal_table",
+          "top_signals"
+        ]
+      },
+      "replay_equivalence": {
+        "signal_table": "exact_canonical_value",
+        "dynamics_table": "exact_canonical_value",
+        "top_signals": "exact_canonical_value",
+        "fit_summary": "exact_canonical_value"
+      }
+    },
+    {
+      "name": "trajectory_geneset_dynamics_explicit",
+      "qualified_name": "scwbtrajectory::trajectory_geneset_dynamics_explicit",
+      "title": "Trajectory Geneset Dynamics Explicit",
+      "description": "Grouped S2 explicit trajectory consumer with authenticated typed inputs.",
+      "runner": ".run_trajectory_geneset_dynamics_explicit",
+      "inputs": [
+        {
+          "name": "matrix",
+          "kind": "matrix",
+          "required": true,
+          "alignment": "cell_and_feature_ordered"
+        },
+        {
+          "name": "pseudotime",
+          "kind": "cell_vector_family",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "membership",
+          "kind": "cell_vector",
+          "required": false,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "bootstrap_n": {
+            "type": "integer"
+          },
+          "bootstrap_seed": {
+            "type": "integer"
+          },
+          "chunk_size": {
+            "type": "integer",
+            "default": 128,
+            "minimum": 1,
+            "maximum": 100000
+          },
+          "ci_level": {
+            "type": "number"
+          },
+          "class_min_amplitude": {
+            "type": "number"
+          },
+          "end_label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "feature_sets": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "loess_span": {
+            "type": "number"
+          },
+          "low_abundance_max_score": {
+            "type": "number"
+          },
+          "max_set_size": {
+            "type": "integer"
+          },
+          "min_amplitude": {
+            "type": "number"
+          },
+          "min_bins_observed": {
+            "type": "integer"
+          },
+          "min_cells_per_bin": {
+            "type": "integer"
+          },
+          "min_detected_fraction": {
+            "type": "number"
+          },
+          "min_features_detected": {
+            "type": "integer"
+          },
+          "min_max_score": {
+            "type": "number"
+          },
+          "min_mean_score": {
+            "type": "number"
+          },
+          "min_set_size": {
+            "type": "integer"
+          },
+          "min_signal_to_noise": {
+            "type": "number"
+          },
+          "monotonic_min_abs_rho": {
+            "type": "number"
+          },
+          "n_bins": {
+            "type": "integer"
+          },
+          "n_permutations": {
+            "type": "integer"
+          },
+          "namespace": {
+            "type": "string",
+            "minLength": 1
+          },
+          "on_off_min_delta": {
+            "type": "number"
+          },
+          "p_adjust_method": {
+            "type": "string"
+          },
+          "permutation_seed": {
+            "type": "integer"
+          },
+          "pseudotime_direction": {
+            "type": "string"
+          },
+          "pseudotime_key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "score_method": {
+            "type": "string"
+          },
+          "smooth_method": {
+            "type": "string"
+          },
+          "start_label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "summary_fun": {
+            "type": "string"
+          },
+          "top_driver_genes": {
+            "type": "integer"
+          },
+          "top_n": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "namespace",
+          "pseudotime_key"
+        ]
+      },
+      "registry_reads": [
+        {
+          "name": "feature_sets",
+          "category": "authenticated_core_registry_snapshot",
+          "kind": "feature_set_registry",
+          "reader": "read_feature_set_registry",
+          "matrix_input": "matrix",
+          "no_selector_policy": "all_namespaces",
+          "empty_match_policy": "allow"
+        }
+      ],
+      "typed_slice_reads": [
+        {
+          "name": "matrix_chunks",
+          "input": "matrix",
+          "reader": "read_typed_slices",
+          "kind": "matrix",
+          "supported_axes": [
+            "features"
+          ],
+          "chunk_axis": "features",
+          "chunk_size_parameter": "chunk_size",
+          "call_discipline": "ordered_partition_exactly_once",
+          "empty_selection_policy": "reject",
+          "duplicate_policy": "reject",
+          "selection": {
+            "cells": {
+              "policy": "effective_input_axis_v1"
+            },
+            "features": {
+              "policy": "effective_input_axis_v1"
+            }
+          }
+        }
+      ],
+      "dimension_policies": [
+        {
+          "output": "signature_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "dynamics_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "top_sets",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "driver_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "driver_curve_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "fit_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "signature_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "signature_table_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "table_type": "trajectory_geneset_dynamics_curve"
+        },
+        {
+          "name": "dynamics_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "dynamics_table_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "table_type": "trajectory_geneset_dynamics"
+        },
+        {
+          "name": "top_sets",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "top_sets_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "table_type": "trajectory_geneset_dynamics_top"
+        },
+        {
+          "name": "driver_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "driver_table_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "table_type": "trajectory_geneset_dynamics_drivers"
+        },
+        {
+          "name": "driver_curve_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "driver_curve_table_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "table_type": "trajectory_geneset_dynamics_driver_curve"
+        },
+        {
+          "name": "fit_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "fit_summary_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "table_type": "trajectory_geneset_dynamics_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_feature_table"
+        }
+      ],
+      "promotion_closure": {
+        "signature_table": [
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ],
+        "dynamics_table": [
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ],
+        "top_sets": [
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ],
+        "driver_table": [
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ],
+        "driver_curve_table": [
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ],
+        "fit_summary": [
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ]
+      },
+      "replay_equivalence": {
+        "signature_table": "exact_canonical_value",
+        "dynamics_table": "exact_canonical_value",
+        "top_sets": "exact_canonical_value",
+        "driver_table": "exact_canonical_value",
+        "driver_curve_table": "exact_canonical_value",
+        "fit_summary": "exact_canonical_value"
+      }
+    },
+    {
+      "name": "trajectory_signal_dynamics_explicit",
+      "qualified_name": "scwbtrajectory::trajectory_signal_dynamics_explicit",
+      "title": "Trajectory Signal Dynamics Explicit",
+      "description": "Grouped S2 explicit trajectory consumer with authenticated typed inputs.",
+      "runner": ".run_trajectory_signal_dynamics_explicit",
+      "inputs": [
+        {
+          "name": "signal",
+          "kind": "cell_vector_family",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "pseudotime",
+          "kind": "cell_vector_family",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "membership",
+          "kind": "cell_vector",
+          "required": false,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "bootstrap_n": {
+            "type": "integer"
+          },
+          "bootstrap_seed": {
+            "type": "integer"
+          },
+          "ci_level": {
+            "type": "number"
+          },
+          "class_min_amplitude": {
+            "type": "number"
+          },
+          "end_label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "loess_span": {
+            "type": "number"
+          },
+          "min_amplitude": {
+            "type": "number"
+          },
+          "min_bins_observed": {
+            "type": "integer"
+          },
+          "min_cells_per_bin": {
+            "type": "integer"
+          },
+          "monotonic_min_abs_rho": {
+            "type": "number"
+          },
+          "n_bins": {
+            "type": "integer"
+          },
+          "on_off_min_delta": {
+            "type": "number"
+          },
+          "pseudotime_direction": {
+            "type": "string"
+          },
+          "pseudotime_key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "signal_keys": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "smooth_method": {
+            "type": "string"
+          },
+          "start_label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "summary_fun": {
+            "type": "string"
+          },
+          "top_n": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "pseudotime_key"
+        ]
+      },
+      "dimension_policies": [
+        {
+          "output": "signal_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "dynamics_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "top_signals",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "fit_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "signal_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "signal_table_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_dynamics",
+          "table_type": "trajectory_signal_dynamics_curve"
+        },
+        {
+          "name": "dynamics_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "dynamics_table_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_dynamics",
+          "table_type": "trajectory_signal_dynamics"
+        },
+        {
+          "name": "top_signals",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "top_signals_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_dynamics",
+          "table_type": "trajectory_signal_dynamics_top"
+        },
+        {
+          "name": "fit_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "fit_summary_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_dynamics",
+          "table_type": "trajectory_signal_dynamics_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_feature_table"
+        }
+      ],
+      "promotion_closure": {
+        "signal_table": [
+          "dynamics_table",
+          "fit_summary",
+          "signal_table",
+          "top_signals"
+        ],
+        "dynamics_table": [
+          "dynamics_table",
+          "fit_summary",
+          "signal_table",
+          "top_signals"
+        ],
+        "top_signals": [
+          "dynamics_table",
+          "fit_summary",
+          "signal_table",
+          "top_signals"
+        ],
+        "fit_summary": [
+          "dynamics_table",
+          "fit_summary",
+          "signal_table",
+          "top_signals"
+        ]
+      },
+      "replay_equivalence": {
+        "signal_table": "exact_canonical_value",
+        "dynamics_table": "exact_canonical_value",
+        "top_signals": "exact_canonical_value",
+        "fit_summary": "exact_canonical_value"
+      }
     }
   ]
 }

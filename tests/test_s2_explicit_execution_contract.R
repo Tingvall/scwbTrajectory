@@ -28,8 +28,9 @@ source(file.path(test_dir, "helper_s2_fixture.R"), local = .GlobalEnv)
 
 test_trajectory_s2_explicit_runners_oracle_and_seed_contract <- function() {
   x <- trajectory_s2_fixture(); on.exit(trajectory_close(x), add = TRUE)
-  stopifnot(!any(c("scwbtrajectory::trajectory_geneset_dynamics",
-    "scwbtrajectory::trajectory_signal_dynamics") %in% wb_list_ops()))
+  stopifnot(all(c("scwbtrajectory::trajectory_geneset_dynamics_explicit",
+    "scwbtrajectory::trajectory_signal_dynamics_explicit") %in%
+    wb_list_ops()))
   reference <- trajectory_s2_reference()
   set.seed(20260922)
   seed_before <- get(".Random.seed", envir = .GlobalEnv)

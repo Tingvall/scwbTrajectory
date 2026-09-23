@@ -24,7 +24,21 @@ register_operation_pack <- function() {
       `scwbtrajectory::trajectory_segment_join` =
         .run_trajectory_segment_join,
       `scwbtrajectory::trajectory_segment_path_join` =
-        .run_trajectory_segment_path_join
+        .run_trajectory_segment_path_join,
+      `scwbtrajectory::trajectory_de` = .run_trajectory_de_model,
+      `scwbtrajectory::trajectory_smooth` = .run_trajectory_smooth_model,
+      `scwbtrajectory::trajectory_signature_smooth` =
+        .run_trajectory_signature_smooth_model,
+      `scwbtrajectory::trajectory_geneset_dynamics` =
+        .run_trajectory_geneset_dynamics_model,
+      `scwbtrajectory::trajectory_vector_smooth` =
+        .run_trajectory_vector_smooth_model,
+      `scwbtrajectory::trajectory_signal_dynamics` =
+        .run_trajectory_signal_dynamics_model,
+      `scwbtrajectory::trajectory_geneset_dynamics_explicit` =
+        .run_trajectory_geneset_dynamics_explicit,
+      `scwbtrajectory::trajectory_signal_dynamics_explicit` =
+        .run_trajectory_signal_dynamics_explicit
     )
   )
 }

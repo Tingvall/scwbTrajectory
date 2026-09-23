@@ -1,5 +1,5 @@
-# Unregistered ABI-v3-shaped model consumers. Integration will declare their
-# G1, registry, typed matrix, and terminal grants in the shared manifest.
+# Grouped S2 model consumers use G1, registry, typed matrix, and terminal
+# grants declared in the pack manifest.
 .trajectory_s2_model_matrix_inputs <- function(readers, params, context,
                                                required, prefix) {
   snapshot <- readers$feature_sets()

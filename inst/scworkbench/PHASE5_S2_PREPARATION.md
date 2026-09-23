@@ -16,29 +16,28 @@ bootstrap and permutation seeds and check the source kind separately.
 The pack also owns an explicit-family selector and shared bin/aggregate
 equations, with focused comparisons against the old-core method helpers.
 One focused test executes the old-core operations to verify that the frozen
-fixture can be reproduced. A separate test executes the two direct pack
-runners against the same frozen comparator. At S2 integration, replace the
-old-core caller with the namespaced pack runner; the test must not continue to
-depend on removed core method functions.
+fixture can be reproduced. Direct pack runners use the same comparator.
+The pack manifest now declares eight grouped S2 entries: six canonical model
+names and two explicit-pseudotime dynamics names. The latter execute through
+registered dispatch and pass terminal publication checks. Model entries
+register but cannot yet execute through the accepted core's retained or
+staged model-reference path, as detailed below.
 
 | Operation | Prepared now | Remaining for S2 integration |
 |---|---|
-| `trajectory_de` | Direct Slingshot and Monocle3 model runners write `de_table` and `fit_summary` from G1 pseudotime and a typed matrix. Frozen Slingshot and both Monocle3 branch oracles match. | Register G1 and matrix grants; grouped publication audit. |
-| `trajectory_smooth` | Direct Slingshot and Monocle3 model runners write `trend_table` and `fit_summary`. Frozen Slingshot and both Monocle3 branch oracles match. This runner also consumes a real relocated G1 private read. | Register G1 and matrix grants; grouped publication audit. |
-| `trajectory_signature_smooth` | Direct Slingshot and Monocle3 model runners use a typed feature-set snapshot and bounded matrix. Frozen Slingshot and both Monocle3 branch oracles match. | Register G1, registry, and matrix grants; grouped publication audit. |
-| `trajectory_geneset_dynamics` | Direct explicit, Slingshot, and Monocle3 model runners write six terminals. Frozen explicit and Slingshot identities and both Monocle3 branch oracles match. | Register source modes and grants; grouped publication audit. |
-| `trajectory_vector_smooth` | Direct Slingshot and Monocle3 model runners use a typed signal family. Frozen Slingshot and both Monocle3 branch oracles match. | Register signal and G1 grants; grouped publication audit. |
-| `trajectory_signal_dynamics` | Direct explicit, Slingshot, and Monocle3 model runners write four terminals. Frozen explicit and Slingshot identities and both Monocle3 branch oracles match. | Register source modes and grants; grouped publication audit. |
+| `trajectory_de` | Model entry registered; direct Slingshot and Monocle3 runners match both terminals and branch oracles. | Core G1 model-reference dispatch repair; registered publication. |
+| `trajectory_smooth` | Model entry registered; direct Slingshot and Monocle3 runners match both terminals. A relocated G1 private read executes it directly. | Core G1 model-reference dispatch repair; registered publication. |
+| `trajectory_signature_smooth` | Model entry registered; direct Slingshot and Monocle3 runners match both terminals. | Core G1 model-reference dispatch repair; registered publication. |
+| `trajectory_geneset_dynamics` | Model and explicit entries registered; explicit dispatch publishes all six terminals with frozen identities, rollback, and pack-free reopen. Direct model oracles match. | Core G1 model-reference dispatch repair and model publication. |
+| `trajectory_vector_smooth` | Model entry registered; direct Slingshot and Monocle3 runners match both terminals. | Core G1 model-reference dispatch repair; registered publication. |
+| `trajectory_signal_dynamics` | Model and explicit entries registered; explicit dispatch publishes all four terminals with frozen identities, rollback, and pack-free reopen. Direct model oracles match. | Core G1 model-reference dispatch repair and model publication. |
 
 The explicit-pseudotime inputs are complete-axis `cell_vector_family`
 primitives. The direct runners consume only the accepted typed readers and
 return declared primitives to terminal writers; they do not receive a bundle,
-database, registry handle, or committed path. They remain deliberately
-unregistered because shared registration and manifest files belong to the
-integration owner. The focused writer-fault test checks that a failed staged
-write propagates and leaves the durable bundle unchanged. A full ABI atomic
-rollback test requires integration-owned registration. This preparation does
-not remove any core operation or assert migration completion.
+database, registry handle, or committed path. The registered explicit modes
+also pass promotion fault rollback and retry through the core ABI. This
+preparation does not remove any core operation or assert migration completion.
 
 The explicit runner tests compare all ten terminal identities against the
 frozen core oracle, reject absent or unknown pseudotime and method keys and
@@ -164,8 +163,8 @@ scworkbench `5433162180017f6cd1b58badad305cfc0188a7b0` fixture tree
 all four fixture files and fails on missing or changed inputs. It uses G1
 to seal a Slingshot RDS on a 12-of-24 fitted axis, promote and finalize its
 bundle, relocate the bundle, and obtain a verified private G1 reader with
-the reconstructed fitted axis. That read executes the unregistered
-`trajectory_smooth` runner, and both terminal identities match the old core.
+the reconstructed fitted axis. That read executes the
+`trajectory_smooth` runner directly, and both terminal identities match the old core.
 Altering either the retained model tree or
 selected-axis evidence rejects during G1 preparation, before S2 computation
 or terminal writes. This is a real retained-state reopen with a synthetic
@@ -174,9 +173,25 @@ The pack does not synthesize excluded cells or bypass G1 checks.
 
 ## Integration checks still owed
 
-At grouped S2 integration, execute all six consumers through registered
-dispatch on retained S3 or S5 fitted models. Add pack promotion,
-rollback, replay-plan, pack-free inspection, and missing-pack dispatch checks
-at the grouped S2 gate. Preserve each terminal's `exact_canonical_value`
-policy; the frozen method oracle alone does not prove operation-level or
-biological equivalence.
+The accepted core pin `5433162180017f6cd1b58badad305cfc0188a7b0`
+still blocks registered model-reference dispatch in two independent paths.
+`tests/test_s2_registered_publication_contract.R` seals a Slingshot RDS with
+the generic G1 fixture, then reproduces both failures before any S2 runner:
+
+1. `wb_ref_run(fit$run$run_id, "model")` reaches v3 request validation and
+   fails at `$/self_linked_model_payload_grants/0/model_source_linkage` with
+   `missing required property source_space_content_identity`. The staged
+   linkage uses the accepted v3 derived fitted-axis shape.
+2. After G1 promotion, `wb_art_load(bundle, model_id,
+   expected_kind="model_ref")` tries `readRDS()` on the contained model-tree
+   directory and fails `cannot open the connection`; using
+   `wb_ref_artifact(model_id, "model")` reaches the same loader failure.
+
+The fix belongs to generic core model-reference resolution and request
+validation. The pack does not reconstruct an unauthenticated model_ref or
+patch its metadata. Once repaired, execute all six registered model entries
+on retained S3 or S5 models and add their publication, replay-plan, and
+pack-free checks. The explicit modes already pass frozen terminal policy,
+promotion, rollback/retry, pack-free reopen, and missing-pack dispatch.
+S2 migration and operation-level equivalence remain unqualified; the
+Phase 5 migrated count remains 9/24.

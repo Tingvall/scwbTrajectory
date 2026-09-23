@@ -1,5 +1,5 @@
-# These runners have ABI-v3 reader/writer signatures but are intentionally not
-# registered. Integration owns the manifest and registration changes.
+# Explicit S2 modes have their own registered entries because a self-linked
+# G1 read requires a present model input for each model-mode operation.
 .trajectory_s2_call <- function(method, fixed, params,
                                 extra_allowed = character()) {
   .trajectory_assert(is.list(params) && !anyDuplicated(names(params)),
