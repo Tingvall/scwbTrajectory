@@ -4,6 +4,15 @@
   .trajectory_assert(is.function(reader),
     "S2 model path requires an authenticated G1 payload reader.")
   payload <- reader()
+  fitted <- payload$fitted_source_space %||% NULL
+  .trajectory_assert(is.matrix(fitted) && is.numeric(fitted) &&
+      nrow(fitted) > 0L && ncol(fitted) > 0L &&
+      !is.null(rownames(fitted)) && !anyNA(rownames(fitted)) &&
+      all(nzchar(rownames(fitted))) && !anyDuplicated(rownames(fitted)) &&
+      !is.null(colnames(fitted)) && !anyNA(colnames(fitted)) &&
+      all(nzchar(colnames(fitted))) && !anyDuplicated(colnames(fitted)) &&
+      all(is.finite(fitted)),
+    "S2 G1 reader returned no valid authenticated fitted source space.")
   primary <- as.character(payload$primary_path %||% "")
   .trajectory_assert(length(primary) == 1L && !is.na(primary) &&
       nzchar(primary) && is.function(payload$runtime_private_path),
@@ -21,6 +30,8 @@
         !is.null(rownames(pt)) && !anyNA(rownames(pt)) &&
         all(nzchar(rownames(pt))) && !anyDuplicated(rownames(pt)),
       "S2 G1 Slingshot model has no valid fitted pseudotime axis.")
+    .trajectory_assert(identical(rownames(pt), rownames(fitted)),
+      "S2 G1 Slingshot pseudotime cells differ from the authenticated fitted axis.")
     axis <- do.call(rbind, lapply(seq_len(ncol(pt)), function(j)
       data.frame(lineage_id = paste0("L", j),
         cell_id = rownames(pt), pseudotime = as.numeric(pt[, j]),

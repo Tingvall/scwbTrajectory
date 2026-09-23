@@ -40,10 +40,25 @@ source(file.path(test_dir, "helper_s2_fixture.R"), local = .GlobalEnv)
 .trajectory_s2_run_model_direct <- function(x, operation, params = NULL,
                                             model = NULL,
                                             membership = NULL,
-                                            fault_terminal = NULL) {
+                                            fault_terminal = NULL,
+                                            fitted_cells = x$cells,
+                                            fitted_source_space = NULL,
+                                            include_fitted_space = TRUE,
+                                            effective_cells = x$cells) {
   boundary <- trajectory_s2_mock_boundary(x, fault_terminal)
   boundary$readers$membership <- if (is.null(membership)) NULL else
     function() membership
+  boundary$context$effective_cells <- as.character(effective_cells)
+  boundary$readers$matrix_chunks <- function(features, cells) {
+    stopifnot(identical(as.character(cells), as.character(effective_cells)),
+      all(features %in% x$features))
+    boundary$state$calls$matrix_chunks <- c(
+      boundary$state$calls$matrix_chunks, as.character(features))
+    list(values = x$values[features, cells, drop = FALSE])
+  }
+  if (is.null(fitted_source_space)) fitted_source_space <- matrix(
+    seq_len(length(fitted_cells) * 2L), ncol = 2L,
+    dimnames = list(as.character(fitted_cells), c("PC1", "PC2")))
   path <- tempfile("s2_g1_model_", fileext = ".rds")
   on.exit(unlink(path), add = TRUE)
   if (is.null(model)) model <- .trajectory_s2_synthetic_slingshot(x$cells)
@@ -52,11 +67,13 @@ source(file.path(test_dir, "helper_s2_fixture.R"), local = .GlobalEnv)
     boundary$state$calls$model_payload <- as.integer(
       boundary$state$calls$model_payload %||% 0L) + 1L
     stopifnot(identical(boundary$state$calls$model_payload, 1L))
-    list(primary_path = "model.rds",
+    c(list(primary_path = "model.rds"),
+      if (isTRUE(include_fitted_space))
+        list(fitted_source_space = fitted_source_space) else list(), list(
       runtime_private_path = function(entry) {
         stopifnot(identical(entry, "model.rds"))
         path
-      })
+      }))
   }
   name <- paste0(".run_trajectory_", operation, "_model")
   runner <- getFromNamespace(name, "scwbTrajectory")
@@ -93,6 +110,17 @@ test_trajectory_s2_model_direct_oracle_contract <- function() {
       stopifnot(identical(observed$outputs, repeated$outputs))
     }
   }
+  subset <- x$cells[1:12]
+  observed <- .trajectory_s2_run_model_direct(x, "smooth",
+    effective_cells = subset)
+  expected <- wb_op_trajectory_smooth(x$bundle, "RNA", x$model,
+    cells = subset, lineage = "L1", features = x$features[1:3],
+    n_bins = 5L, min_cells_per_bin = 1L, chunk_size = 2L)$outputs
+  stopifnot(!inherits(observed$value, "error"),
+    identical(names(observed$outputs), names(expected)))
+  for (name in names(expected)) stopifnot(identical(
+    trajectory_identity(x$bundle, observed$outputs[[name]])$content_sha256,
+    trajectory_identity(x$bundle, expected[[name]])$content_sha256))
   stopifnot(identical(seed, get(".Random.seed", envir = .GlobalEnv)))
   TRUE
 }
@@ -138,6 +166,30 @@ test_trajectory_s2_model_direct_rejection_contract <- function() {
     stopifnot(inherits(rejected$value, "error"),
       length(rejected$outputs) == 0L)
   }
+  reordered <- .trajectory_s2_run_model_direct(x, "de",
+    fitted_cells = rev(x$cells))
+  stopifnot(inherits(reordered$value, "error"),
+    grepl("differ from the authenticated fitted axis",
+      conditionMessage(reordered$value), fixed = TRUE),
+    length(reordered$outputs) == 0L)
+  subset_model <- .trajectory_s2_synthetic_slingshot(x$cells[1:12])
+  different_subset <- .trajectory_s2_run_model_direct(x,
+    "signal_dynamics", model = subset_model,
+    fitted_cells = x$cells[2:13])
+  stopifnot(inherits(different_subset$value, "error"),
+    grepl("differ from the authenticated fitted axis",
+      conditionMessage(different_subset$value), fixed = TRUE),
+    length(different_subset$outputs) == 0L)
+  missing_fitted <- .trajectory_s2_run_model_direct(x, "de",
+    include_fitted_space = FALSE)
+  malformed_fitted <- .trajectory_s2_run_model_direct(x, "de",
+    fitted_source_space = data.frame(PC1 = seq_along(x$cells),
+      row.names = x$cells))
+  for (rejected in list(missing_fitted, malformed_fitted))
+    stopifnot(inherits(rejected$value, "error"),
+      grepl("no valid authenticated fitted source space",
+        conditionMessage(rejected$value), fixed = TRUE),
+      length(rejected$outputs) == 0L)
   fault <- .trajectory_s2_run_model_direct(x, "smooth",
     fault_terminal = "fit_summary")
   stopifnot(inherits(fault$value, "error"),

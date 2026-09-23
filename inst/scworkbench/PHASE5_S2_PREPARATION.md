@@ -93,10 +93,13 @@ they do not claim a full ABI transaction guarantee.
 
 The six Slingshot model runners call one `model_payload` reader with the
 accepted G1 shape. Core's self-linked G1 adapter verifies the private model
-copy and supplies `runtime_private_path(primary_path)`
-(`scworkbench/R/operation_pack_v3_models.R:654-702`). The pack reads that
-private RDS and calls `slingshot::slingPseudotime()`. The resulting matrix
-provides fitted cell order, finite pseudotime, and `L1`...`Ln` lineage keys.
+copy and supplies `runtime_private_path(primary_path)` and a reconstructed
+`fitted_source_space` matrix (`scworkbench/R/operation_pack_v3_models.R`,
+accepted derived-axis branch, lines 665-713). The pack requires a valid
+fitted-space matrix and compares its exact ordered rownames with those of
+`slingshot::slingPseudotime()` before selecting effective session cells.
+The resulting pseudotime matrix provides finite values and `L1`...`Ln`
+lineage keys.
 Slingshot curves and lineage weights influence the values returned by
 `slingPseudotime()`, but none of these six old-core methods uses their raw
 coordinates or weights after that call. The pack never reads a caller's
@@ -119,7 +122,12 @@ old-core terminal kind, table type, row count, and canonical identity. Tests
 also compare alternate lineage and parameter choices to the old core, check
 bounded matrix reads, deterministic seeds and RNG restoration, and reject
 unknown keys, invalid model payloads, and disjoint fitted axes before any
-terminal write. These tests establish pack numerical equivalence under a
+terminal write. The mock G1 reader supplies a fitted-space matrix separately
+from the model RDS. A reordered axis, a different subset of the same parent
+universe, an absent or malformed fitted-space field all fail with zero
+terminal writes. A full fitted axis with a smaller valid session subset
+passes and matches the old-core method output. These tests establish pack
+numerical equivalence and axis binding under a
 synthetic Slingshot projection; they do not establish real G1 reopen or ABI
 publication.
 
@@ -136,20 +144,17 @@ must be reviewed with the completed G1 contract. An unsupported model type
 fails before terminal writes; no synthetic pseudotime field is accepted as
 an alternate production source.
 
-## Smallest generic dependency exposed by model-backed S2
+## G1 integration dependency
 
-G1 exists at the oracle core pin, but its self-linked reader recomputes
-`fitted_cell_order_identity` from the **full** durable parent-space axis.
-Reproduction: bind a model to a parent space with 24 cells, fit only 12 cells,
-then reopen that model for any S2 consumer. The selected 12-cell identity and
-the reader's recomputed 24-cell identity differ before method dispatch. This
-is the same derived-fitted-axis issue identified for S3, not a new S2-specific
-capability. The smallest remedy is the already authorized generic G1/G2
-ordered-subset sidecar and sealed fitted-axis linkage, with exact reopen
-verification. S2 must not pad the excluded cells, alter the durable parent
-space, or bypass G1 checks. A positive fixture must reopen a sealed 12-of-24
-model and run all model-backed consumers; an adversarial fixture must reject a
-reordered or tampered fitted-axis sidecar before dispatch.
+The old oracle pin predates the accepted generic G1/G2 derived fitted-axis
+capability. Its self-linked reader compared the selected fitted-cell identity
+with the full parent-space axis. The accepted generic work now reconstructs
+the authenticated fitted subset and exposes it as `fitted_source_space` to
+the private model reader. This pack checks the model's exact ordered cells
+against that matrix, but its direct tests use a mock G1 reader. A real S2
+fixture must still reopen a sealed 12-of-24 fitted model, execute the six
+consumers, and reject reordered or tampered fitted-axis evidence before
+dispatch. The pack does not synthesize excluded cells or bypass G1 checks.
 
 ## Integration checks still owed
 
