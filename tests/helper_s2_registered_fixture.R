@@ -1,6 +1,9 @@
 # Build a temporary test producer from the pack-owned, pinned generic G1
 # fixture. Only the test package's model engine/type policy is specialized;
 # S2 registration and the accepted core remain untouched.
+.trajectory_s2_registered_producer_state <- new.env(parent = emptyenv())
+.trajectory_s2_registered_producer_state$next_id <- 0L
+
 trajectory_s2_g1_test_producer <- function(engine, model_type, model_factory) {
   stopifnot(engine %in% c("slingshot", "monocle3"),
     is.function(model_factory))
@@ -9,6 +12,21 @@ trajectory_s2_g1_test_producer <- function(engine, model_type, model_factory) {
   library <- file.path(root, "library"); dir.create(library)
   fs::dir_copy(file.path(test_dir, "fixtures", "s2-g1-derived-axis"),
     source)
+  .trajectory_s2_registered_producer_state$next_id <-
+    .trajectory_s2_registered_producer_state$next_id + 1L
+  suffix <- paste0(if (identical(engine, "slingshot"))
+    "Slingshot" else "Monocle",
+    .trajectory_s2_registered_producer_state$next_id)
+  package_name <- paste0("scwbV3Phase5", suffix)
+  namespace <- paste0("scwbv3phase5", tolower(suffix))
+  for (relative in c("DESCRIPTION", "R/register.R",
+      "inst/scworkbench/operation-pack.json")) {
+    path <- file.path(source, relative)
+    lines <- readLines(path, warn = FALSE)
+    lines <- gsub("scwbV3Phase5", package_name, lines, fixed = TRUE)
+    lines <- gsub("scwbv3phase5", namespace, lines, fixed = TRUE)
+    writeLines(lines, path)
+  }
   manifest <- file.path(source, "inst", "scworkbench",
     "operation-pack.json")
   value <- paste(readLines(manifest, warn = FALSE), collapse = "\n")
@@ -31,7 +49,7 @@ trajectory_s2_g1_test_producer <- function(engine, model_type, model_factory) {
   if (!identical(status, 0L)) stop(paste(readLines(log,
     warn = FALSE), collapse = "\n"), call. = FALSE)
   previous <- .libPaths(); .libPaths(c(library, previous))
-  loadNamespace("scwbV3Phase5", lib.loc = library)
+  loadNamespace(package_name, lib.loc = library)
   fit_runner <- function(readers, writers, params, context) {
     source <- readers$source()
     fitted <- as.character(params$fitted_cells)
@@ -53,16 +71,17 @@ trajectory_s2_g1_test_producer <- function(engine, model_type, model_factory) {
     invisible(list(status = "ok"))
   }
   assignInNamespace(".fit_derived_axis_model", fit_runner,
-    ns = "scwbV3Phase5")
+    ns = package_name)
   manifest <- system.file("scworkbench", "operation-pack.json",
-    package = "scwbV3Phase5", lib.loc = library)
+    package = package_name, lib.loc = library)
   scworkbench::wb_operation_pack_activate(manifest, lib.loc = library)
   list(root = root, library = library, previous = previous,
+    fit_op = paste0(namespace, "::fit_derived_axis_model"),
     cleanup = function() {
-      try(scworkbench::wb_operation_pack_unload("scwbv3phase5"),
+      try(scworkbench::wb_operation_pack_unload(namespace),
         silent = TRUE)
-      if ("scwbV3Phase5" %in% loadedNamespaces())
-        try(unloadNamespace("scwbV3Phase5"), silent = TRUE)
+      if (package_name %in% loadedNamespaces())
+        try(unloadNamespace(package_name), silent = TRUE)
       .libPaths(previous)
       unlink(root, recursive = TRUE, force = TRUE)
     })
@@ -70,7 +89,7 @@ trajectory_s2_g1_test_producer <- function(engine, model_type, model_factory) {
 
 trajectory_s2_promote_test_model <- function(x, cells = x$cells) {
   fit <- scworkbench::wb_session_run_op(scworkbench::wb_session_new(),
-    x$bundle, "scwbv3phase5::fit_derived_axis_model", inputs = list(
+    x$bundle, producer$fit_op, inputs = list(
       source = "latent", dims = c(1L, 3L), fitted_cells = cells))
   promoted <- scworkbench::wb_session_promote_current(x$bundle,
     fit$session, outputs = c("embedding", "model", "weights"),

@@ -3,6 +3,8 @@ source(file.path(test_dir, "test_s2_model_execution_contract.R"),
   local = .GlobalEnv)
 source(file.path(test_dir, "helper_s2_registered_fixture.R"),
   local = .GlobalEnv)
+source(file.path(test_dir, "test_s2_monocle3_execution_contract.R"),
+  local = .GlobalEnv)
 
 .trajectory_s2_registered_explicit_cases <- function(x) {
   list(
@@ -190,52 +192,140 @@ test_trajectory_s2_registered_explicit_rejection_contract <- function() {
   TRUE
 }
 
-test_trajectory_s2_registered_model_g1_core_gap_contract <- function() {
-  x <- trajectory_s2_fixture(); on.exit(trajectory_close(x), add = TRUE)
-  producer <- trajectory_s2_g1_test_producer("slingshot", "slingshot",
-    .trajectory_s2_synthetic_slingshot)
-  on.exit(producer$cleanup(), add = TRUE)
+.trajectory_s2_registered_model_cases <- function(x, engine, model_ref,
+                                                   lineage = NULL) {
+  if (is.null(lineage)) lineage <- if (identical(engine, "slingshot"))
+    "L1" else "root:A::lineage:C"
+  operations <- c("de", "smooth", "signature_smooth",
+    "geneset_dynamics", "vector_smooth", "signal_dynamics")
+  stats::setNames(lapply(operations, function(operation) {
+    params <- .trajectory_s2_model_params(operation)
+    params$lineage <- lineage
+    input <- switch(operation,
+      de = list(matrix = "RNA"), smooth = list(matrix = "RNA"),
+      signature_smooth = list(matrix = "RNA"),
+      geneset_dynamics = list(matrix = "RNA"),
+      vector_smooth = list(signal = x$signal),
+      signal_dynamics = list(signal = x$signal))
+    c(input, list(model = model_ref), params)
+  }), paste0("trajectory_", operations))
+}
+
+.trajectory_s2_registered_model_oracle_key <- function(operation, engine,
+                                                        lineage) {
+  if (identical(engine, "slingshot")) {
+    if (operation %in% c("trajectory_geneset_dynamics",
+      "trajectory_signal_dynamics")) return(paste0(operation, "_model"))
+    return(operation)
+  }
+  paste(sub("^trajectory_", "", operation),
+    if (identical(lineage, "root:A::lineage:C")) "C" else "D",
+    "full", sep = "__")
+}
+
+.trajectory_s2_registered_model_reference <- function(engine) {
+  if (identical(engine, "slingshot")) trajectory_s2_reference() else
+    jsonlite::read_json(file.path(test_dir, "fixtures",
+      "trajectory_s2_monocle3_reference.json"), simplifyVector = FALSE)
+}
+
+.trajectory_s2_registered_model_setup <- function(x, engine,
+                                                   cells = x$cells) {
+  factory <- if (identical(engine, "slingshot"))
+    .trajectory_s2_synthetic_slingshot else .trajectory_s2_branching_cds
+  model_type <- if (identical(engine, "slingshot")) "slingshot" else
+    "monocle3_cds"
+  producer <- trajectory_s2_g1_test_producer(engine, model_type, factory)
   fit <- scworkbench::wb_session_run_op(scworkbench::wb_session_new(),
-    x$bundle, "scwbv3phase5::fit_derived_axis_model", inputs = list(
-      source = "latent", dims = c(1L, 3L),
-      fitted_cells = x$cells))
-  before_staged <- scworkbench::wb_art_list(x$bundle)
-  staged <- tryCatch(scworkbench::wb_session_run_op(fit$session,
-    x$bundle, "scwbtrajectory::trajectory_de", inputs = list(
-      matrix = "RNA", model = scworkbench::wb_ref_run(
-        fit$run$run_id, "model"), lineage = "L1",
-      features = x$features[1:3], chunk_size = 2L)), error = identity)
-  stopifnot(inherits(staged, "error"),
-    grepl("missing required property source_space_content_identity",
-      conditionMessage(staged), fixed = TRUE),
-    identical(before_staged, scworkbench::wb_art_list(x$bundle)))
+    x$bundle, producer$fit_op, inputs = list(
+      source = "latent", dims = c(1L, 3L), fitted_cells = cells))
+  list(producer = producer, fit = fit)
+}
+
+.trajectory_s2_registered_durable_snapshot <- function(x) {
+  con <- x$bundle$con
+  tables <- sort(DBI::dbListTables(con))
+  counts <- stats::setNames(vapply(tables, function(table) {
+    query <- paste0("SELECT COUNT(*) AS n FROM ",
+      as.character(DBI::dbQuoteIdentifier(con, table)))
+    as.integer(DBI::dbGetQuery(con, query)$n[[1L]])
+  }, integer(1)), tables)
+  files <- list.files(x$root, recursive = TRUE, all.files = TRUE,
+    include.dirs = FALSE)
+  db_file <- basename(DBI::dbGetInfo(con)$dbname)
+  files <- sort(files[!basename(files) %in% c("manifest.json", db_file,
+    paste0(db_file, c("-shm", "-wal", "-journal")))])
+  payload <- stats::setNames(vapply(files, function(relative)
+    digest::digest(file = file.path(x$root, relative), algo = "sha256"),
+    character(1)), files)
+  list(artifacts = scworkbench::wb_art_list(x$bundle),
+    state = getFromNamespace(".wb_session_source_identity",
+      "scworkbench")(x$bundle)$scientific_state_fingerprint,
+    counts = counts, payload = payload)
+}
+
+test_trajectory_s2_registered_model_staged_oracles_contract <-
+    function() {
+  for (engine in c("slingshot", "monocle3")) {
+    x <- trajectory_s2_fixture()
+    setup <- .trajectory_s2_registered_model_setup(x, engine)
+    reference <- .trajectory_s2_registered_model_reference(engine)
+    staged_ref <- scworkbench::wb_ref_run(setup$fit$run$run_id, "model")
+    staged_cases <- .trajectory_s2_registered_model_cases(x, engine,
+      staged_ref)
+    before <- scworkbench::wb_art_list(x$bundle)
+    for (operation in names(staged_cases)) {
+      result <- scworkbench::wb_session_run_op(setup$fit$session,
+        x$bundle, paste0("scwbtrajectory::", operation),
+        inputs = staged_cases[[operation]])
+      key <- .trajectory_s2_registered_model_oracle_key(operation,
+        engine, staged_cases[[operation]]$lineage)
+      trajectory_s2_compare_outputs(x$bundle, key,
+        list(outputs = result$run$outputs), reference)
+      stopifnot(identical(before, scworkbench::wb_art_list(x$bundle)))
+    }
+    if (identical(engine, "monocle3")) {
+      alternate <- .trajectory_s2_registered_model_cases(x, engine,
+        staged_ref, lineage = "root:A::lineage:D")
+      for (operation in names(alternate)) {
+        result <- scworkbench::wb_session_run_op(setup$fit$session,
+          x$bundle, paste0("scwbtrajectory::", operation),
+          inputs = alternate[[operation]])
+        key <- .trajectory_s2_registered_model_oracle_key(operation,
+          engine, alternate[[operation]]$lineage)
+        trajectory_s2_compare_outputs(x$bundle, key,
+          list(outputs = result$run$outputs), reference)
+        stopifnot(identical(before, scworkbench::wb_art_list(x$bundle)))
+      }
+    }
+    setup$producer$cleanup()
+    trajectory_close(x)
+  }
+  TRUE
+}
+
+test_trajectory_s2_registered_model_artifact_descriptor_gap_contract <-
+    function() {
+  x <- trajectory_s2_fixture(); on.exit(trajectory_close(x), add = TRUE)
+  setup <- .trajectory_s2_registered_model_setup(x, "slingshot")
+  on.exit(setup$producer$cleanup(), add = TRUE)
   promoted <- scworkbench::wb_session_promote_current(x$bundle,
-    fit$session, outputs = c("embedding", "model", "weights"),
-    created_by = "s2-g1-gap-reproducer")
+    setup$fit$session, outputs = c("embedding", "model", "weights"),
+    created_by = "s2-registered-model-oracle")
   model_id <- promoted$promoted$artifact_id[
     promoted$promoted$output == "model"][[1L]]
-  row <- DBI::dbGetQuery(x$bundle$con, paste0(
-    "SELECT model_path, model_primary_path FROM artifact_model_ref ",
-    "WHERE artifact_id = ?"), params = list(model_id))
-  stopifnot(nrow(row) == 1L)
-  tree <- file.path(x$root, row$model_path[[1L]])
-  stopifnot(dir.exists(tree), file.exists(file.path(tree,
-    row$model_primary_path[[1L]])))
-  load_error <- tryCatch(scworkbench::wb_art_load(x$bundle,
-    model_id, expected_kind = "model_ref"), error = identity)
-  before_durable <- scworkbench::wb_art_list(x$bundle)
-  durable <- tryCatch(scworkbench::wb_session_run_op(
+  stopifnot(inherits(scworkbench::wb_art_load(x$bundle, model_id,
+    expected_kind = "model_ref"), "wb_primitive"))
+  cases <- .trajectory_s2_registered_model_cases(x, "slingshot",
+    scworkbench::wb_ref_artifact(model_id, "model"))
+  before <- .trajectory_s2_registered_durable_snapshot(x)
+  result <- tryCatch(scworkbench::wb_session_run_op(
     scworkbench::wb_session_new(), x$bundle,
-    "scwbtrajectory::trajectory_de", inputs = list(
-      matrix = "RNA", model = scworkbench::wb_ref_artifact(
-        model_id, "model"), lineage = "L1",
-      features = x$features[1:3], chunk_size = 2L)), error = identity)
-  stopifnot(inherits(load_error, "error"),
-    inherits(durable, "error"),
-    grepl("cannot open the connection", conditionMessage(load_error),
-      fixed = TRUE),
-    grepl("cannot open the connection", conditionMessage(durable),
-      fixed = TRUE),
-    identical(before_durable, scworkbench::wb_art_list(x$bundle)))
+    "scwbtrajectory::trajectory_de", inputs = cases$trajectory_de),
+    error = identity)
+  stopifnot(inherits(result, "error"),
+    grepl("Unsupported canonical identity value type: SlingshotDataSet",
+      conditionMessage(result), fixed = TRUE),
+    identical(before, .trajectory_s2_registered_durable_snapshot(x)))
   TRUE
 }
