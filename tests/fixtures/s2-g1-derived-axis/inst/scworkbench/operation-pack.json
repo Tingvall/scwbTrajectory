@@ -1,0 +1,815 @@
+{
+  "schema_version": "scworkbench.operation_pack.v3",
+  "pack_abi_version": "3",
+  "identity_scheme": "scworkbench.operation_pack.canonical_json.v1",
+  "namespace": "scwbv3phase5",
+  "package": {
+    "name": "scwbV3Phase5",
+    "version": "0.1.0"
+  },
+  "backend": "R",
+  "compatibility": {
+    "scworkbench": {
+      "minimum": "0.1.0",
+      "maximum_exclusive": "0.2.0"
+    },
+    "pack_abi": {
+      "minimum": "3",
+      "maximum": "3"
+    }
+  },
+  "entry_point": "scwbV3Phase5::register_operation_pack",
+  "operations": [
+    {
+      "name": "fit_derived_axis_model",
+      "qualified_name": "scwbv3phase5::fit_derived_axis_model",
+      "title": "Derived fitted-axis model fixture",
+      "description": "Publishes a contained model and cell-indexed siblings on a declared fitted subset.",
+      "runner": ".fit_derived_axis_model",
+      "inputs": [
+        {"name": "source", "kind": "space", "required": true, "alignment": "cell_ordered"}
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "dims": {"type": "array", "items": {"type": "integer", "minimum": 1}, "minItems": 1, "uniqueItems": true},
+          "fitted_cells": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true},
+          "declaration_mode": {"type": "string", "enum": ["normal", "omit", "repeat", "after_output"], "default": "normal"},
+          "bad_embedding_order": {"type": "boolean", "default": false},
+          "foreign_family_cell": {"type": "boolean", "default": false},
+          "fitted_axis_attack": {"type": "string", "enum": ["normal", "duplicate", "empty", "oversized_id"], "default": "normal"},
+          "weights_attack": {"type": "string", "enum": ["normal", "duplicate_cell", "reordered_cells", "too_many_keys"], "default": "normal"},
+          "output_attack": {"type": "string", "enum": ["normal", "missing_weights", "extra_output"], "default": "normal"}
+        },
+        "required": ["dims", "fitted_cells"],
+        "additionalProperties": false
+      },
+      "outputs": [
+        {
+          "name": "model", "category": "terminal_artifact", "kind": "model_ref",
+          "storage_profile": "model_ref_contained_tree_v1", "allocated_id_key": "model_id",
+          "required": true, "promotion_group": "fit",
+          "contained_model_sibling_closure_policy": {
+            "policy": "staged_contained_model_sibling_closure_v1", "engine": "fixture",
+            "model_type": "derived_axis_model", "primary_path": "model.bin",
+            "source_space_input": "source", "dimensions_parameter": "dims",
+            "required_sibling_terminals": ["embedding", "weights"],
+            "file_order": "utf8_path_lexicographic_v1", "maximum_file_count": 32,
+            "maximum_total_bytes": 1073741824
+          },
+          "derived_fitted_axis_policy": {
+            "schema": "scworkbench.operation_pack.derived_fitted_axis_policy.v1",
+            "mode": "source_relative_subset_v1", "source_space_input": "source",
+            "model_output": "model",
+            "required_siblings": [
+              {"name": "embedding", "kind": "cell_vector", "coverage_policy": "exact_fitted_axis_v1"},
+              {"name": "weights", "kind": "cell_vector_family", "coverage_policy": "per_key_source_relative_subset_v1"}
+            ],
+            "declaration_discipline": "exactly_once_before_cell_indexed_writes",
+            "maximum_selected_cells": 1000000, "maximum_combined_id_bytes": 67108864,
+            "maximum_id_bytes": 1024, "maximum_family_keys": 64,
+            "policy_identity": {
+              "scheme": "scworkbench.operation_pack.derived_fitted_axis_policy.v1",
+              "scope": "policy excluding policy_identity",
+              "sha256": "6dd727adeff6336c2ec2ca67897f9f9c298189960b7fa0429d79a5e986b6080f"
+            }
+          }
+        },
+        {"name": "embedding", "category": "terminal_artifact", "kind": "cell_vector", "storage_profile": "terminal_primitive_v1", "allocated_id_key": "embedding_id", "required": true, "promotion_group": "fit", "value_kind": "continuous"},
+        {"name": "weights", "category": "terminal_artifact", "kind": "cell_vector_family", "storage_profile": "terminal_primitive_v1", "allocated_id_key": "weights_id", "required": true, "promotion_group": "fit", "value_kind": "continuous"}
+      ],
+      "dependencies": [],
+      "promotion_closure": {
+        "model": ["embedding", "model", "weights"],
+        "embedding": ["embedding", "model", "weights"],
+        "weights": ["embedding", "model", "weights"]
+      },
+      "replay_equivalence": {"model": "loadable_reference", "embedding": "exact_canonical_value", "weights": "exact_canonical_value"}
+    },
+    {
+      "name": "fit_sibling_model",
+      "qualified_name": "scwbv3phase5::fit_sibling_model",
+      "title": "Sibling model fixture",
+      "description": "Publishes a contained model with a terminal sibling and no paired two-dimensional output.",
+      "runner": ".fit_sibling_model",
+      "inputs": [
+        {
+          "name": "source",
+          "kind": "space",
+          "required": true,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "dims": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "dims"
+        ],
+        "additionalProperties": false
+      },
+      "dimension_policies": [
+        {
+          "output": "embedding",
+          "policy": "authenticated_output_axes_v1",
+          "shape": "one_per_cell",
+          "cell_axis": {
+            "source": "effective_cells_v1",
+            "input": "source"
+          },
+          "row_order": "input_cell_order_v1",
+          "missing_values": "forbidden"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "model",
+          "category": "terminal_artifact",
+          "kind": "model_ref",
+          "storage_profile": "model_ref_contained_tree_v1",
+          "allocated_id_key": "model_id",
+          "required": true,
+          "promotion_group": "fit",
+          "contained_model_sibling_closure_policy": {
+            "policy": "staged_contained_model_sibling_closure_v1",
+            "engine": "fixture",
+            "model_type": "phase5_model",
+            "primary_path": "model.bin",
+            "source_space_input": "source",
+            "dimensions_parameter": "dims",
+            "required_sibling_terminals": [
+              "embedding"
+            ],
+            "file_order": "utf8_path_lexicographic_v1",
+            "maximum_file_count": 32,
+            "maximum_total_bytes": 1073741824
+          }
+        },
+        {
+          "name": "embedding",
+          "category": "terminal_artifact",
+          "kind": "cell_vector",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "embedding_id",
+          "required": true,
+          "promotion_group": "fit",
+          "value_kind": "continuous"
+        }
+      ],
+      "dependencies": [],
+      "promotion_closure": {
+        "model": [
+          "embedding",
+          "model"
+        ],
+        "embedding": [
+          "embedding",
+          "model"
+        ]
+      },
+      "replay_equivalence": {
+        "model": "loadable_reference",
+        "embedding": "exact_canonical_value"
+      }
+    },
+    {
+      "name": "consume_self_linked_model",
+      "qualified_name": "scwbv3phase5::consume_self_linked_model",
+      "title": "Self-linked model fixture",
+      "description": "Consumes a durable model by its own authenticated source linkage.",
+      "runner": ".consume_self_linked_model",
+      "inputs": [
+        {
+          "name": "model",
+          "kind": "model_ref",
+          "required": true,
+          "alignment": "model_linked"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "self_linked_contained_model_reads": [
+        {
+          "name": "fitted_model",
+          "input": "model",
+          "reader": "read_self_linked_contained_model_payload",
+          "allowed_models": [
+            {
+              "engine": "fixture",
+              "model_type": "phase5_model"
+            },
+            {
+              "engine": "fixture",
+              "model_type": "derived_axis_model"
+            }
+          ],
+          "linkage_policy": "authenticated_existing_source_and_cell_linkage_v1",
+          "maximum_file_count": 32,
+          "maximum_total_bytes": 1073741824,
+          "call_discipline": "exactly_once"
+        }
+      ],
+      "dimension_policies": [
+        {
+          "output": "summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "summary_id",
+          "required": true,
+          "promotion_group": "summary",
+          "table_type": "phase5_model_summary"
+        }
+      ],
+      "dependencies": [],
+      "promotion_closure": {
+        "summary": [
+          "summary"
+        ]
+      },
+      "replay_equivalence": {
+        "summary": "exact_canonical_value"
+      }
+    },
+    {
+      "name": "adopt_external_state",
+      "qualified_name": "scwbv3phase5::adopt_external_state",
+      "title": "Generic external-state adoption fixture",
+      "description": "Adopts an authenticated external model tree through the path-free generic G3 capability.",
+      "runner": ".adopt_external_state",
+      "inputs": [
+        {
+          "name": "source",
+          "kind": "space",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "candidate",
+          "kind": "external_state_candidate",
+          "required": true,
+          "alignment": "none"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "dims": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "external_source_ref": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "source_id",
+              "snapshot_id",
+              "run_id"
+            ],
+            "properties": {
+              "source_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "snapshot_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "run_id": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "required": [
+          "dims",
+          "external_source_ref"
+        ],
+        "additionalProperties": false
+      },
+      "dimension_policies": [
+        {
+          "output": "summary",
+          "policy": "authenticated_output_axes_v1",
+          "shape": "one_per_cell",
+          "cell_axis": {
+            "source": "effective_cells_v1",
+            "input": "source"
+          },
+          "row_order": "input_cell_order_v1",
+          "missing_values": "forbidden"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "model",
+          "category": "terminal_artifact",
+          "kind": "model_ref",
+          "storage_profile": "model_ref_contained_tree_v1",
+          "allocated_id_key": "model_id",
+          "required": true,
+          "promotion_group": "adoption",
+          "contained_model_sibling_closure_policy": {
+            "policy": "staged_contained_model_sibling_closure_v1",
+            "engine": "fixture",
+            "model_type": "external_state",
+            "primary_path": "model.bin",
+            "source_space_input": "source",
+            "dimensions_parameter": "dims",
+            "required_sibling_terminals": [
+              "summary"
+            ],
+            "file_order": "utf8_path_lexicographic_v1",
+            "maximum_file_count": 8,
+            "maximum_total_bytes": 1048576
+          }
+        },
+        {
+          "name": "summary",
+          "category": "terminal_artifact",
+          "kind": "cell_vector",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "summary_id",
+          "required": true,
+          "promotion_group": "adoption",
+          "value_kind": "categorical"
+        }
+      ],
+      "dependencies": [],
+      "promotion_closure": {
+        "model": [
+          "model",
+          "summary"
+        ],
+        "summary": [
+          "model",
+          "summary"
+        ]
+      },
+      "replay_equivalence": {
+        "model": "loadable_reference",
+        "summary": "exact_canonical_value"
+      },
+      "supported_external_state_adoptions": [
+        {
+          "schema": "scworkbench.operation_pack.supported_external_state_adoption.v1",
+          "name": "adoption",
+          "state_input": "candidate",
+          "source_parameter": "external_source_ref",
+          "allowed_state_types": [
+            {
+              "engine": "fixture",
+              "model_type": "external_state"
+            }
+          ],
+          "allowed_source_byte_states": [
+            "bytes_verified",
+            "bytes_not_inspected",
+            "bytes_unavailable"
+          ],
+          "model_output": "model",
+          "required_closure_outputs": [
+            "summary"
+          ],
+          "primary_path": "model.bin",
+          "maximum_file_count": 8,
+          "maximum_total_bytes": 1048576,
+          "maximum_cell_count": 1000,
+          "call_discipline": "adoption_state_exactly_once",
+          "output_tree_policy": "exact_admitted_tree_identity",
+          "execution_semantics": "supported_external_state_adoption_without_refit_v1",
+          "declaration_identity": {
+            "scheme": "scworkbench.operation_pack.supported_external_state_adoption.v1",
+            "scope": "supported external state adoption declaration excluding declaration_identity",
+            "sha256": "4c8debf3ab5452ec2a56701173aae9606cc71b3f68419960158f629938781910"
+          }
+        }
+      ]
+    },
+    {
+      "name": "derived_subset",
+      "qualified_name": "scwbv3phase5::derived_subset",
+      "title": "Generic G7 subset fixture",
+      "description": "Declares a source-relative derived cell axis.",
+      "runner": ".derived_subset",
+      "inputs": [
+        {
+          "name": "source",
+          "kind": "cell_vector",
+          "required": true,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "selected_cells",
+          "key_prefix"
+        ],
+        "properties": {
+          "selected_cells": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "key_prefix": {
+            "type": "string"
+          },
+          "fault_after_first_output": {
+            "type": "boolean"
+          },
+          "omit_declaration": {
+            "type": "boolean"
+          },
+          "repeat_declaration": {
+            "type": "boolean"
+          }
+        }
+      },
+      "outputs": [
+        {
+          "name": "vector",
+          "category": "terminal_artifact",
+          "kind": "cell_vector",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "vector_id",
+          "required": true,
+          "promotion_group": "derived",
+          "value_kind": "continuous"
+        },
+        {
+          "name": "family",
+          "category": "terminal_artifact",
+          "kind": "cell_vector_family",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "family_id",
+          "required": true,
+          "promotion_group": "derived",
+          "value_kind": "continuous"
+        }
+      ],
+      "dependencies": [],
+      "promotion_closure": {
+        "vector": [
+          "family",
+          "vector"
+        ],
+        "family": [
+          "family",
+          "vector"
+        ]
+      },
+      "replay_equivalence": {
+        "vector": "exact_canonical_value",
+        "family": "exact_canonical_value"
+      },
+      "derived_cell_output_axes": [
+        {
+          "schema": "scworkbench.operation_pack.derived_cell_output_axis.v1",
+          "name": "derived",
+          "derivation_mode": "ordered_unique_subset_v1",
+          "source": {
+            "mode": "static_input_axis",
+            "input": "source",
+            "projection": "cell_vector_axis_v1",
+            "family_key_selector": null
+          },
+          "linked_outputs": [
+            {
+              "name": "vector",
+              "shape": "one_per_cell",
+              "row_order": "sealed_cell_axis_order_v1",
+              "missing_values": "forbidden"
+            },
+            {
+              "name": "family",
+              "shape": "cell_key_cartesian",
+              "row_order": "key_major_then_sealed_cell_v1",
+              "missing_values": "forbidden",
+              "key_axis": {
+                "source": "declared_keys_with_optional_prefix_v1",
+                "keys": [
+                  "score",
+                  "confidence"
+                ],
+                "prefix_parameter": "key_prefix"
+              }
+            }
+          ],
+          "limits": {
+            "minimum_cells": 1,
+            "maximum_cells": 1000,
+            "maximum_source_axes": 1,
+            "maximum_source_memberships": 10000,
+            "maximum_linked_outputs": 2
+          },
+          "call_discipline": "declare_once_seal_before_linked_output_v1",
+          "closure_policy": "all_linked_outputs_and_axis_observation_required_v1",
+          "declaration_identity": {
+            "scheme": "scworkbench.operation_pack.derived_cell_output_axis.v1",
+            "scope": "derived cell output axis declaration excluding declaration_identity",
+            "sha256": "c5c149f9d2160cc7a0c71880cbc0987367485ea7a47700fb84b7c4b1c55e37ed"
+          }
+        }
+      ]
+    },
+    {
+      "name": "derived_union",
+      "qualified_name": "scwbv3phase5::derived_union",
+      "title": "Generic G7 union fixture",
+      "description": "Declares an exact ordered union from authenticated members.",
+      "runner": ".derived_union",
+      "inputs": [],
+      "params_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "member_selections",
+          "final_cells"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 8,
+            "items": {
+              "type": "object"
+            }
+          },
+          "member_selections": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 8,
+            "items": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "final_cells": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      },
+      "outputs": [
+        {
+          "name": "vector",
+          "category": "terminal_artifact",
+          "kind": "cell_vector",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "vector_id",
+          "required": true,
+          "promotion_group": "derived",
+          "value_kind": "continuous"
+        }
+      ],
+      "dependencies": [],
+      "promotion_closure": {
+        "vector": [
+          "vector"
+        ]
+      },
+      "replay_equivalence": {
+        "vector": "exact_canonical_value"
+      },
+      "artifact_collection_reads": [
+        {
+          "name": "sources",
+          "parameter": "items",
+          "reader": "read_retained_artifact_collection_item",
+          "minimum_items": 1,
+          "maximum_items": 8,
+          "item_key_field": "name",
+          "order_field": "order",
+          "reference_slots": [
+            {
+              "slot": "axis",
+              "field": "axis_ref",
+              "required": true,
+              "allowed_kinds": [
+                "cell_vector"
+              ],
+              "activation": "always",
+              "lifecycle_policy": "require_current",
+              "ancestry_policy": "require_content_verified_producer"
+            }
+          ],
+          "maximum_references": 8,
+          "maximum_single_payload_bytes": 1048576,
+          "maximum_total_payload_bytes": 8388608,
+          "call_discipline": "resolved_ordinal_slot_exactly_once"
+        }
+      ],
+      "derived_cell_output_axes": [
+        {
+          "schema": "scworkbench.operation_pack.derived_cell_output_axis.v1",
+          "name": "derived",
+          "derivation_mode": "declared_ordered_unique_union_v1",
+          "source": {
+            "mode": "g4_collection_member_axis",
+            "collection": "sources",
+            "slot": "axis",
+            "projection": "cell_vector_axis_v1",
+            "family_key_selector": null
+          },
+          "linked_outputs": [
+            {
+              "name": "vector",
+              "shape": "one_per_cell",
+              "row_order": "sealed_cell_axis_order_v1",
+              "missing_values": "forbidden"
+            }
+          ],
+          "limits": {
+            "minimum_cells": 1,
+            "maximum_cells": 1000,
+            "maximum_source_axes": 8,
+            "maximum_source_memberships": 10000,
+            "maximum_linked_outputs": 1
+          },
+          "call_discipline": "declare_once_seal_before_linked_output_v1",
+          "closure_policy": "all_linked_outputs_and_axis_observation_required_v1",
+          "declaration_identity": {
+            "scheme": "scworkbench.operation_pack.derived_cell_output_axis.v1",
+            "scope": "derived cell output axis declaration excluding declaration_identity",
+            "sha256": "147a1fb58b89c761cc28641073f62710e689a0f1a520e6678d31445d1f74fc16"
+          }
+        }
+      ]
+    },
+    {
+      "name": "derived_effective_key",
+      "qualified_name": "scwbv3phase5::derived_effective_key",
+      "title": "Generic G7 effective family-key fixture",
+      "description": "Resolves one family key from authenticated effective parameters.",
+      "runner": ".derived_effective_key",
+      "inputs": [
+        {
+          "name": "source",
+          "kind": "cell_vector",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "override_present",
+          "kind": "cell_vector",
+          "required": false,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "override_absent",
+          "kind": "cell_vector",
+          "required": false,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "selected_cells",
+          "fallback_key"
+        ],
+        "properties": {
+          "selected_cells": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "primary_key": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "fallback_key": {
+            "type": "string",
+            "minLength": 1,
+            "default": "fallback"
+          },
+          "forge_key": {
+            "type": "string"
+          },
+          "fault_after_output": {
+            "type": "boolean"
+          }
+        }
+      },
+      "outputs": [
+        {
+          "name": "family",
+          "category": "terminal_artifact",
+          "kind": "cell_vector_family",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "family_id",
+          "required": true,
+          "promotion_group": "derived",
+          "value_kind": "continuous"
+        }
+      ],
+      "dependencies": [],
+      "promotion_closure": {
+        "family": [
+          "family"
+        ]
+      },
+      "replay_equivalence": {
+        "family": "exact_canonical_value"
+      },
+      "derived_cell_output_axes": [
+        {
+          "schema": "scworkbench.operation_pack.derived_cell_output_axis.v1",
+          "name": "derived",
+          "derivation_mode": "ordered_unique_subset_v1",
+          "source": {
+            "mode": "static_input_axis",
+            "input": "source",
+            "projection": "cell_vector_axis_v1",
+            "family_key_selector": null
+          },
+          "linked_outputs": [
+            {
+              "name": "family",
+              "shape": "cell_key_cartesian",
+              "row_order": "key_major_then_sealed_cell_v1",
+              "missing_values": "forbidden",
+              "key_axis": {
+                "source": "resolved_effective_parameter_key_v1",
+                "parameter_candidates": [
+                  "primary_key",
+                  "fallback_key"
+                ],
+                "null_policy": "first_non_null_v1",
+                "invalid_value_policy": "error",
+                "input_presence_override": {
+                  "present": "override_present",
+                  "absent": "override_absent",
+                  "use_parameter": "fallback_key"
+                }
+              }
+            }
+          ],
+          "limits": {
+            "minimum_cells": 1,
+            "maximum_cells": 1000,
+            "maximum_source_axes": 1,
+            "maximum_source_memberships": 10000,
+            "maximum_linked_outputs": 1
+          },
+          "call_discipline": "declare_once_seal_before_linked_output_v1",
+          "closure_policy": "all_linked_outputs_and_axis_observation_required_v1",
+          "declaration_identity": {
+            "scheme": "scworkbench.operation_pack.derived_cell_output_axis.v1",
+            "scope": "derived cell output axis declaration excluding declaration_identity",
+            "sha256": "7b0eedc7a954b7b152c759bd7cafdeb00c938ade40d816b91694a98e4ddbce14"
+          }
+        }
+      ]
+    }
+  ]
+}

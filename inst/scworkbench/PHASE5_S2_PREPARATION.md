@@ -157,7 +157,11 @@ with the full parent-space axis. The accepted generic work now reconstructs
 the authenticated fitted subset and exposes it as `fitted_source_space` to
 the private model reader. This pack checks the model's exact ordered cells
 against that matrix. The direct numerical fixtures still use a mock G1
-reader. A separate lifecycle test uses the accepted generic G1 fixture pack
+reader. A separate lifecycle test uses a pack-owned copy of the accepted
+generic G1 fixture pack at `tests/fixtures/s2-g1-derived-axis`, copied from
+scworkbench `5433162180017f6cd1b58badad305cfc0188a7b0` fixture tree
+`c30d6274a54bd964545d62140b7a98477b8894c6`. The test pins SHA-256 for
+all four fixture files and fails on missing or changed inputs. It uses G1
 to seal a Slingshot RDS on a 12-of-24 fitted axis, promote and finalize its
 bundle, relocate the bundle, and obtain a verified private G1 reader with
 the reconstructed fitted axis. That read executes the unregistered

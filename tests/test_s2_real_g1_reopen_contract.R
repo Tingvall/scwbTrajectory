@@ -3,19 +3,61 @@ source(file.path(test_dir, "test_s2_model_execution_contract.R"),
 
 # This fixture uses the accepted core G1 test pack to seal and reopen an
 # actual Slingshot RDS. It does not register any S2 consumer.
+.trajectory_s2_g1_fixture_source <- function(directory) {
+  fixture_source <- file.path(directory, "fixtures",
+    "s2-g1-derived-axis")
+  fixture_files <- c("DESCRIPTION", "NAMESPACE", "R/register.R",
+    "inst/scworkbench/operation-pack.json")
+  fixture_sha256 <- c(
+    "0c4b651150ceb54ebe978bf6c27f4a13294386829cccf7939e9bd3b020e9366f",
+    "b1f21ca084303169f23123f59d2ed35079ff820fcd99ab5bbfb906233410e72e",
+    "340de2b30eea159118f8ab7b858d8b21d3fb4ccbafb660cf03f4232b9b5bebaa",
+    "af1c672ef2f4d5e75b77ec4811ac4970b3d5b802690995d09694770ca12c8fa8")
+  paths <- file.path(fixture_source, fixture_files)
+  if (!all(file.exists(paths)))
+    stop("Real G1 proof fixture is missing: ", fixture_source,
+      call. = FALSE)
+  observed_sha256 <- vapply(paths, digest::digest, character(1),
+    algo = "sha256", file = TRUE)
+  if (!identical(unname(observed_sha256), fixture_sha256))
+    stop("Real G1 proof fixture identity differs from the accepted G1 pin.",
+      call. = FALSE)
+  fixture_source
+}
+
+test_trajectory_s2_real_g1_fixture_pin_contract <- function() {
+  absent <- tempfile("forge2-g1-absent-"); dir.create(absent)
+  on.exit(unlink(absent, recursive = TRUE, force = TRUE), add = TRUE)
+  missing <- tryCatch(.trajectory_s2_g1_fixture_source(absent),
+    error = identity)
+  stopifnot(inherits(missing, "error"),
+    grepl("fixture is missing", conditionMessage(missing), fixed = TRUE))
+  fixture <- file.path(absent, "fixtures", "s2-g1-derived-axis")
+  dir.create(dirname(fixture), recursive = TRUE)
+  fs::dir_copy(file.path(test_dir, "fixtures", "s2-g1-derived-axis"),
+    fixture)
+  write("tamper", file = file.path(fixture, "R", "register.R"),
+    append = TRUE)
+  changed <- tryCatch(.trajectory_s2_g1_fixture_source(absent),
+    error = identity)
+  stopifnot(inherits(changed, "error"),
+    grepl("fixture identity differs", conditionMessage(changed),
+      fixed = TRUE))
+  TRUE
+}
+
 test_trajectory_s2_real_g1_reopen_contract <- function() {
   core <- asNamespace("scworkbench")
   required <- c(".wb_operation_pack_v3_prepare_self_linked_model_reads",
     ".wb_operation_pack_v3_model_adapters")
   if (!all(vapply(required, exists, logical(1), envir = core,
       inherits = FALSE)))
-    return(structure(TRUE, skip = "accepted G1 core unavailable"))
-  fixture_source <- file.path(
-    "/home/dirk/Projects/.scworkbench-worktrees/phase5-derived-fitted-axis-forge-20260922",
-    "tests/fixtures/operation-pack-v3-phase5")
-  stopifnot(dir.exists(fixture_source),
-    requireNamespace("slingshot", quietly = TRUE),
-    requireNamespace("fs", quietly = TRUE))
+    stop("Real G1 proof requires the accepted derived fitted-axis core.",
+      call. = FALSE)
+  fixture_source <- .trajectory_s2_g1_fixture_source(test_dir)
+  if (!requireNamespace("slingshot", quietly = TRUE) ||
+      !requireNamespace("fs", quietly = TRUE))
+    stop("Real G1 proof requires slingshot and fs.", call. = FALSE)
   library <- tempfile("forge2-g1-lib-"); dir.create(library)
   install_log <- tempfile("forge2-g1-install-", fileext = ".log")
   status <- system2(file.path(R.home("bin"), "R"), c("CMD", "INSTALL",
@@ -128,24 +170,48 @@ test_trajectory_s2_real_g1_reopen_contract <- function() {
   stopifnot(length(durable$model_tree_root) == 1L,
     length(prepared$values[[1L]]$manifest$primary_path) == 1L,
     length(durable$model_source_linkage$selected_axis_evidence$relative_path) == 1L)
+  retained_state <- function() {
+    tree <- durable$model_tree_root
+    entries <- sort(list.files(tree, recursive = TRUE,
+      all.files = TRUE, no.. = TRUE))
+    paths <- file.path(tree, entries)
+    files <- paths[!file.info(paths)$isdir]
+    list(artifacts = scworkbench::wb_art_list(reopened),
+      payload = stats::setNames(vapply(files, digest::digest,
+        character(1), algo = "sha256", file = TRUE),
+        substring(files, nchar(tree) + 2L)))
+  }
   # Both attacks target the relocated retained model, before a private read.
   test_attack <- function(path) {
+    before <- retained_state()
+    before_calls <- state$model_payload_calls
     bytes <- readBin(path, "raw", n = file.info(path)$size)
     mode <- file.info(path)$mode
     Sys.chmod(path, mode = "0644")
-    on.exit({
+    restored <- FALSE
+    restore <- function() {
       connection <- file(path, "wb")
       writeBin(bytes, connection); close(connection)
       Sys.chmod(path, mode = mode)
-    }, add = TRUE)
+      restored <<- TRUE
+    }
+    on.exit(if (!restored) restore(), add = TRUE)
     connection <- file(path, "ab")
     writeBin(charToRaw("tamper"), connection); close(connection)
-    before <- scworkbench::wb_art_list(x$bundle)
+    tampered <- retained_state()
+    stopifnot(identical(before$artifacts, tampered$artifacts),
+      !identical(before$payload, tampered$payload))
+    reject_stage <- tempfile("forge2-g1-reject-")
+    on.exit(unlink(reject_stage, recursive = TRUE, force = TRUE), add = TRUE)
     rejected <- tryCatch(prepare(reopened, consume,
       list(model = durable), list(model = descriptor),
-      tempfile("forge2-g1-reject-")), error = identity)
+      reject_stage), error = identity)
     stopifnot(inherits(rejected, "error"),
-      identical(before, scworkbench::wb_art_list(x$bundle)))
+      identical(tampered, retained_state()),
+      identical(before_calls, state$model_payload_calls))
+    restore()
+    stopifnot(identical(before, retained_state()),
+      identical(file.info(path)$mode, mode))
   }
   test_attack(file.path(durable$model_tree_root,
     prepared$values[[1L]]$manifest$primary_path))
