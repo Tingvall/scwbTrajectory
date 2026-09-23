@@ -23,12 +23,12 @@ depend on removed core method functions.
 
 | Operation | Prepared now | Remaining for S2 integration |
 |---|---|
-| `trajectory_de` | Model method oracle for `de_table` and `fit_summary`, feature chunks of two. | Pack runner using bounded matrix and feature-set grants; actual G1 reopened S3/S5 model; derived fitted-axis acceptance for subset fits. |
-| `trajectory_smooth` | Model method oracle for `trend_table` and `fit_summary`, five bins and bounded feature chunks. | Pack runner and actual G1 reopened model; derived fitted-axis acceptance for subset fits. |
-| `trajectory_signature_smooth` | Model method oracle for `signature_table` and `fit_summary` against an authenticated feature-set name. | Pack runner using registry snapshot and bounded matrix; actual G1 reopened model and subset-axis support. |
-| `trajectory_geneset_dynamics` | Separate model and explicit-pseudotime six-terminal oracles. An unregistered ABI-v3-shaped runner executes explicit mode through typed pseudotime, optional membership, feature-set snapshot, and bounded matrix chunks. All six output identities match the frozen oracle. | Integration-owned registration and manifest; atomic publication audit; actual G1 model fixture and subset-axis support for model mode. |
-| `trajectory_vector_smooth` | Model method oracle for `signal_table` and `fit_summary`, selected signal key. | Pack runner and actual G1 reopened model; derived fitted-axis acceptance for subset fits. |
-| `trajectory_signal_dynamics` | Separate model and explicit-pseudotime four-terminal oracles. An unregistered ABI-v3-shaped runner executes explicit mode through typed signal/pseudotime inputs and optional membership. All four output identities match the frozen oracle. | Integration-owned registration and manifest; atomic publication audit; actual G1 model fixture and subset-axis support for model mode. |
+| `trajectory_de` | Unregistered Slingshot model runner writes `de_table` and `fit_summary` from G1 lineage pseudotime, a bounded typed matrix, and a feature-set snapshot. Both frozen identities match. | Register the G1 and matrix grants; real fitted-axis reopen; Monocle3 branch projection. |
+| `trajectory_smooth` | Unregistered Slingshot model runner writes `trend_table` and `fit_summary` using the shared bin and aggregate equations. Both frozen identities match. | Same G1, matrix, registration, and Monocle3 work. |
+| `trajectory_signature_smooth` | Unregistered Slingshot model runner uses an authenticated feature-set snapshot and bounded matrix reads. Both frozen identities match. | Same G1, matrix, registration, and Monocle3 work. |
+| `trajectory_geneset_dynamics` | Unregistered explicit and Slingshot model runners share the six-terminal numerical method. Both frozen model and explicit terminal closures match. | Register each source mode and its grants; real G1 reopen, publication audit, and Monocle3 branch projection. |
+| `trajectory_vector_smooth` | Unregistered Slingshot model runner uses a typed signal family. Both frozen identities match. | Register signal and G1 grants; real reopen and Monocle3 branch projection. |
+| `trajectory_signal_dynamics` | Unregistered explicit and Slingshot model runners share the four-terminal numerical method. Both frozen model and explicit terminal closures match. | Register each source mode and its grants; real G1 reopen, publication audit, and Monocle3 branch projection. |
 
 The explicit-pseudotime inputs are complete-axis `cell_vector_family`
 primitives. The direct runners consume only the accepted typed readers and
@@ -88,6 +88,53 @@ known/unknown feature-set and signal-key selectors fail before the first
 writer. Repeated pseudotime key/cell rows belong to the core coverage check.
 The staged-writer fault and seed/oracle checks remain direct-runner tests;
 they do not claim a full ABI transaction guarantee.
+
+### Model-derived inputs and direct-runner evidence
+
+The six Slingshot model runners call one `model_payload` reader with the
+accepted G1 shape. Core's self-linked G1 adapter verifies the private model
+copy and supplies `runtime_private_path(primary_path)`
+(`scworkbench/R/operation_pack_v3_models.R:654-702`). The pack reads that
+private RDS and calls `slingshot::slingPseudotime()`. The resulting matrix
+provides fitted cell order, finite pseudotime, and `L1`...`Ln` lineage keys.
+Slingshot curves and lineage weights influence the values returned by
+`slingPseudotime()`, but none of these six old-core methods uses their raw
+coordinates or weights after that call. The pack never reads a caller's
+`model_ref$pseudotime_table`, `model_path`, or bundle field.
+
+| Operation | Model-derived information used by the old-core method |
+|---|---|
+| `trajectory_de` | Per-lineage pseudotime and ordered fitted cells drive Spearman tests and slopes. The model engine is recorded in both terminal metadata objects. |
+| `trajectory_smooth` | Per-lineage pseudotime and cells determine bins and matrix slices. No other model metadata enters its outputs. |
+| `trajectory_signature_smooth` | The same pseudotime and cells determine bins and signature scores; the feature-set members come from the typed registry snapshot. |
+| `trajectory_vector_smooth` | The same pseudotime and cells align the typed signal family before aggregation. |
+| `trajectory_geneset_dynamics` | Pseudotime and lineage selection drive scores, curves, bootstrap intervals and permutation nulls. The source kind, selected lineage key, and post-selection cell count enter output metadata. |
+| `trajectory_signal_dynamics` | Pseudotime and lineage selection drive signal curves and bootstrap intervals. The source kind, selected lineage key, and post-selection cell count enter output metadata. |
+
+`tests/test_s2_model_execution_contract.R` serializes a minimal valid
+`SlingshotDataSet` with two exact pseudotime curves and passes it through a
+mock G1 reader with the same callable interface. This synthetic model is not
+a fitted or reopened G1 artifact. Its six direct runners match every frozen
+old-core terminal kind, table type, row count, and canonical identity. Tests
+also compare alternate lineage and parameter choices to the old core, check
+bounded matrix reads, deterministic seeds and RNG restoration, and reject
+unknown keys, invalid model payloads, and disjoint fitted axes before any
+terminal write. These tests establish pack numerical equivalence under a
+synthetic Slingshot projection; they do not establish real G1 reopen or ABI
+publication.
+
+The Monocle3 route remains at the G1 projection interface. The old core
+gets global `monocle3::pseudotime(cds)` and separately derives a keyed
+cell-to-lineage relation from the ordered principal graph and closest-vertex
+mapping (`scworkbench/R/op_trajectory_de.R:43-70`,
+`R/op_monocle3.R:38-174`). Reproducer: an authenticated `monocle3_cds`
+with two branches has one global pseudotime vector but requires that keyed
+relation before any of the six consumers can select lineage cells. The
+Slingshot matrix projection alone cannot represent it. A pack-owned
+projection from a verified CDS, or a typed relation bound to the same fit,
+must be reviewed with the completed G1 contract. An unsupported model type
+fails before terminal writes; no synthetic pseudotime field is accepted as
+an alternate production source.
 
 ## Smallest generic dependency exposed by model-backed S2
 

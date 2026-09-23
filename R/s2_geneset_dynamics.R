@@ -1,8 +1,8 @@
-# Pack-side explicit-pseudotime S2 method, derived from the frozen core
-# method with authenticated typed inputs in place of bundle getters.
+# Pack-side S2 method, with source selection supplied by authenticated readers.
 .trajectory_s2_geneset_dynamics <- function(matrix, registry, effective_cells,
                                               matrix_id,
                                               pseudotime = NULL,
+                                              model_source = NULL,
                                               pseudotime_key = NULL,
                                               membership = NULL,
                                               namespace = NULL,
@@ -44,7 +44,10 @@
     !is.null(colnames(matrix)), "trajectory_geneset_dynamics: matrix is malformed.")
   .trajectory_assert(identical(colnames(matrix), as.character(effective_cells)),
     "trajectory_geneset_dynamics: matrix cell axis differs from the authenticated effective axis.")
-  .trajectory_kind(pseudotime, "cell_vector_family")
+  .trajectory_assert(xor(is.null(pseudotime), is.null(model_source)),
+    "trajectory_geneset_dynamics requires exactly one pseudotime source.")
+  if (is.null(model_source)) .trajectory_kind(pseudotime,
+    "cell_vector_family")
   .trajectory_assert(is.character(matrix_id) && length(matrix_id) == 1 && nzchar(matrix_id), "matrix_id invalid")
   .trajectory_assert(is.character(namespace) && length(namespace) == 1 && nzchar(namespace), "namespace invalid")
 
@@ -121,11 +124,13 @@
   set_names <- selected_sets$names
   set_members <- selected_sets$members
 
-  pt_res <- .trajectory_s2_explicit_source(
+  pt_res <- if (is.null(model_source)) .trajectory_s2_explicit_source(
     pseudotime = pseudotime, pseudotime_key = pseudotime_key,
     membership = membership, lineage = lineage,
     cells = effective_cells, pseudotime_artifact_id = pseudotime_artifact_id,
-    membership_artifact_id = membership_artifact_id)
+    membership_artifact_id = membership_artifact_id) else
+    .trajectory_s2_model_source(model_source, lineage, effective_cells,
+      membership)
   lineages <- pt_res$lineages
   pt_meta <- pt_res$meta
 
