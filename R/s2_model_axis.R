@@ -39,6 +39,8 @@
     rownames(axis) <- NULL
     return(list(engine = "slingshot", axis = axis))
   }
+  if (methods::is(model, "cell_data_set"))
+    return(.trajectory_s2_monocle3_axis(model, rownames(fitted)))
   stop("S2 G1 model type needs an authenticated lineage projection.",
     call. = FALSE)
 }
@@ -47,7 +49,8 @@
                                           cells = NULL,
                                           membership = NULL) {
   .trajectory_assert(is.list(source) &&
-      identical(as.character(source$engine %||% "")[1L], "slingshot") &&
+      as.character(source$engine %||% "")[1L] %in%
+        c("slingshot", "monocle3") &&
       is.data.frame(source$axis) &&
       all(c("lineage_id", "cell_id", "pseudotime") %in% names(source$axis)),
     "S2 model projection is missing its fitted lineage axis.")

@@ -44,7 +44,8 @@ source(file.path(test_dir, "helper_s2_fixture.R"), local = .GlobalEnv)
                                             fitted_cells = x$cells,
                                             fitted_source_space = NULL,
                                             include_fitted_space = TRUE,
-                                            effective_cells = x$cells) {
+                                            effective_cells = x$cells,
+                                            model_payload_reader = NULL) {
   boundary <- trajectory_s2_mock_boundary(x, fault_terminal)
   boundary$readers$membership <- if (is.null(membership)) NULL else
     function() membership
@@ -75,6 +76,8 @@ source(file.path(test_dir, "helper_s2_fixture.R"), local = .GlobalEnv)
         path
       }))
   }
+  if (!is.null(model_payload_reader))
+    boundary$readers$model_payload <- model_payload_reader
   name <- paste0(".run_trajectory_", operation, "_model")
   runner <- getFromNamespace(name, "scwbTrajectory")
   if (is.null(params)) params <- .trajectory_s2_model_params(operation)

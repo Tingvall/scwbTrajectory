@@ -1,0 +1,1048 @@
+{
+  "core_commit": "ba24635611756240f21f6817044883b832f12701",
+  "oracle": "old_core_monocle3_branching_cds",
+  "comparison_policy": "exact_canonical_value",
+  "cases": {
+    "de__C__full": {
+      "outputs": {
+        "de_table": {
+          "kind": "feature_table",
+          "table_type": "trajectory_de",
+          "rows": 3,
+          "identity": {
+            "structural_fingerprint": "69f0e7709efef521f24c566bdf4ff351b1a24a3bc184756c4a9a75e3ed9fae27",
+            "content_sha256": "1008184918df6e785def5a546661932c572d6b9291c85820dea7bf68f60e3ba7",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_de_summary",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "229f445f612863eff19e10b3d631cef7b113ab1dc6098bd26f546b93dc3191d3",
+            "content_sha256": "6650b0d44c521fcd1f411f59a009e648eb2d809b1e7aa896562ad8afaedb13a0",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "matrix_id": "RNA",
+        "model_engine": "monocle3",
+        "lineage": "root:A::lineage:C",
+        "n_lineages_input": 2,
+        "n_lineages_tested": 1,
+        "n_features_tested": 3,
+        "feature_set": "",
+        "min_pct_nonzero": 0,
+        "min_sd": 0,
+        "p_adjust_method": "BH",
+        "test": "spearman"
+      }
+    },
+    "de__C__subset": {
+      "outputs": {
+        "de_table": {
+          "kind": "feature_table",
+          "table_type": "trajectory_de",
+          "rows": 3,
+          "identity": {
+            "structural_fingerprint": "69f0e7709efef521f24c566bdf4ff351b1a24a3bc184756c4a9a75e3ed9fae27",
+            "content_sha256": "db50fc62e35198548182516b74c11d94d26d32aeee576f59c97008f516481535",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_de_summary",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "229f445f612863eff19e10b3d631cef7b113ab1dc6098bd26f546b93dc3191d3",
+            "content_sha256": "5f1a7d61fe808803f0e618731e00a51c4c3f26593c659af6e26a16ecbb2332a1",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "matrix_id": "RNA",
+        "model_engine": "monocle3",
+        "lineage": "root:A::lineage:C",
+        "n_lineages_input": 2,
+        "n_lineages_tested": 1,
+        "n_features_tested": 3,
+        "feature_set": "",
+        "min_pct_nonzero": 0,
+        "min_sd": 0,
+        "p_adjust_method": "BH",
+        "test": "spearman"
+      }
+    },
+    "de__D__full": {
+      "outputs": {
+        "de_table": {
+          "kind": "feature_table",
+          "table_type": "trajectory_de",
+          "rows": 3,
+          "identity": {
+            "structural_fingerprint": "69f0e7709efef521f24c566bdf4ff351b1a24a3bc184756c4a9a75e3ed9fae27",
+            "content_sha256": "1dd60bf57f2952ed4fa875ff35fadcd61c2fc483c6f7570dcfa9000e92cc7d68",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_de_summary",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "229f445f612863eff19e10b3d631cef7b113ab1dc6098bd26f546b93dc3191d3",
+            "content_sha256": "2eec3b17db407051d67db4ebbe33dedaada73fcc5a805be4ec5417dd92aa7d7a",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "matrix_id": "RNA",
+        "model_engine": "monocle3",
+        "lineage": "root:A::lineage:D",
+        "n_lineages_input": 2,
+        "n_lineages_tested": 1,
+        "n_features_tested": 3,
+        "feature_set": "",
+        "min_pct_nonzero": 0,
+        "min_sd": 0,
+        "p_adjust_method": "BH",
+        "test": "spearman"
+      }
+    },
+    "smooth__C__full": {
+      "outputs": {
+        "trend_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_smooth",
+          "rows": 15,
+          "identity": {
+            "structural_fingerprint": "ccf432a7a35e2f6388c7138232442f8013a809852668e29e30c7a6b6c968b8e4",
+            "content_sha256": "6b23224caae7b0a21aff2b1e6f6ceefb176bd739ff25cb7315d4d8df934e6991",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_smooth_summary",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "00d48c2c3edfe177a13feef044d0e631bcbf0a705f4a07e87a880126b24323cd",
+            "content_sha256": "92ce6a6dd6f1fbfcfdf1ee18c9f68df85143947bad7dcf093e4fa3091b599db5",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "matrix_id": "RNA",
+        "feature_set": null,
+        "n_features_input": 3,
+        "n_lineages": 1,
+        "n_bins": 5,
+        "summary_fun": "mean",
+        "min_cells_per_bin": 1
+      }
+    },
+    "smooth__C__subset": {
+      "outputs": {
+        "trend_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_smooth",
+          "rows": 12,
+          "identity": {
+            "structural_fingerprint": "6f0af17c27cc0b1045325da3f83b1a9c858200d77047caa7a8c801030532a2cf",
+            "content_sha256": "609e53d5d7a8da9f9b27a69d536860a70c9536d17d3951709b085a123335fa53",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_smooth_summary",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "00d48c2c3edfe177a13feef044d0e631bcbf0a705f4a07e87a880126b24323cd",
+            "content_sha256": "0db09c7a40efe0f5731d161b098881ed61f93f6454beb89834138a4177e6dca5",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "matrix_id": "RNA",
+        "feature_set": null,
+        "n_features_input": 3,
+        "n_lineages": 1,
+        "n_bins": 5,
+        "summary_fun": "mean",
+        "min_cells_per_bin": 1
+      }
+    },
+    "smooth__D__full": {
+      "outputs": {
+        "trend_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_smooth",
+          "rows": 15,
+          "identity": {
+            "structural_fingerprint": "ccf432a7a35e2f6388c7138232442f8013a809852668e29e30c7a6b6c968b8e4",
+            "content_sha256": "7faf5daa4e9b2f32c24aa46bec1a6b5f66b7935db2c6670bcc95ed943a7885b7",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_smooth_summary",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "00d48c2c3edfe177a13feef044d0e631bcbf0a705f4a07e87a880126b24323cd",
+            "content_sha256": "7f0624179cd19b209d1433b7958ca103789efd9ab7b796770ddc71eb8ae299f5",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "matrix_id": "RNA",
+        "feature_set": null,
+        "n_features_input": 3,
+        "n_lineages": 1,
+        "n_bins": 5,
+        "summary_fun": "mean",
+        "min_cells_per_bin": 1
+      }
+    },
+    "signature_smooth__C__full": {
+      "outputs": {
+        "signature_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_signature_smooth",
+          "rows": 5,
+          "identity": {
+            "structural_fingerprint": "d52364ec3f36874a82e49fefee8bf82caff65572a6f148b95c242360b2514d74",
+            "content_sha256": "5774fc068e58953014a7cde55bcfd4e25708b87ff65110d2cfb983a2435e1216",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_signature_smooth_summary",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "0e47d24a17de455c4c7b4167ee0adb3faca338acd338917e532ceeebc05c4607",
+            "content_sha256": "4dba6b06cd4eba30aeaf2f666081c4920267514804ceb1992f0c5eb8020db487",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "matrix_id": "RNA",
+        "feature_set": "selected",
+        "n_features": 2,
+        "n_lineages": 1,
+        "n_bins": 5,
+        "score_method": "mean",
+        "summary_fun": "mean",
+        "min_cells_per_bin": 1
+      }
+    },
+    "signature_smooth__C__subset": {
+      "outputs": {
+        "signature_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_signature_smooth",
+          "rows": 4,
+          "identity": {
+            "structural_fingerprint": "134cfe21d80f294a4bef1140a9814f4743070dfb555d142d53c1f80b912cd5e7",
+            "content_sha256": "6cef8caee7092b87c346e157b9a73e69680104f2a08b26c5e05f6504d14cc340",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_signature_smooth_summary",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "0e47d24a17de455c4c7b4167ee0adb3faca338acd338917e532ceeebc05c4607",
+            "content_sha256": "2c00aa04b6159fbaa871313a952e0829aa59707253c0c42ecdad407694953555",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "matrix_id": "RNA",
+        "feature_set": "selected",
+        "n_features": 2,
+        "n_lineages": 1,
+        "n_bins": 5,
+        "score_method": "mean",
+        "summary_fun": "mean",
+        "min_cells_per_bin": 1
+      }
+    },
+    "signature_smooth__D__full": {
+      "outputs": {
+        "signature_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_signature_smooth",
+          "rows": 5,
+          "identity": {
+            "structural_fingerprint": "d52364ec3f36874a82e49fefee8bf82caff65572a6f148b95c242360b2514d74",
+            "content_sha256": "f06b7c041dbddaba90b8a753a26a0835d5ee1b7a7b4486395bdd18315c9a7843",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_signature_smooth_summary",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "0e47d24a17de455c4c7b4167ee0adb3faca338acd338917e532ceeebc05c4607",
+            "content_sha256": "686e8dfb77a021be521cf59859ec5f9158c3e915756ce4842e83933016f265dd",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "matrix_id": "RNA",
+        "feature_set": "selected",
+        "n_features": 2,
+        "n_lineages": 1,
+        "n_bins": 5,
+        "score_method": "mean",
+        "summary_fun": "mean",
+        "min_cells_per_bin": 1
+      }
+    },
+    "geneset_dynamics__C__full": {
+      "outputs": {
+        "signature_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_geneset_dynamics_curve",
+          "rows": 5,
+          "identity": {
+            "structural_fingerprint": "3f0a654a1f4cbe97fdf8affaa55ff2fe2cd0f0b6a5ff6cd4e96a971f1139a14e",
+            "content_sha256": "471b98770f0d4d9e6c41e9ec5f05582c0b6ce5ab87d589db2617aadefc495a04",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "dynamics_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_geneset_dynamics",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "ec93f6bacc2eaf1e9b01c18e8c6a3516ebaef370107b0b9724ef42213f7c45b4",
+            "content_sha256": "2ec1ab5e4b4394497a442efe1e89b252a02f45d434bb9fca3c78067d0c40a70b",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "top_sets": {
+          "kind": "obs_table",
+          "table_type": "trajectory_geneset_dynamics_top",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "125bbbfa9cc80166fc9e8963d83db13a5fb436a650f595b4756c647a9d9634c5",
+            "content_sha256": "b307bd54eecfba583444f29d40bfa5e32a1f5e8c8da81232352a8d51ad4857a7",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "driver_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_geneset_dynamics_drivers",
+          "rows": 2,
+          "identity": {
+            "structural_fingerprint": "0b934ff046cbe71c1f34b82466bf224392137d8033299a005ecf9690952b2394",
+            "content_sha256": "f0b3315bfca52737b017726800dca61555935f5b4b13c65b753f0f70fac004dd",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "driver_curve_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_geneset_dynamics_driver_curve",
+          "rows": 10,
+          "identity": {
+            "structural_fingerprint": "ee87fe5781b46f7cd62238284489598a93646d23051f62bebdda731e55e8bec6",
+            "content_sha256": "8c32852b6505f4b4c668b709deaba0007ca3b80dc764888856c1f26b34591b28",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_geneset_dynamics_summary",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "1351a78b941899996e5f6fd098fd1c54e5819ac272d41c411677f32b16562b9d",
+            "content_sha256": "70740184ff869aebff33d310593a9f1a8549d747b85fa52903f9c5eb4161e69e",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "matrix_id": "RNA",
+        "namespace": "trajectory",
+        "pseudotime_source_kind": "model_ref",
+        "pseudotime_artifact_id": "",
+        "pseudotime_key": "root:A::lineage:C",
+        "membership_artifact_id": "",
+        "n_feature_sets_input": 1,
+        "n_feature_sets_screened": 1,
+        "n_lineages": 1,
+        "n_bins": 5,
+        "score_method": "mean",
+        "summary_fun": "mean",
+        "min_cells_per_bin": 1,
+        "min_set_size": 1,
+        "max_set_size": 5000,
+        "top_n": 50,
+        "on_off_min_delta": 0,
+        "monotonic_min_abs_rho": 0.5,
+        "top_driver_genes": 5,
+        "pseudotime_direction": "as_is",
+        "start_label": null,
+        "end_label": null,
+        "min_amplitude": 0,
+        "min_bins_observed": 2,
+        "min_features_detected": 1,
+        "min_detected_fraction": 0,
+        "min_mean_score": 0,
+        "min_max_score": 0,
+        "min_signal_to_noise": 0,
+        "low_abundance_max_score": 0.1,
+        "smooth_method": "none",
+        "loess_span": 0.5,
+        "bootstrap_n": 8,
+        "ci_level": 0.95,
+        "class_min_amplitude": 0,
+        "n_permutations": 8,
+        "permutation_seed": 19,
+        "p_adjust_method": "BH"
+      }
+    },
+    "geneset_dynamics__C__subset": {
+      "outputs": {
+        "signature_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_geneset_dynamics_curve",
+          "rows": 4,
+          "identity": {
+            "structural_fingerprint": "1262862126570aeb91495efd721d0545cb447dc5bd9cb1ca070a894953279937",
+            "content_sha256": "3fd80c4e1680ce139baacbced7efff999b718beb4a7cabd945f241adbcd13fd6",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "dynamics_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_geneset_dynamics",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "ec93f6bacc2eaf1e9b01c18e8c6a3516ebaef370107b0b9724ef42213f7c45b4",
+            "content_sha256": "b6d8791bd9acd253e5146af2209688436ec59f190556151cee345be33c98bb0e",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "top_sets": {
+          "kind": "obs_table",
+          "table_type": "trajectory_geneset_dynamics_top",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "125bbbfa9cc80166fc9e8963d83db13a5fb436a650f595b4756c647a9d9634c5",
+            "content_sha256": "99d280df6b5a1d8e7edf54491375716cbb67bbc88c564448acf75dfa1bd3b1eb",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "driver_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_geneset_dynamics_drivers",
+          "rows": 2,
+          "identity": {
+            "structural_fingerprint": "0b934ff046cbe71c1f34b82466bf224392137d8033299a005ecf9690952b2394",
+            "content_sha256": "e1227128fec5c78b486b709ae633457a442669beb8d88080097bddc59f4d0ea6",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "driver_curve_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_geneset_dynamics_driver_curve",
+          "rows": 8,
+          "identity": {
+            "structural_fingerprint": "717aaa36676445bd29b86bacd4604cdaf96cebe2e05bbf72327b82bad9002a1e",
+            "content_sha256": "516c7f8e18d15cd663b63f0ba88a2148688f568c357effde10c82d3480e89dc5",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_geneset_dynamics_summary",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "1351a78b941899996e5f6fd098fd1c54e5819ac272d41c411677f32b16562b9d",
+            "content_sha256": "a1721db5f374304a281b41118d20306bbcf2062082a5b44c5875d3c7b5f00580",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "matrix_id": "RNA",
+        "namespace": "trajectory",
+        "pseudotime_source_kind": "model_ref",
+        "pseudotime_artifact_id": "",
+        "pseudotime_key": "root:A::lineage:C",
+        "membership_artifact_id": "",
+        "n_feature_sets_input": 1,
+        "n_feature_sets_screened": 1,
+        "n_lineages": 1,
+        "n_bins": 5,
+        "score_method": "mean",
+        "summary_fun": "mean",
+        "min_cells_per_bin": 1,
+        "min_set_size": 1,
+        "max_set_size": 5000,
+        "top_n": 50,
+        "on_off_min_delta": 0,
+        "monotonic_min_abs_rho": 0.5,
+        "top_driver_genes": 5,
+        "pseudotime_direction": "as_is",
+        "start_label": null,
+        "end_label": null,
+        "min_amplitude": 0,
+        "min_bins_observed": 2,
+        "min_features_detected": 1,
+        "min_detected_fraction": 0,
+        "min_mean_score": 0,
+        "min_max_score": 0,
+        "min_signal_to_noise": 0,
+        "low_abundance_max_score": 0.1,
+        "smooth_method": "none",
+        "loess_span": 0.5,
+        "bootstrap_n": 8,
+        "ci_level": 0.95,
+        "class_min_amplitude": 0,
+        "n_permutations": 8,
+        "permutation_seed": 19,
+        "p_adjust_method": "BH"
+      }
+    },
+    "geneset_dynamics__D__full": {
+      "outputs": {
+        "signature_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_geneset_dynamics_curve",
+          "rows": 5,
+          "identity": {
+            "structural_fingerprint": "3f0a654a1f4cbe97fdf8affaa55ff2fe2cd0f0b6a5ff6cd4e96a971f1139a14e",
+            "content_sha256": "2e9829b0bab1808eada182a0649642517aacf34eb9ac9dd31e406e662642a8e2",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "dynamics_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_geneset_dynamics",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "ec93f6bacc2eaf1e9b01c18e8c6a3516ebaef370107b0b9724ef42213f7c45b4",
+            "content_sha256": "354ee6424b1cef54b872b83d0987677326f167751b76a2475596d49047b53f00",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "top_sets": {
+          "kind": "obs_table",
+          "table_type": "trajectory_geneset_dynamics_top",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "125bbbfa9cc80166fc9e8963d83db13a5fb436a650f595b4756c647a9d9634c5",
+            "content_sha256": "c8eb0fd83fa0f78ade5c6655ba256ca1ed46302c466c194c064fcbffc8e559ba",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "driver_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_geneset_dynamics_drivers",
+          "rows": 2,
+          "identity": {
+            "structural_fingerprint": "0b934ff046cbe71c1f34b82466bf224392137d8033299a005ecf9690952b2394",
+            "content_sha256": "2d13ec970cb0305dddd3ae2c3004f3cb3fd064496194b26bce0bd23d32f46504",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "driver_curve_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_geneset_dynamics_driver_curve",
+          "rows": 10,
+          "identity": {
+            "structural_fingerprint": "ee87fe5781b46f7cd62238284489598a93646d23051f62bebdda731e55e8bec6",
+            "content_sha256": "37a6cc1f70229152677863c7b9d05d88c8f04b4d897610a96acbc1c659baadff",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_geneset_dynamics_summary",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "1351a78b941899996e5f6fd098fd1c54e5819ac272d41c411677f32b16562b9d",
+            "content_sha256": "50e72041cd2c698e9f47d27f22caac7ca0cb804d353b5d31fc827060bd22da1b",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "matrix_id": "RNA",
+        "namespace": "trajectory",
+        "pseudotime_source_kind": "model_ref",
+        "pseudotime_artifact_id": "",
+        "pseudotime_key": "root:A::lineage:D",
+        "membership_artifact_id": "",
+        "n_feature_sets_input": 1,
+        "n_feature_sets_screened": 1,
+        "n_lineages": 1,
+        "n_bins": 5,
+        "score_method": "mean",
+        "summary_fun": "mean",
+        "min_cells_per_bin": 1,
+        "min_set_size": 1,
+        "max_set_size": 5000,
+        "top_n": 50,
+        "on_off_min_delta": 0,
+        "monotonic_min_abs_rho": 0.5,
+        "top_driver_genes": 5,
+        "pseudotime_direction": "as_is",
+        "start_label": null,
+        "end_label": null,
+        "min_amplitude": 0,
+        "min_bins_observed": 2,
+        "min_features_detected": 1,
+        "min_detected_fraction": 0,
+        "min_mean_score": 0,
+        "min_max_score": 0,
+        "min_signal_to_noise": 0,
+        "low_abundance_max_score": 0.1,
+        "smooth_method": "none",
+        "loess_span": 0.5,
+        "bootstrap_n": 8,
+        "ci_level": 0.95,
+        "class_min_amplitude": 0,
+        "n_permutations": 8,
+        "permutation_seed": 19,
+        "p_adjust_method": "BH"
+      }
+    },
+    "vector_smooth__C__full": {
+      "outputs": {
+        "signal_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_vector_smooth",
+          "rows": 5,
+          "identity": {
+            "structural_fingerprint": "5575f06b00bbb276771688642a98d78f7ee213b8e96459cd12469c6cc24cb4a6",
+            "content_sha256": "45919d8ce1a45b03e44635c4dcc9b612eedb7a840782aa33b92e3d7f1cb1f2e7",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_vector_smooth_summary",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "05b9a8b5374ca531f67966c8fe740441ee0d532ab1838de19f6657b76d4c0c2e",
+            "content_sha256": "517002cb53b33ad08467bf2e867038c8e6b1c787d3b9911df54d77812993dd56",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "signal_kind": "cell_vector_family",
+        "signal_keys": "rising",
+        "n_signal_keys_input": 1,
+        "n_lineages": 1,
+        "n_bins": 5,
+        "summary_fun": "mean",
+        "min_cells_per_bin": 1
+      }
+    },
+    "vector_smooth__C__subset": {
+      "outputs": {
+        "signal_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_vector_smooth",
+          "rows": 4,
+          "identity": {
+            "structural_fingerprint": "62b91928528bfa54d46bca3bb10ebcc5b79e8ff8b86d50becae568310ee4ba59",
+            "content_sha256": "6b6100d0d79102a0d633420c9820cc2252cfd62dcbb66a91f0fc50ccc0dc3f33",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_vector_smooth_summary",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "05b9a8b5374ca531f67966c8fe740441ee0d532ab1838de19f6657b76d4c0c2e",
+            "content_sha256": "723fa51f9ba7e2e65c073336a968e21e6e2ca0358402c5a32c9000f78c2bb2f2",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "signal_kind": "cell_vector_family",
+        "signal_keys": "rising",
+        "n_signal_keys_input": 1,
+        "n_lineages": 1,
+        "n_bins": 5,
+        "summary_fun": "mean",
+        "min_cells_per_bin": 1
+      }
+    },
+    "vector_smooth__D__full": {
+      "outputs": {
+        "signal_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_vector_smooth",
+          "rows": 5,
+          "identity": {
+            "structural_fingerprint": "5575f06b00bbb276771688642a98d78f7ee213b8e96459cd12469c6cc24cb4a6",
+            "content_sha256": "0790b5a501f70e641085525fd81da0783c4db6e2f5e273e41cc088356d0de4b2",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_vector_smooth_summary",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "05b9a8b5374ca531f67966c8fe740441ee0d532ab1838de19f6657b76d4c0c2e",
+            "content_sha256": "ae373efa3ba2f96e62393cf269cd2a3491f73948a35851afb5b66928cf4e612f",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "signal_kind": "cell_vector_family",
+        "signal_keys": "rising",
+        "n_signal_keys_input": 1,
+        "n_lineages": 1,
+        "n_bins": 5,
+        "summary_fun": "mean",
+        "min_cells_per_bin": 1
+      }
+    },
+    "signal_dynamics__C__full": {
+      "outputs": {
+        "signal_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_signal_dynamics_curve",
+          "rows": 10,
+          "identity": {
+            "structural_fingerprint": "e25229b54ac0ea3321824b1059ba9ebf741779d1ad963e983f1846b91d960d9e",
+            "content_sha256": "fc1af9bbfe8f49dbafed64abf5b51d18b16527c729601ecb8e43589f35d19e00",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "dynamics_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_signal_dynamics",
+          "rows": 2,
+          "identity": {
+            "structural_fingerprint": "b83501f3ed2f7e7dd987b521b5b239735c90c813742400280b44a8dd7998dbe8",
+            "content_sha256": "a876eb8747c5d2104c82c541fe58a7bd3aeaebd5e3fcfdc4bcf9dd178d2d01a0",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "top_signals": {
+          "kind": "obs_table",
+          "table_type": "trajectory_signal_dynamics_top",
+          "rows": 2,
+          "identity": {
+            "structural_fingerprint": "c9f1ef94a836414bfc37034cd6acc632aa1f2db445c0beb30a7c3b8d759a9cc0",
+            "content_sha256": "74baf0bbe663e75cb5d15e5608378279f2d78f4368cd0944e31105a1a4ae4cc6",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_signal_dynamics_summary",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "b9ddbde11e902ba221dd223e6a0dc083cad073d0b615c2d19c8f0a0210af0f19",
+            "content_sha256": "b45a2831fc8537bf0aad56f6f52a933fd75a75afa71ce1cc798a3deb993b9488",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "signal_kind": "cell_vector_family",
+        "pseudotime_source_kind": "model_ref",
+        "pseudotime_artifact_id": "",
+        "pseudotime_key": "root:A::lineage:C",
+        "membership_artifact_id": "",
+        "signal_keys": ["rising", "falling"],
+        "n_signal_keys_input": 2,
+        "n_lineages": 1,
+        "n_bins": 5,
+        "summary_fun": "mean",
+        "min_cells_per_bin": 1,
+        "top_n": 50,
+        "on_off_min_delta": 0,
+        "monotonic_min_abs_rho": 0.5,
+        "pseudotime_direction": "as_is",
+        "start_label": null,
+        "end_label": null,
+        "min_amplitude": 0,
+        "min_bins_observed": 2,
+        "smooth_method": "none",
+        "loess_span": 0.5,
+        "bootstrap_n": 8,
+        "ci_level": 0.95,
+        "class_min_amplitude": 0
+      }
+    },
+    "signal_dynamics__C__subset": {
+      "outputs": {
+        "signal_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_signal_dynamics_curve",
+          "rows": 8,
+          "identity": {
+            "structural_fingerprint": "ff704581aa3cbaeaefbbce8e598f5ee36efa1577998a14ec23162365dcd89def",
+            "content_sha256": "a59561cd315857b32fa45a53f1604a1d5b99f426eeb87827c920daf19e7cbaf7",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "dynamics_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_signal_dynamics",
+          "rows": 2,
+          "identity": {
+            "structural_fingerprint": "b83501f3ed2f7e7dd987b521b5b239735c90c813742400280b44a8dd7998dbe8",
+            "content_sha256": "58bcf8c1213178fc48df256f760037ef45c873c4ef445be2ec3272df4275fdd7",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "top_signals": {
+          "kind": "obs_table",
+          "table_type": "trajectory_signal_dynamics_top",
+          "rows": 2,
+          "identity": {
+            "structural_fingerprint": "c9f1ef94a836414bfc37034cd6acc632aa1f2db445c0beb30a7c3b8d759a9cc0",
+            "content_sha256": "b05cdbfc57487c463838a851cb93288d7f90a6a7d391d90af569552ef7b74aa3",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_signal_dynamics_summary",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "b9ddbde11e902ba221dd223e6a0dc083cad073d0b615c2d19c8f0a0210af0f19",
+            "content_sha256": "f010494f4f46266922705f6be5b3136acc567798d00491cd11b965b375ee327b",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "signal_kind": "cell_vector_family",
+        "pseudotime_source_kind": "model_ref",
+        "pseudotime_artifact_id": "",
+        "pseudotime_key": "root:A::lineage:C",
+        "membership_artifact_id": "",
+        "signal_keys": ["rising", "falling"],
+        "n_signal_keys_input": 2,
+        "n_lineages": 1,
+        "n_bins": 5,
+        "summary_fun": "mean",
+        "min_cells_per_bin": 1,
+        "top_n": 50,
+        "on_off_min_delta": 0,
+        "monotonic_min_abs_rho": 0.5,
+        "pseudotime_direction": "as_is",
+        "start_label": null,
+        "end_label": null,
+        "min_amplitude": 0,
+        "min_bins_observed": 2,
+        "smooth_method": "none",
+        "loess_span": 0.5,
+        "bootstrap_n": 8,
+        "ci_level": 0.95,
+        "class_min_amplitude": 0
+      }
+    },
+    "signal_dynamics__D__full": {
+      "outputs": {
+        "signal_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_signal_dynamics_curve",
+          "rows": 10,
+          "identity": {
+            "structural_fingerprint": "e25229b54ac0ea3321824b1059ba9ebf741779d1ad963e983f1846b91d960d9e",
+            "content_sha256": "92d2f1724395c1e106f42e6f4848c98c6ac43f7267b319ef99ce19be8a972e35",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "dynamics_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_signal_dynamics",
+          "rows": 2,
+          "identity": {
+            "structural_fingerprint": "b83501f3ed2f7e7dd987b521b5b239735c90c813742400280b44a8dd7998dbe8",
+            "content_sha256": "66b17b9374ba1d6b3dd671708ab0d6c003a036a937cbf34f424ba830cce6fcfe",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "top_signals": {
+          "kind": "obs_table",
+          "table_type": "trajectory_signal_dynamics_top",
+          "rows": 2,
+          "identity": {
+            "structural_fingerprint": "c9f1ef94a836414bfc37034cd6acc632aa1f2db445c0beb30a7c3b8d759a9cc0",
+            "content_sha256": "6d7ddd2712ee2249a0347684ddd59d76eb82dffc6c050f86443d8e129ca3a49b",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_signal_dynamics_summary",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "b9ddbde11e902ba221dd223e6a0dc083cad073d0b615c2d19c8f0a0210af0f19",
+            "content_sha256": "9f9d1f85aa6c6531d7e690c7e6c2a97cd73a901994d051d0f0d0ca966b3d5b5e",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "signal_kind": "cell_vector_family",
+        "pseudotime_source_kind": "model_ref",
+        "pseudotime_artifact_id": "",
+        "pseudotime_key": "root:A::lineage:D",
+        "membership_artifact_id": "",
+        "signal_keys": ["rising", "falling"],
+        "n_signal_keys_input": 2,
+        "n_lineages": 1,
+        "n_bins": 5,
+        "summary_fun": "mean",
+        "min_cells_per_bin": 1,
+        "top_n": 50,
+        "on_off_min_delta": 0,
+        "monotonic_min_abs_rho": 0.5,
+        "pseudotime_direction": "as_is",
+        "start_label": null,
+        "end_label": null,
+        "min_amplitude": 0,
+        "min_bins_observed": 2,
+        "smooth_method": "none",
+        "loess_span": 0.5,
+        "bootstrap_n": 8,
+        "ci_level": 0.95,
+        "class_min_amplitude": 0
+      }
+    }
+  }
+}

@@ -23,12 +23,12 @@ depend on removed core method functions.
 
 | Operation | Prepared now | Remaining for S2 integration |
 |---|---|
-| `trajectory_de` | Unregistered Slingshot model runner writes `de_table` and `fit_summary` from G1 lineage pseudotime, a bounded typed matrix, and a feature-set snapshot. Both frozen identities match. | Register the G1 and matrix grants; real fitted-axis reopen; Monocle3 branch projection. |
-| `trajectory_smooth` | Unregistered Slingshot model runner writes `trend_table` and `fit_summary` using the shared bin and aggregate equations. Both frozen identities match. | Same G1, matrix, registration, and Monocle3 work. |
-| `trajectory_signature_smooth` | Unregistered Slingshot model runner uses an authenticated feature-set snapshot and bounded matrix reads. Both frozen identities match. | Same G1, matrix, registration, and Monocle3 work. |
-| `trajectory_geneset_dynamics` | Unregistered explicit and Slingshot model runners share the six-terminal numerical method. Both frozen model and explicit terminal closures match. | Register each source mode and its grants; real G1 reopen, publication audit, and Monocle3 branch projection. |
-| `trajectory_vector_smooth` | Unregistered Slingshot model runner uses a typed signal family. Both frozen identities match. | Register signal and G1 grants; real reopen and Monocle3 branch projection. |
-| `trajectory_signal_dynamics` | Unregistered explicit and Slingshot model runners share the four-terminal numerical method. Both frozen model and explicit terminal closures match. | Register each source mode and its grants; real G1 reopen, publication audit, and Monocle3 branch projection. |
+| `trajectory_de` | Direct Slingshot and Monocle3 model runners write `de_table` and `fit_summary` from G1 pseudotime and a typed matrix. Frozen Slingshot and both Monocle3 branch oracles match. | Register G1 and matrix grants; grouped publication audit. |
+| `trajectory_smooth` | Direct Slingshot and Monocle3 model runners write `trend_table` and `fit_summary`. Frozen Slingshot and both Monocle3 branch oracles match. This runner also consumes a real relocated G1 private read. | Register G1 and matrix grants; grouped publication audit. |
+| `trajectory_signature_smooth` | Direct Slingshot and Monocle3 model runners use a typed feature-set snapshot and bounded matrix. Frozen Slingshot and both Monocle3 branch oracles match. | Register G1, registry, and matrix grants; grouped publication audit. |
+| `trajectory_geneset_dynamics` | Direct explicit, Slingshot, and Monocle3 model runners write six terminals. Frozen explicit and Slingshot identities and both Monocle3 branch oracles match. | Register source modes and grants; grouped publication audit. |
+| `trajectory_vector_smooth` | Direct Slingshot and Monocle3 model runners use a typed signal family. Frozen Slingshot and both Monocle3 branch oracles match. | Register signal and G1 grants; grouped publication audit. |
+| `trajectory_signal_dynamics` | Direct explicit, Slingshot, and Monocle3 model runners write four terminals. Frozen explicit and Slingshot identities and both Monocle3 branch oracles match. | Register source modes and grants; grouped publication audit. |
 
 The explicit-pseudotime inputs are complete-axis `cell_vector_family`
 primitives. The direct runners consume only the accepted typed readers and
@@ -131,18 +131,23 @@ numerical equivalence and axis binding under a
 synthetic Slingshot projection; they do not establish real G1 reopen or ABI
 publication.
 
-The Monocle3 route remains at the G1 projection interface. The old core
-gets global `monocle3::pseudotime(cds)` and separately derives a keyed
-cell-to-lineage relation from the ordered principal graph and closest-vertex
-mapping (`scworkbench/R/op_trajectory_de.R:43-70`,
-`R/op_monocle3.R:38-174`). Reproducer: an authenticated `monocle3_cds`
-with two branches has one global pseudotime vector but requires that keyed
-relation before any of the six consumers can select lineage cells. The
-Slingshot matrix projection alone cannot represent it. A pack-owned
-projection from a verified CDS, or a typed relation bound to the same fit,
-must be reviewed with the completed G1 contract. An unsupported model type
-fails before terminal writes; no synthetic pseudotime field is accepted as
-an alternate production source.
+The pack derives Monocle3 root-to-leaf keys and closest-vertex membership
+directly from the CDS loaded through the verified private G1 reader. It
+compares the global pseudotime's exact ordered cells with G1's authenticated
+fitted axis before deriving the relation or writing terminals. It requires a
+named connected tree, valid roots, complete fitted-cell membership, and
+valid vertices. Caller pseudotime, lineage mapping, model path, and model
+metadata cannot replace the CDS. The old-core relation in
+`scworkbench/R/op_trajectory_de.R:43-70` and `R/op_monocle3.R:38-174`
+provides the independent branch oracle. The 24-cell synthetic branching CDS
+tests all six model runners on both branch keys and a smaller session subset.
+The 18 old-core cases are frozen in
+`tests/fixtures/trajectory_s2_monocle3_reference.json` with an
+`exact_canonical_value` comparison policy. The test compares every
+terminal's table, metadata, canonical identity, kind, and output order with
+both the frozen record and the old core, and checks the old-core effective
+parameters against the record. Reordered or foreign fitted cells
+and invalid graph or membership fail with no terminal writes.
 
 ## G1 integration dependency
 
@@ -151,16 +156,22 @@ capability. Its self-linked reader compared the selected fitted-cell identity
 with the full parent-space axis. The accepted generic work now reconstructs
 the authenticated fitted subset and exposes it as `fitted_source_space` to
 the private model reader. This pack checks the model's exact ordered cells
-against that matrix, but its direct tests use a mock G1 reader. A real S2
-fixture must still reopen a sealed 12-of-24 fitted model, execute the six
-consumers, and reject reordered or tampered fitted-axis evidence before
-dispatch. The pack does not synthesize excluded cells or bypass G1 checks.
+against that matrix. The direct numerical fixtures still use a mock G1
+reader. A separate lifecycle test uses the accepted generic G1 fixture pack
+to seal a Slingshot RDS on a 12-of-24 fitted axis, promote and finalize its
+bundle, relocate the bundle, and obtain a verified private G1 reader with
+the reconstructed fitted axis. That read executes the unregistered
+`trajectory_smooth` runner, and both terminal identities match the old core.
+Altering either the retained model tree or
+selected-axis evidence rejects during G1 preparation, before S2 computation
+or terminal writes. This is a real retained-state reopen with a synthetic
+fitted model; it is not registered S2 dispatch or proof for all six methods.
+The pack does not synthesize excluded cells or bypass G1 checks.
 
 ## Integration checks still owed
 
-Once the generic derived-axis capability and fitted-model producer are
-accepted, replace the synthetic model oracle with a retained S3 or S5 model,
-reopen it, and compare the six pack terminal closures. Add pack promotion,
+At grouped S2 integration, execute all six consumers through registered
+dispatch on retained S3 or S5 fitted models. Add pack promotion,
 rollback, replay-plan, pack-free inspection, and missing-pack dispatch checks
 at the grouped S2 gate. Preserve each terminal's `exact_canonical_value`
 policy; the frozen method oracle alone does not prove operation-level or
