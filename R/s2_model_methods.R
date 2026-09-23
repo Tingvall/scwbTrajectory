@@ -132,7 +132,7 @@
   .trajectory_assert(ri > 0L,
     "trajectory_de: no lineage produced testable cells/features.")
   de <- do.call(rbind, rows); summary <- do.call(rbind, summaries)
-  de$p_val_adj <- ave(de$p_val, de$lineage_id,
+  de$p_val_adj <- stats::ave(de$p_val, de$lineage_id,
     FUN = function(x) stats::p.adjust(x,
       method = as.character(p_adjust_method)[1L]))
   de <- de[order(de$lineage_id, de$p_val_adj, -de$abs_rho), , drop = FALSE]

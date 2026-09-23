@@ -206,7 +206,7 @@ test_trajectory_s4_metadata_identity_change_ledger_contract <- function() {
     "scworkbench.operation_pack.manifest.v3", manifest)$sha256
   stopifnot(identical(manifest$package$version, "0.1.1"),
     identical(manifest_identity,
-      "0cffbd5566b0b0e88829716498c348e1131e9a909e2b92e834023a2eb4651540"),
+      "3d72ae2afdc762f759ee1b00dfa5a0206aed7805314685398ec174d4d55da64e"),
     identical(as.character(utils::packageVersion("scwbTrajectory")),
       "0.1.1"))
   expected <- c(

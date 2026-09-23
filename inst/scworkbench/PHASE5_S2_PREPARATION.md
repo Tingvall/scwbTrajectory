@@ -20,17 +20,17 @@ fixture can be reproduced. Direct pack runners use the same comparator.
 The pack manifest now declares eight grouped S2 entries: six canonical model
 names and two explicit-pseudotime dynamics names. The latter execute through
 registered dispatch and pass terminal publication checks. Model entries
-execute through registered staged G1 reads on the repaired core pair below.
-Promoted model-reference dispatch remains blocked as detailed below.
+execute through registered staged and promoted G1 reads on the proposed core
+delta below. All model terminals have frozen-oracle publication coverage.
 
 | Operation | Prepared now | Remaining for S2 integration |
 |---|---|
-| `trajectory_de` | Registered staged Slingshot and Monocle3 reads match both terminals and frozen branch oracles. | Promoted reference dispatch and full publication audit. |
-| `trajectory_smooth` | Registered staged Slingshot and Monocle3 reads match both terminals. A relocated G1 private read also executes the direct runner. | Promoted reference dispatch and full publication audit. |
-| `trajectory_signature_smooth` | Registered staged Slingshot and Monocle3 reads match both terminals. | Promoted reference dispatch and full publication audit. |
-| `trajectory_geneset_dynamics` | Registered staged model reads match all six terminals; explicit dispatch publishes its six terminals with rollback and pack-free reopen. | Promoted model dispatch and full publication audit. |
-| `trajectory_vector_smooth` | Registered staged Slingshot and Monocle3 reads match both terminals. | Promoted reference dispatch and full publication audit. |
-| `trajectory_signal_dynamics` | Registered staged model reads match all four terminals; explicit dispatch publishes its four terminals with rollback and pack-free reopen. | Promoted model dispatch and full publication audit. |
+| `trajectory_de` | Registered staged and promoted Slingshot and Monocle3 reads match both terminals and frozen branch oracles; terminal group publishes. | Independent core-delta acceptance and grouped integration. |
+| `trajectory_smooth` | Registered staged and promoted Slingshot and Monocle3 reads match both terminals; terminal group publishes. | Independent core-delta acceptance and grouped integration. |
+| `trajectory_signature_smooth` | Registered staged and promoted Slingshot and Monocle3 reads match both terminals; terminal group publishes. | Independent core-delta acceptance and grouped integration. |
+| `trajectory_geneset_dynamics` | Registered model reads match all six terminals and publish; explicit mode retains frozen publication and rollback checks. | Independent core-delta acceptance and grouped integration. |
+| `trajectory_vector_smooth` | Registered model reads match both terminals and publish from an authenticated signal artifact. | Independent core-delta acceptance and grouped integration. |
+| `trajectory_signal_dynamics` | Registered model reads match all four terminals and publish from an authenticated signal artifact; explicit mode retains its checks. | Independent core-delta acceptance and grouped integration. |
 
 The explicit-pseudotime inputs are complete-axis `cell_vector_family`
 primitives. The direct runners consume only the accepted typed readers and
@@ -173,53 +173,70 @@ The pack does not synthesize excluded cells or bypass G1 checks.
 
 ## Integration checks still owed
 
-The accepted repair pair is scworkbench
-`434d55a280b0e03e90530bf272add63dfdb3064b` and PyBench
-`9ad8a7a3bd2298fdc6f426032e54ccb07eee0402`. With this pair,
-`tests/test_s2_registered_publication_contract.R` executes all six registered
-model entries against verified staged Slingshot and Monocle3 G1 reads. All
-declared terminal identities match the frozen old-core oracles, including
-both Monocle3 branches. A staged `trajectory_de` run can also promote its
-terminal group. The earlier v3 request-schema and contained-tree loader
-failures are repaired.
+The proposed generic core delta is scworkbench
+`ac7656c74af42160b6a1342ddfcd86f5c1b336a1`, directly descended from
+accepted G1 core `434d55a280b0e03e90530bf272add63dfdb3064b`. PyBench
+remains `9ad8a7a3bd2298fdc6f426032e54ccb07eee0402`. The delta excludes
+transient deserialized `model_obj` from the contained `model_ref` request
+identity. It has **not** received independent acceptance under this order.
 
-A new generic promoted-reference gap remains. After the same verified G1
-model is promoted, `wb_art_load(bundle, model_id,
-expected_kind="model_ref")` succeeds and supplies the authenticated model.
-But `wb_session_run_op(..., model=wb_ref_artifact(model_id, "model"))` fails
-before the S2 runner in core's `.wb_operation_pack_v2_input_descriptor()`:
-`Unsupported canonical identity value type: SlingshotDataSet.` The descriptor
-tries to canonicalize the deserialized S4 `model_obj` rather than deriving
-the request identity from the authenticated model reference. The focused test
-asserts this exact failure with no durable artifact change. The pack does
-not strip `model_obj`, reconstruct a model reference, or patch metadata.
-Promoted model publication, replay planning, pack-free inspection, and the
-full negative matrix require a generic core fix and rerun on a newly accepted
-pair. The explicit modes still pass frozen terminal policy, promotion,
-rollback/retry, pack-free reopen, and missing-pack dispatch.
-S2 migration and operation-level equivalence remain unqualified; the
-Phase 5 migrated count remains 9/24.
+With that exact pair, the pack test now executes all six registered model
+operations through both `wb_ref_run()` and promoted `wb_ref_artifact()` G1
+reads. It compares all declared terminal identities with the frozen old-core
+Slingshot and both Monocle3 branch oracles. A replayable test signal comes
+from the verified G1 sibling artifact. Every promoted terminal group passes
+`exact_canonical_value` content verification and replay-input planning.
+Slingshot publication faults roll back and retry for all six operations.
+Model and terminal artifacts load after read-only relocation with the pack
+registration removed. Missing-pack dispatch fails. Invalid lineage, model
+type, contained primary bytes, and selected-axis evidence reject with no
+durable output, provenance, transition-row, or payload-file residue; both
+altered files are restored byte-for-byte and to their original permissions.
 
-Focused results on the exact accepted pair, using a separate
-`/tmp/forge2-s2-g1-434d55a-lib` R library built from the core and pack pins:
+Remaining work is focused independent acceptance of the small core delta,
+then grouped manifest integration with Forge-1's separate S3 branch and the
+independent S2 migration audit. This pack branch does not remove old-core
+owners or claim the combined catalog. Phase 5 remains **9/24**.
 
-The pack command, run from this pack worktree, was:
+## Focused and package qualification
+
+The isolated R library `/tmp/forge2-s2-ac7656c-lib` was installed from
+scworkbench `ac7656c74af42160b6a1342ddfcd86f5c1b336a1` and this pack
+worktree. The exact PyBench source was
+`/home/dirk/Projects/.pybench-worktrees/phase5-g1-model-reference-dispatch-quill-20260923`
+at `9ad8a7a3bd2298fdc6f426032e54ccb07eee0402`.
+
+From the pack worktree:
 
 ```sh
-R_LIBS=/tmp/forge2-s2-g1-434d55a-lib Rscript -e 'test_dir <- "tests"; source("tests/helper_trajectory_fixture.R",local=.GlobalEnv); source("tests/test_s2_registered_publication_contract.R",local=.GlobalEnv); n <- sort(ls(.GlobalEnv,pattern="^test_trajectory_s2_registered_")); for(x in n){get(x,.GlobalEnv)();cat("PASS",x,"\n")};cat("RESULT",length(n),"passed\n")'
+R_LIBS=/tmp/forge2-s2-ac7656c-lib Rscript -e 'test_dir <- "tests"; source("tests/helper_trajectory_fixture.R",local=.GlobalEnv); source("tests/test_s2_registered_publication_contract.R",local=.GlobalEnv); n <- sort(ls(.GlobalEnv,pattern="^test_trajectory_s2_registered_")); for(x in n){get(x,.GlobalEnv)();cat("PASS",x,"\n")};cat("RESULT",length(n),"passed\n")'
 ```
 
-It exited **0**, with **7/7 passed**. The seventh test is the
-promoted-reference blocker reproducer, not a positive publication result.
+Result: **8/8 passed, exit 0**. The broader pack contract runner found
+**34/34 passed** inside the final package check. From the core delta
+worktree, with that R library, the exact PyBench source on `PYTHONPATH`, and
+`SCWORKBENCH_PYBENCH_PYTHON` set to the project virtual environment:
 
-- Core `Rscript inst/tests/run_contract_tests.R
-  --test-file=tests/test_operation_pack_v3_g1_model_reference_dispatch_repair_contract.R`
-  with the exact PyBench source on `PYTHONPATH`: **2/2 passed, exit 0**.
-- PyBench `python -m pytest -q -p no:cacheprovider
-  tests/test_phase5_model_capabilities_v3.py` from the pinned source:
-  **31/31 passed, exit 0**.
-- Both changed R test files parsed; `git diff --check` passed.
+```sh
+Rscript inst/tests/run_contract_tests.R --test-file=tests/test_operation_pack_v3_g1_model_reference_dispatch_repair_contract.R
+```
 
-Broader qualification and the six-mode promoted publication audit wait for
-the generic descriptor repair. No pack-side model-reference workaround was
-added.
+Result: **3/3 passed, exit 0**. From the pinned PyBench worktree:
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src /home/dirk/Projects/pybench/.venv/bin/python -m pytest -q -p no:cacheprovider tests/test_phase5_model_capabilities_v3.py
+```
+
+Result: **31/31 passed, exit 0**. The pack was built in
+`/tmp/forge2-s2-ac7656c-final-check` with `R CMD build
+--no-build-vignettes <pack-worktree>` and checked there with the exact R
+library and PyBench source using `R CMD check --no-manual
+scwbTrajectory_0.1.1.tar.gz`: both **exit 0**, check **Status: OK**.
+Changed R files parse and `git diff --check` passes. The earlier exploratory
+check, before test-file source portability and import declarations were fixed,
+ended with 1 ERROR, 1 WARNING, and 1 NOTE; it is superseded by the final
+clean check.
+
+Sable and Meridian-9 should independently review the two-file core delta
+`434d55a..ac7656c` and this pinned S2 pack candidate as separate decisions.
+The core delta is not accepted by the pack qualification alone.

@@ -60,11 +60,16 @@ trajectory_s2_g1_test_producer <- function(engine, model_type, model_factory) {
         fitted), value_type = "continuous"))
     writers$write_terminal_primitive("weights",
       scworkbench::wb_prim_cell_vector_family(
-        rep("lineage_a", length(fitted)), fitted,
-        rep(1, length(fitted)), value_type = "continuous"))
+        rep(c("rising", "falling"), each = length(fitted)),
+        rep(fitted, 2L),
+        c(seq(0, 1, length.out = length(fitted)),
+          seq(1, 0, length.out = length(fitted))),
+        value_type = "continuous"))
     tree <- writers$open_model_tree("model")
     saveRDS(model_factory(fitted), tree$path(tree$primary_path))
-    model <- scworkbench::wb_prim_model_ref("fixture.derived",
+    model_space_id <- if (model_type %in% c("slingshot", "monocle3_cds"))
+      "fixture.derived" else paste0("fixture.derived.", model_type)
+    model <- scworkbench::wb_prim_model_ref(model_space_id,
       as.character(context$input_ids$source)[1L], engine = engine)
     model$model_type <- model_type
     tree$finish(model)

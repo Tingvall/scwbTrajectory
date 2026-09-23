@@ -346,7 +346,7 @@
           gt <- do.call(rbind, gene_rows)
           gt <- gt[order(-gt$dynamic_score, -gt$amplitude), , drop = FALSE]
           gt$driver_rank <- seq_len(nrow(gt))
-          gt <- head(gt, min(top_driver_genes, nrow(gt)))
+          gt <- utils::head(gt, min(top_driver_genes, nrow(gt)))
           gi <- gi + 1L
           driver_rows[[gi]] <- gt
           for (ii in seq_len(nrow(gt))) {
@@ -460,7 +460,7 @@
     finite_p <- is.finite(out$p_dynamic)
     if (any(finite_p)) out$q_dynamic[finite_p] <- stats::p.adjust(out$p_dynamic[finite_p], method = p_adjust_method)
     out <- out[order(as.character(out$lineage_id), -out$dynamic_score, -out$amplitude, -out$sd_value), , drop = FALSE]
-    out$rank <- ave(seq_len(nrow(out)), as.character(out$lineage_id), FUN = seq_along)
+    out$rank <- stats::ave(seq_len(nrow(out)), as.character(out$lineage_id), FUN = seq_along)
     rownames(out) <- NULL
     out
   }
@@ -492,7 +492,7 @@
     rownames(out) <- NULL
     out
   }
-  top_tbl <- head(eligible_dyn[order(as.character(eligible_dyn$lineage_id), eligible_dyn$rank), , drop = FALSE], top_n)
+  top_tbl <- utils::head(eligible_dyn[order(as.character(eligible_dyn$lineage_id), eligible_dyn$rank), , drop = FALSE], top_n)
   fit_summary <- do.call(rbind, fit_rows[seq_len(si)])
   rownames(fit_summary) <- NULL
 

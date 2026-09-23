@@ -275,13 +275,13 @@
   } else {
     out <- do.call(rbind, dyn_rows[seq_len(di)])
     out <- out[order(as.character(out$lineage_id), -out$dynamic_score, -out$amplitude, -out$sd_value), , drop = FALSE]
-    out$rank <- ave(seq_len(nrow(out)), as.character(out$lineage_id), FUN = seq_along)
+    out$rank <- stats::ave(seq_len(nrow(out)), as.character(out$lineage_id), FUN = seq_along)
     rownames(out) <- NULL
     out
   }
   eligible_dyn <- dyn_tbl[dyn_tbl$passes_filters %in% TRUE, , drop = FALSE]
   if (!nrow(eligible_dyn)) eligible_dyn <- dyn_tbl
-  top_tbl <- head(eligible_dyn[order(as.character(eligible_dyn$lineage_id), eligible_dyn$rank), , drop = FALSE], top_n)
+  top_tbl <- utils::head(eligible_dyn[order(as.character(eligible_dyn$lineage_id), eligible_dyn$rank), , drop = FALSE], top_n)
   fit_summary <- do.call(rbind, fit_rows[seq_len(si)])
   rownames(fit_summary) <- NULL
 

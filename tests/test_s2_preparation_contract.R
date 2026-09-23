@@ -1,3 +1,4 @@
+test_dir <- if (file.exists("helper_s2_fixture.R")) "." else "tests"
 source(file.path(test_dir, "helper_s2_fixture.R"), local = .GlobalEnv)
 
 test_trajectory_s2_frozen_method_outputs_contract <- function() {

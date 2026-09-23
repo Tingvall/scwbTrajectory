@@ -1,3 +1,4 @@
+test_dir <- if (file.exists("helper_s2_fixture.R")) "." else "tests"
 source(file.path(test_dir, "helper_s2_fixture.R"), local = .GlobalEnv)
 
 .trajectory_s2_model_params <- function(operation) {
