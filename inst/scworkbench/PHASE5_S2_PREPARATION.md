@@ -20,17 +20,18 @@ fixture can be reproduced. Direct pack runners use the same comparator.
 The pack manifest now declares eight grouped S2 entries: six canonical model
 names and two explicit-pseudotime dynamics names. The latter execute through
 registered dispatch and pass terminal publication checks. Model entries
-execute through registered staged and promoted G1 reads on the proposed core
-delta below. All model terminals have frozen-oracle publication coverage.
+execute through registered staged and promoted G1 reads on accepted core
+`c897c93bdb88ac0f78a1ca37e31a1ab2c047c695`. All model terminals have
+frozen-oracle publication coverage.
 
 | Operation | Prepared now | Remaining for S2 integration |
 |---|---|
-| `trajectory_de` | Registered staged and promoted Slingshot and Monocle3 reads match both terminals and frozen branch oracles; terminal group publishes. The runner processes one authenticated feature partition at a time. | Independent core-delta acceptance and grouped integration. |
-| `trajectory_smooth` | Registered staged and promoted Slingshot and Monocle3 reads match both terminals; terminal group publishes. | Independent core-delta acceptance and grouped integration. |
-| `trajectory_signature_smooth` | Registered staged and promoted Slingshot and Monocle3 reads match both terminals; terminal group publishes. | Independent core-delta acceptance and grouped integration. |
-| `trajectory_geneset_dynamics` | Registered model reads match all six terminals and publish; explicit mode retains frozen publication and rollback checks. | Independent core-delta acceptance and grouped integration. |
-| `trajectory_vector_smooth` | Registered model reads match both terminals and publish from an authenticated signal artifact. | Independent core-delta acceptance and grouped integration. |
-| `trajectory_signal_dynamics` | Registered model reads match all four terminals and publish from an authenticated signal artifact; explicit mode retains its checks. | Independent core-delta acceptance and grouped integration. |
+| `trajectory_de` | Registered staged and promoted Slingshot and Monocle3 reads match both terminals and frozen branch oracles; terminal group publishes. The runner processes one authenticated feature partition at a time. | Independent S2 audit and separately authorized ownership migration. |
+| `trajectory_smooth` | Registered staged and promoted Slingshot and Monocle3 reads match both terminals; terminal group publishes. | Independent S2 audit and separately authorized ownership migration. |
+| `trajectory_signature_smooth` | Registered staged and promoted Slingshot and Monocle3 reads match both terminals; terminal group publishes. | Independent S2 audit and separately authorized ownership migration. |
+| `trajectory_geneset_dynamics` | Registered model reads match all six terminals and publish; explicit mode retains frozen publication and rollback checks. | Independent S2 audit and separately authorized ownership migration. |
+| `trajectory_vector_smooth` | Registered model reads match both terminals and publish from an authenticated signal artifact. | Independent S2 audit and separately authorized ownership migration. |
+| `trajectory_signal_dynamics` | Registered model reads match all four terminals and publish from an authenticated signal artifact; explicit mode retains its checks. | Independent S2 audit and separately authorized ownership migration. |
 
 The DE runner scans the authenticated feature axis once in declared chunks.
 It densifies at most the selected rows in the current chunk, discards that
@@ -184,16 +185,22 @@ or terminal writes. This is a real retained-state reopen with a synthetic
 fitted model; it is not registered S2 dispatch or proof for all six methods.
 The pack does not synthesize excluded cells or bypass G1 checks.
 
-## Integration checks still owed
+## Exact-pair qualification and remaining integration
 
-The proposed generic core delta is scworkbench
-`ac7656c74af42160b6a1342ddfcd86f5c1b336a1`, directly descended from
-accepted G1 core `434d55a280b0e03e90530bf272add63dfdb3064b`. PyBench
-remains `9ad8a7a3bd2298fdc6f426032e54ccb07eee0402`. The delta excludes
-transient deserialized `model_obj` from the contained `model_ref` request
-identity. It has **not** received independent acceptance under this order.
+The accepted generic core correction is scworkbench
+`c897c93bdb88ac0f78a1ca37e31a1ab2c047c695`, descended from the
+superseded `ac7656c74af42160b6a1342ddfcd86f5c1b336a1` candidate.
+The exact paired pack is scwbTrajectory
+`d4fd81a524d6104fa526b4960d5e1498242ad60e`; PyBench remains
+`9ad8a7a3bd2298fdc6f426032e54ccb07eee0402`. This later documentary
+correction does not change the qualified executable pack files. The core
+correction omits transient deserialized `model_obj` from request identity
+only for declared, authenticated G1 model reads; ordinary readers retain it
+as identity-bearing.
+Sable and Meridian-9 accepted this focused core correction, and Sable accepted
+the pack's focused DE streaming correction for paired qualification.
 
-With that exact pair, the pack test now executes all six registered model
+With this exact pair, the pack test executes all six registered model
 operations through both `wb_ref_run()` and promoted `wb_ref_artifact()` G1
 reads. It compares all declared terminal identities with the frozen old-core
 Slingshot and both Monocle3 branch oracles. A replayable test signal comes
@@ -206,10 +213,19 @@ type, contained primary bytes, and selected-axis evidence reject with no
 durable output, provenance, transition-row, or payload-file residue; both
 altered files are restored byte-for-byte and to their original permissions.
 
-Remaining work is focused independent acceptance of the small core delta,
-then grouped manifest integration with Forge-1's separate S3 branch and the
-independent S2 migration audit. This pack branch does not remove old-core
-owners or claim the combined catalog. Phase 5 remains **9/24**.
+The exact-pair pack suite passed **36/36**, including nine registered S2
+contracts: eight execution/publication tests through `wb_session_run_op()`
+and one manifest-registration/terminal-policy contract. The three intended
+core composites passed after `SCWBREPRESENTATION_SOURCE` was supplied to
+the one affected test. The non-forced pack `R CMD check --no-manual` ended
+`Status: OK`. The initial missing-environment and unsupported-selector
+attempts were setup failures, not passing tests. The full command and log
+record is `/tmp/forge2-s2-exact-c897-d4fd/HANDOFF.md`.
+
+Remaining work is the independent S2 exact-pair audit, then separately
+authorized ownership migration and grouped integration with Forge-1's S3
+branch. This pack branch does not remove old-core owners or claim the
+combined catalog. Phase 5 remains **9/24**.
 
 ## Focused and package qualification
 
@@ -252,17 +268,17 @@ check, before test-file source portability and import declarations were fixed,
 ended with 1 ERROR, 1 WARNING, and 1 NOTE; it is superseded by the final
 clean check.
 
-Sable and Meridian-9 should independently review the two-file core delta
-`434d55a..ac7656c` and this pinned S2 pack candidate as separate decisions.
-The core delta is not accepted by the pack qualification alone.
+The preceding checks describe the superseded `ac7656c` / `d17df85` pair;
+they do not qualify the current exact pair.
 
 For the DE streaming correction, the temporary test library was rebuilt from
-a clean archive of core `ac7656c` and the current pack source. The focused
+a clean archive of core `ac7656c` and pack `d4fd81a`. This was an earlier
+focused check, not the final exact-pair qualification. The focused
 `test_trajectory_s2_de_streaming_block_bound_contract` passed (**1/1**);
-the registered S2 suite passed **9/9**. The new frozen DE oracle was generated
+the registered S2 suite passed **9/9**: eight execution/publication tests
+and one manifest contract. The new frozen DE oracle was generated
 with old core `ba24635611756240f21f6817044883b832f12701`, and old-core
 chunk sizes 2 and 3 produced identical identities for both cases. Changed
-R and JSON files parsed and `git diff --check` passed. A new broader package
-check awaits the final accepted core/pack pair, as directed by the streaming
-work order. Sable should review the bounded-block correction before that
-paired qualification is used for migration acceptance.
+R and JSON files parsed and `git diff --check` passed. The later exact-pair
+qualification and Sable focused review are recorded above; independent S2
+acceptance remains pending.
