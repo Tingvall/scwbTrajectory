@@ -48,6 +48,67 @@
   matrix[features, cells, drop = FALSE]
 }
 
+.trajectory_s2_de_one_feature <- function(y0, pt, lineage_id, feature_id,
+                                          min_pct_nonzero, min_sd) {
+  ok <- is.finite(y0) & is.finite(pt)
+  n_used <- sum(ok)
+  n_dropped <- length(ok) - n_used
+  if (n_used < 10L) return(list(status = "filtered_cells"))
+  y <- y0[ok]; pt_ok <- pt[ok]
+  nz <- mean(y > 0)
+  if (is.finite(min_pct_nonzero) && min_pct_nonzero > 0 &&
+      nz < as.numeric(min_pct_nonzero))
+    return(list(status = "filtered_nonzero"))
+  sd_y <- stats::sd(y)
+  if (!is.finite(sd_y) || sd_y < as.numeric(min_sd))
+    return(list(status = "filtered_sd"))
+  rho <- suppressWarnings(stats::cor(y, pt_ok, method = "spearman"))
+  if (!is.finite(rho)) return(list(status = "no_rho"))
+  pval <- if (abs(rho) >= 1) 0 else {
+    tval <- rho * sqrt((n_used - 2) /
+      pmax(1 - rho^2, .Machine$double.eps))
+    2 * stats::pt(abs(tval), df = n_used - 2, lower.tail = FALSE)
+  }
+  slope <- tryCatch(as.numeric(stats::coef(
+    stats::lm(y ~ pt_ok))[2]), error = function(e) NA_real_)
+  list(status = "tested", row = data.frame(
+    lineage_id = as.character(lineage_id), feature_id = feature_id,
+    rho = rho, abs_rho = abs(rho),
+    direction = ifelse(rho > 0, "up", ifelse(rho < 0, "down", "flat")),
+    slope = slope, p_val = pval, pct_nonzero = nz, sd_expr = sd_y,
+    mean_expr = mean(y), n_used = as.integer(n_used),
+    n_dropped_na = as.integer(n_dropped), stringsAsFactors = FALSE))
+}
+
+.trajectory_s2_de_finish <- function(rows, summaries, matrix_id, source,
+                                     feature_set, min_pct_nonzero, min_sd,
+                                     p_adjust_method, n_lineages_input) {
+  .trajectory_assert(length(rows) > 0L,
+    "trajectory_de: no lineage produced testable cells/features.")
+  de <- do.call(rbind, rows); summary <- do.call(rbind, summaries)
+  de$p_val_adj <- stats::ave(de$p_val, de$lineage_id,
+    FUN = function(x) stats::p.adjust(x,
+      method = as.character(p_adjust_method)[1L]))
+  de <- de[order(de$lineage_id, de$p_val_adj, -de$abs_rho), , drop = FALSE]
+  rownames(de) <- rownames(summary) <- NULL
+  list(outputs = list(
+    de_table = scworkbench::wb_prim_feature_table(de,
+      table_type = "trajectory_de", meta = list(matrix_id = matrix_id,
+        model_engine = source$engine,
+        n_lineages_input = as.integer(n_lineages_input),
+        n_lineages_tested = as.integer(length(unique(de$lineage_id))),
+        n_features_tested = as.integer(nrow(de)),
+        feature_set = as.character(feature_set %||% "")[1L],
+        min_pct_nonzero = as.numeric(min_pct_nonzero),
+        min_sd = as.numeric(min_sd),
+        p_adjust_method = as.character(p_adjust_method)[1L],
+        test = "spearman")),
+    fit_summary = scworkbench::wb_prim_obs_table(summary,
+      table_type = "trajectory_de_summary", entity_kind = "lineage",
+      meta = list(matrix_id = matrix_id, model_engine = source$engine,
+        test = "spearman"))))
+}
+
 .trajectory_s2_de_model <- function(matrix, source, effective_cells,
                                     matrix_id, feature_set = NULL,
                                     features = NULL, test = "spearman",
@@ -81,36 +142,20 @@
     filtered_cells <- filtered_nonzero <- filtered_sd <- 0L
     for (k in seq_len(nrow(m))) {
       y0 <- as.numeric(m[k, ])
-      ok <- is.finite(y0) & is.finite(pt)
-      n_used <- sum(ok)
-      n_dropped <- length(ok) - n_used
-      if (n_used < 10L) { filtered_cells <- filtered_cells + 1L; next }
-      y <- y0[ok]; pt_ok <- pt[ok]
-      nz <- mean(y > 0)
-      if (is.finite(min_pct_nonzero) && min_pct_nonzero > 0 &&
-          nz < as.numeric(min_pct_nonzero)) {
+      one <- .trajectory_s2_de_one_feature(y0, pt, lin, rownames(m)[k],
+        min_pct_nonzero, min_sd)
+      if (identical(one$status, "filtered_cells")) {
+        filtered_cells <- filtered_cells + 1L; next
+      }
+      if (identical(one$status, "filtered_nonzero")) {
         filtered_nonzero <- filtered_nonzero + 1L; next
       }
-      sd_y <- stats::sd(y)
-      if (!is.finite(sd_y) || sd_y < as.numeric(min_sd)) {
+      if (identical(one$status, "filtered_sd")) {
         filtered_sd <- filtered_sd + 1L; next
       }
-      rho <- suppressWarnings(stats::cor(y, pt_ok, method = "spearman"))
-      if (!is.finite(rho)) next
-      pval <- if (abs(rho) >= 1) 0 else {
-        tval <- rho * sqrt((n_used - 2) /
-          pmax(1 - rho^2, .Machine$double.eps))
-        2 * stats::pt(abs(tval), df = n_used - 2, lower.tail = FALSE)
-      }
-      slope <- tryCatch(as.numeric(stats::coef(
-        stats::lm(y ~ pt_ok))[2]), error = function(e) NA_real_)
+      if (!identical(one$status, "tested")) next
       oi <- oi + 1L
-      one_rows[[oi]] <- data.frame(lineage_id = as.character(lin),
-        feature_id = rownames(m)[k], rho = rho, abs_rho = abs(rho),
-        direction = ifelse(rho > 0, "up", ifelse(rho < 0, "down", "flat")),
-        slope = slope, p_val = pval, pct_nonzero = nz, sd_expr = sd_y,
-        mean_expr = mean(y), n_used = as.integer(n_used),
-        n_dropped_na = as.integer(n_dropped), stringsAsFactors = FALSE)
+      one_rows[[oi]] <- one$row
     }
     tbl <- if (oi) do.call(rbind, one_rows) else data.frame(
       lineage_id = character(), feature_id = character(), rho = numeric(),
@@ -129,30 +174,8 @@
       n_filtered_min_pct_nonzero = as.integer(filtered_nonzero),
       n_filtered_min_sd = as.integer(filtered_sd), stringsAsFactors = FALSE)
   }
-  .trajectory_assert(ri > 0L,
-    "trajectory_de: no lineage produced testable cells/features.")
-  de <- do.call(rbind, rows); summary <- do.call(rbind, summaries)
-  de$p_val_adj <- stats::ave(de$p_val, de$lineage_id,
-    FUN = function(x) stats::p.adjust(x,
-      method = as.character(p_adjust_method)[1L]))
-  de <- de[order(de$lineage_id, de$p_val_adj, -de$abs_rho), , drop = FALSE]
-  rownames(de) <- rownames(summary) <- NULL
-  list(outputs = list(
-    de_table = scworkbench::wb_prim_feature_table(de,
-      table_type = "trajectory_de", meta = list(matrix_id = matrix_id,
-        model_engine = source$engine,
-        n_lineages_input = as.integer(n_lineages_input),
-        n_lineages_tested = as.integer(length(unique(de$lineage_id))),
-        n_features_tested = as.integer(nrow(de)),
-        feature_set = as.character(feature_set %||% "")[1L],
-        min_pct_nonzero = as.numeric(min_pct_nonzero),
-        min_sd = as.numeric(min_sd),
-        p_adjust_method = as.character(p_adjust_method)[1L],
-        test = "spearman")),
-    fit_summary = scworkbench::wb_prim_obs_table(summary,
-      table_type = "trajectory_de_summary", entity_kind = "lineage",
-      meta = list(matrix_id = matrix_id, model_engine = source$engine,
-        test = "spearman"))))
+  .trajectory_s2_de_finish(rows, summaries, matrix_id, source, feature_set,
+    min_pct_nonzero, min_sd, p_adjust_method, n_lineages_input)
 }
 
 .trajectory_s2_model_pt <- function(item, lineage_id, prefix) {

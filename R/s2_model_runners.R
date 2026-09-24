@@ -21,12 +21,17 @@
 
 .run_trajectory_de_model <- function(readers, writers, params, context) {
   source <- .trajectory_s2_model_axis(readers$model_payload)
-  input <- .trajectory_s2_model_matrix_inputs(readers, params, context,
-    FALSE, "trajectory_de")
-  result <- .trajectory_s2_call(.trajectory_s2_de_model,
-    list(matrix = input$matrix, source = source,
-      effective_cells = input$cells, matrix_id = input$matrix_id),
-    params, extra_allowed = "chunk_size")
+  snapshot <- readers$feature_sets()
+  all_features <- as.character(context$typed_slice_reads$matrix_chunks$features)
+  selected <- .trajectory_s2_model_features(snapshot, all_features,
+    feature_set = params$feature_set %||% NULL,
+    features = params$features %||% NULL,
+    required = FALSE, prefix = "trajectory_de")
+  result <- .trajectory_s2_call(.trajectory_s2_de_stream,
+    list(reader = readers$matrix_chunks, all_features = all_features,
+      selected_features = selected, source = source,
+      effective_cells = as.character(context$effective_cells),
+      matrix_id = as.character(snapshot$matrix_id)[1L]), params)
   .trajectory_s2_publish(result, writers,
     c("de_table", "fit_summary"))
 }

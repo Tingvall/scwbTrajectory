@@ -25,12 +25,25 @@ delta below. All model terminals have frozen-oracle publication coverage.
 
 | Operation | Prepared now | Remaining for S2 integration |
 |---|---|
-| `trajectory_de` | Registered staged and promoted Slingshot and Monocle3 reads match both terminals and frozen branch oracles; terminal group publishes. | Independent core-delta acceptance and grouped integration. |
+| `trajectory_de` | Registered staged and promoted Slingshot and Monocle3 reads match both terminals and frozen branch oracles; terminal group publishes. The runner processes one authenticated feature partition at a time. | Independent core-delta acceptance and grouped integration. |
 | `trajectory_smooth` | Registered staged and promoted Slingshot and Monocle3 reads match both terminals; terminal group publishes. | Independent core-delta acceptance and grouped integration. |
 | `trajectory_signature_smooth` | Registered staged and promoted Slingshot and Monocle3 reads match both terminals; terminal group publishes. | Independent core-delta acceptance and grouped integration. |
 | `trajectory_geneset_dynamics` | Registered model reads match all six terminals and publish; explicit mode retains frozen publication and rollback checks. | Independent core-delta acceptance and grouped integration. |
 | `trajectory_vector_smooth` | Registered model reads match both terminals and publish from an authenticated signal artifact. | Independent core-delta acceptance and grouped integration. |
 | `trajectory_signal_dynamics` | Registered model reads match all four terminals and publish from an authenticated signal artifact; explicit mode retains its checks. | Independent core-delta acceptance and grouped integration. |
+
+The DE runner scans the authenticated feature axis once in declared chunks.
+It densifies at most the selected rows in the current chunk, discards that
+block after accumulating per-feature rows, and adjusts p-values per lineage
+after the scan. The frozen old-core fixture
+`trajectory_s2_de_streaming_reference.json` covers all features and lineages
+and a reordered explicit feature selection; chunk sizes 2 and 3 produce the
+same terminal identities. The focused block observer records a largest dense
+block no greater than `chunk_size`. Peak memory still includes the current
+feature block, lineage pseudotime vectors, and the final per-feature output
+rows. The accepted typed-reader discipline requests every authenticated
+feature partition once, so a small feature selection still scans the full
+feature axis, though it densifies only selected rows.
 
 The explicit-pseudotime inputs are complete-axis `cell_vector_family`
 primitives. The direct runners consume only the accepted typed readers and
@@ -200,9 +213,11 @@ owners or claim the combined catalog. Phase 5 remains **9/24**.
 
 ## Focused and package qualification
 
-The isolated R library `/tmp/forge2-s2-ac7656c-lib` was installed from
-scworkbench `ac7656c74af42160b6a1342ddfcd86f5c1b336a1` and this pack
-worktree. The exact PyBench source was
+The following package check belongs to the predecessor pack commit
+`d17df85bd53d09db2a21b2ee39717e87d5e338db`, before the DE streaming
+correction. The isolated R library `/tmp/forge2-s2-ac7656c-lib` was installed
+from scworkbench `ac7656c74af42160b6a1342ddfcd86f5c1b336a1` and that
+pack commit. The exact PyBench source was
 `/home/dirk/Projects/.pybench-worktrees/phase5-g1-model-reference-dispatch-quill-20260923`
 at `9ad8a7a3bd2298fdc6f426032e54ccb07eee0402`.
 
@@ -240,3 +255,14 @@ clean check.
 Sable and Meridian-9 should independently review the two-file core delta
 `434d55a..ac7656c` and this pinned S2 pack candidate as separate decisions.
 The core delta is not accepted by the pack qualification alone.
+
+For the DE streaming correction, the temporary test library was rebuilt from
+a clean archive of core `ac7656c` and the current pack source. The focused
+`test_trajectory_s2_de_streaming_block_bound_contract` passed (**1/1**);
+the registered S2 suite passed **9/9**. The new frozen DE oracle was generated
+with old core `ba24635611756240f21f6817044883b832f12701`, and old-core
+chunk sizes 2 and 3 produced identical identities for both cases. Changed
+R and JSON files parsed and `git diff --check` passed. A new broader package
+check awaits the final accepted core/pack pair, as directed by the streaming
+work order. Sable should review the bounded-block correction before that
+paired qualification is used for migration acceptance.

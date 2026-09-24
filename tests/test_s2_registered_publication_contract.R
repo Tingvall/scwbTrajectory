@@ -280,6 +280,33 @@ test_trajectory_s2_registered_explicit_rejection_contract <- function() {
   force(code)
 }
 
+test_trajectory_s2_registered_de_full_axis_stream_contract <- function() {
+  x <- trajectory_s2_fixture(); on.exit(trajectory_close(x), add = TRUE)
+  setup <- .trajectory_s2_registered_model_setup(x, "slingshot")
+  on.exit(setup$producer$cleanup(), add = TRUE)
+  reference <- jsonlite::read_json(file.path(test_dir, "fixtures",
+    "trajectory_s2_de_streaming_reference.json"), simplifyVector = FALSE)
+  model_ref <- scworkbench::wb_ref_run(setup$fit$run$run_id, "model")
+  before <- .trajectory_s2_registered_durable_snapshot(x)
+  for (size in c(2L, 3L)) {
+    full <- scworkbench::wb_session_run_op(setup$fit$session,
+      x$bundle, "scwbtrajectory::trajectory_de", inputs = list(
+        matrix = "RNA", model = model_ref, chunk_size = size))
+    trajectory_s2_compare_outputs(x$bundle,
+      "all_lineages_all_features", list(outputs = full$run$outputs),
+      reference)
+    selected <- scworkbench::wb_session_run_op(setup$fit$session,
+      x$bundle, "scwbtrajectory::trajectory_de", inputs = list(
+        matrix = "RNA", model = model_ref, chunk_size = size,
+        features = c("g5", "g1", "g3"), lineage = "L1"))
+    trajectory_s2_compare_outputs(x$bundle, "selected_reordered",
+      list(outputs = selected$run$outputs), reference)
+    stopifnot(identical(before,
+      .trajectory_s2_registered_durable_snapshot(x)))
+  }
+  TRUE
+}
+
 test_trajectory_s2_registered_model_staged_oracles_contract <-
     function() {
   for (engine in c("slingshot", "monocle3")) {
