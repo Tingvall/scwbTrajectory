@@ -117,14 +117,12 @@ test_trajectory_s2_model_direct_oracle_contract <- function() {
   subset <- x$cells[1:12]
   observed <- .trajectory_s2_run_model_direct(x, "smooth",
     effective_cells = subset)
-  expected <- wb_op_trajectory_smooth(x$bundle, "RNA", x$model,
-    cells = subset, lineage = "L1", features = x$features[1:3],
-    n_bins = 5L, min_cells_per_bin = 1L, chunk_size = 2L)$outputs
-  stopifnot(!inherits(observed$value, "error"),
-    identical(names(observed$outputs), names(expected)))
-  for (name in names(expected)) stopifnot(identical(
-    trajectory_identity(x$bundle, observed$outputs[[name]])$content_sha256,
-    trajectory_identity(x$bundle, expected[[name]])$content_sha256))
+  parameter_reference <- jsonlite::read_json(file.path(test_dir,
+    "fixtures", "trajectory_s2_parameter_reference.json"),
+    simplifyVector = FALSE)
+  stopifnot(!inherits(observed$value, "error"))
+  trajectory_s2_compare_outputs(x$bundle, "smooth_subset",
+    list(outputs = observed$outputs), parameter_reference)
   stopifnot(identical(seed, get(".Random.seed", envir = .GlobalEnv)))
   TRUE
 }
@@ -208,82 +206,57 @@ test_trajectory_s2_model_parameter_equivalence_contract <- function() {
   if (!requireNamespace("slingshot", quietly = TRUE))
     return(structure(TRUE, skip = "slingshot unavailable"))
   x <- trajectory_s2_fixture(); on.exit(trajectory_close(x), add = TRUE)
+  reference <- jsonlite::read_json(file.path(test_dir, "fixtures",
+    "trajectory_s2_parameter_reference.json"), simplifyVector = FALSE)
+  stopifnot(identical(reference$core_commit,
+      "ba24635611756240f21f6817044883b832f12701"),
+    identical(reference$comparison_policy, "exact_canonical_value"))
   variants <- list(
-    de = list(params = list(lineage = "L2", features = x$features[1:3],
-      min_sd = 0.1, p_adjust_method = "bonferroni", chunk_size = 2L),
-      core = function() wb_op_trajectory_de(x$bundle, "RNA", x$model,
-        lineage = "L2", features = x$features[1:3], min_sd = 0.1,
-        p_adjust_method = "bonferroni", chunk_size = 2L)),
-    smooth = list(params = list(lineage = "L2", features = x$features[1:3],
-      n_bins = 5L, summary_fun = "median", min_cells_per_bin = 2L,
-      chunk_size = 2L),
-      core = function() wb_op_trajectory_smooth(x$bundle, "RNA", x$model,
-        lineage = "L2", features = x$features[1:3], n_bins = 5L,
-        summary_fun = "median", min_cells_per_bin = 2L, chunk_size = 2L)),
-    signature_smooth = list(params = list(feature_set = "selected",
-      lineage = "L2", score_method = "sum", n_bins = 5L,
-      min_cells_per_bin = 2L, chunk_size = 2L),
-      core = function() wb_op_trajectory_signature_smooth(x$bundle,
-        "RNA", x$model, feature_set = "selected", lineage = "L2",
-        score_method = "sum", n_bins = 5L, min_cells_per_bin = 2L)),
-    vector_smooth = list(params = list(lineage = "L2",
-      signal_keys = "falling", n_bins = 5L, summary_fun = "median",
-      min_cells_per_bin = 2L),
-      core = function() wb_op_trajectory_vector_smooth(x$bundle,
-        x$signal, x$model, lineage = "L2", signal_keys = "falling",
-        n_bins = 5L, summary_fun = "median", min_cells_per_bin = 2L)))
-  for (operation in names(variants)) {
-    observed <- .trajectory_s2_run_model_direct(x, operation,
-      variants[[operation]]$params)
+    de_variant = list(operation = "de", params = list(lineage = "L2",
+      features = x$features[1:3], min_sd = 0.1,
+      p_adjust_method = "bonferroni", chunk_size = 2L)),
+    smooth_variant = list(operation = "smooth", params = list(
+      lineage = "L2", features = x$features[1:3], n_bins = 5L,
+      summary_fun = "median", min_cells_per_bin = 2L, chunk_size = 2L)),
+    signature_variant = list(operation = "signature_smooth", params = list(
+      feature_set = "selected", lineage = "L2", score_method = "sum",
+      n_bins = 5L, min_cells_per_bin = 2L, chunk_size = 2L)),
+    vector_variant = list(operation = "vector_smooth", params = list(
+      lineage = "L2", signal_keys = "falling", n_bins = 5L,
+      summary_fun = "median", min_cells_per_bin = 2L)),
+    de_reordered_lineages = list(operation = "de", params = list(
+      lineage = c("L2", "L1"), features = x$features[1:3],
+      chunk_size = 2L)),
+    smooth_reordered_lineages = list(operation = "smooth", params = list(
+      lineage = c("L2", "L1"), features = x$features[1:3],
+      n_bins = 5L, min_cells_per_bin = 1L, chunk_size = 2L)),
+    geneset_membership = list(operation = "geneset_dynamics",
+      params = .trajectory_s2_model_params("geneset_dynamics"),
+      membership = x$membership),
+    signal_membership = list(operation = "signal_dynamics",
+      params = .trajectory_s2_model_params("signal_dynamics"),
+      membership = x$membership))
+  for (case_name in names(variants)) {
+    case <- variants[[case_name]]
+    observed <- .trajectory_s2_run_model_direct(x, case$operation,
+      params = case$params, membership = case$membership %||% NULL)
     stopifnot(!inherits(observed$value, "error"))
-    expected <- variants[[operation]]$core()$outputs
-    stopifnot(identical(names(observed$outputs), names(expected)))
-    for (name in names(expected)) {
-      actual_identity <- trajectory_identity(x$bundle,
-        observed$outputs[[name]])
-      expected_identity <- trajectory_identity(x$bundle, expected[[name]])
-      stopifnot(identical(actual_identity$content_sha256,
-        expected_identity$content_sha256),
-        identical(actual_identity$structural_fingerprint,
-          expected_identity$structural_fingerprint))
+    trajectory_s2_compare_outputs(x$bundle, case_name,
+      list(outputs = observed$outputs), reference)
+    expected_params <- reference$cases[[case_name]]$params
+    for (terminal in observed$outputs) {
+      common <- intersect(names(terminal$meta), names(expected_params))
+      for (key in common) {
+        want <- expected_params[[key]]
+        same <- if (is.null(want)) {
+          length(terminal$meta[[key]]) == 1L &&
+            is.na(terminal$meta[[key]])
+        } else isTRUE(all.equal(terminal$meta[[key]],
+          unlist(want, use.names = FALSE), check.attributes = FALSE))
+        if (!same) stop(case_name, "/", terminal$table_type,
+          ": effective parameter differs: ", key, call. = FALSE)
+      }
     }
-  }
-  for (operation in c("de", "smooth")) {
-    params <- .trajectory_s2_model_params(operation)
-    params$lineage <- c("L2", "L1")
-    observed <- .trajectory_s2_run_model_direct(x, operation, params)
-    stopifnot(!inherits(observed$value, "error"))
-    expected <- if (identical(operation, "de"))
-      wb_op_trajectory_de(x$bundle, "RNA", x$model,
-        lineage = c("L2", "L1"), features = x$features[1:3],
-        chunk_size = 2L)$outputs else
-      wb_op_trajectory_smooth(x$bundle, "RNA", x$model,
-        lineage = c("L2", "L1"), features = x$features[1:3],
-        n_bins = 5L, min_cells_per_bin = 1L,
-        chunk_size = 2L)$outputs
-    for (name in names(expected)) stopifnot(identical(
-      trajectory_identity(x$bundle, observed$outputs[[name]])$content_sha256,
-      trajectory_identity(x$bundle, expected[[name]])$content_sha256))
-  }
-  for (operation in c("geneset_dynamics", "signal_dynamics")) {
-    observed <- .trajectory_s2_run_model_direct(x, operation,
-      membership = x$membership)
-    stopifnot(!inherits(observed$value, "error"))
-    expected <- if (identical(operation, "geneset_dynamics"))
-      wb_op_trajectory_geneset_dynamics(x$bundle, "RNA", model = x$model,
-        membership = x$membership, namespace = "trajectory",
-        lineage = "L1", min_set_size = 1L, n_bins = 5L,
-        min_cells_per_bin = 1L, min_bins_observed = 2L,
-        bootstrap_n = 8L, bootstrap_seed = 17L,
-        n_permutations = 8L, permutation_seed = 19L)$outputs else
-      wb_op_trajectory_signal_dynamics(x$bundle, x$signal,
-        model = x$model, membership = x$membership,
-        lineage = "L1", n_bins = 5L, min_cells_per_bin = 1L,
-        min_bins_observed = 2L, bootstrap_n = 8L,
-        bootstrap_seed = 17L)$outputs
-    for (name in names(expected)) stopifnot(identical(
-      trajectory_identity(x$bundle, observed$outputs[[name]])$content_sha256,
-      trajectory_identity(x$bundle, expected[[name]])$content_sha256))
   }
   base <- .trajectory_s2_run_model_direct(x, "geneset_dynamics")$outputs
   altered <- .trajectory_s2_model_params("geneset_dynamics")

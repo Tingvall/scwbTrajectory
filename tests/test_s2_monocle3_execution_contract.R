@@ -23,113 +23,68 @@ source(file.path(test_dir, "test_s2_model_execution_contract.R"),
   cds
 }
 
-.trajectory_s2_monocle3_core <- function(x, operation, model, params,
-                                         cells = x$cells) {
-  args <- switch(operation,
-    de = list(bundle = x$bundle, matrix_id = "RNA", model = model),
-    smooth = list(bundle = x$bundle, matrix_id = "RNA", model = model),
-    signature_smooth = list(bundle = x$bundle, matrix_id = "RNA",
-      model = model),
-    vector_smooth = list(bundle = x$bundle, signal = x$signal,
-      model = model),
-    geneset_dynamics = list(bundle = x$bundle, matrix_id = "RNA",
-      model = model),
-    signal_dynamics = list(bundle = x$bundle, signal = x$signal,
-      model = model))
-  fun <- get(paste0("wb_op_trajectory_", operation),
-    envir = asNamespace("scworkbench"))
-  params <- params[names(params) %in% names(formals(fun))]
-  do.call(fun, c(args, if (!identical(cells, x$cells))
-    list(cells = cells) else list(), params))
-}
-
 test_trajectory_s2_monocle3_model_oracle_contract <- function() {
   if (!requireNamespace("monocle3", quietly = TRUE) ||
       !requireNamespace("igraph", quietly = TRUE))
     return(structure(TRUE, skip = "monocle3 or igraph unavailable"))
   x <- trajectory_s2_fixture(); on.exit(trajectory_close(x), add = TRUE)
   cds <- .trajectory_s2_branching_cds(x$cells)
-  model <- x$model
-  model$engine <- "monocle3"
-  model$pseudotime_table <- NULL
-  model$model_obj <- cds
   reference <- jsonlite::read_json(file.path(test_dir, "fixtures",
     "trajectory_s2_monocle3_reference.json"), simplifyVector = FALSE)
   stopifnot(identical(reference$core_commit,
     "ba24635611756240f21f6817044883b832f12701"),
     identical(reference$comparison_policy, "exact_canonical_value"))
-  check_reference <- function(case, expected, actual) {
-    trajectory_s2_compare_outputs(x$bundle, case, expected, reference)
+  source <- scwbTrajectory:::.trajectory_s2_monocle3_axis(cds, x$cells)
+  indices <- list(C = c(seq_len(16L), 17:20),
+    D = c(seq_len(16L), 21:24))
+  pseudotime <- seq(0, 1, length.out = length(x$cells))
+  expected_axis <- do.call(rbind, lapply(names(indices), function(leaf) {
+    keep <- indices[[leaf]]
+    data.frame(lineage_id = rep(paste0("root:A::lineage:", leaf),
+      length(keep)), cell_id = x$cells[keep],
+      pseudotime = pseudotime[keep], stringsAsFactors = FALSE)
+  }))
+  rownames(expected_axis) <- NULL
+  stopifnot(identical(source$engine, "monocle3"),
+    identical(source$axis, expected_axis))
+  check_reference <- function(case, actual) {
     trajectory_s2_compare_outputs(x$bundle, case,
       list(outputs = actual$outputs), reference)
-    stopifnot(identical(jsonlite::toJSON(expected$params,
-      auto_unbox = TRUE, null = "null", digits = NA),
-      jsonlite::toJSON(reference$cases[[case]]$params,
-        auto_unbox = TRUE, null = "null", digits = NA)))
+    expected_params <- reference$cases[[case]]$params
+    for (terminal in actual$outputs) {
+      for (key in intersect(names(terminal$meta), names(expected_params))) {
+        want <- expected_params[[key]]
+        same <- if (is.null(want)) {
+          length(terminal$meta[[key]]) == 1L &&
+            is.na(terminal$meta[[key]])
+        } else isTRUE(all.equal(terminal$meta[[key]],
+          unlist(want, use.names = FALSE), check.attributes = FALSE))
+        if (!same) stop(case, "/", terminal$table_type,
+          ": effective parameter differs: ", key, call. = FALSE)
+      }
+    }
   }
-  source <- scwbTrajectory:::.trajectory_s2_monocle3_axis(cds, x$cells)
-  stopifnot(identical(source$engine, "monocle3"),
-    identical(unique(source$axis$lineage_id),
-      c("root:A::lineage:C", "root:A::lineage:D")))
-  core_axis <- getFromNamespace(".wb_trajectory_de_pt_from_monocle3",
-    "scworkbench")(model)
-  stopifnot(identical(source$axis, core_axis))
   for (operation in c("de", "smooth", "signature_smooth",
       "geneset_dynamics", "vector_smooth", "signal_dynamics")) {
     params <- .trajectory_s2_model_params(operation)
     params$lineage <- "root:A::lineage:C"
-    expected <- .trajectory_s2_monocle3_core(x, operation, model,
-      params)
     actual <- .trajectory_s2_run_model_direct(x, operation, params,
       model = cds)
-    stopifnot(!inherits(actual$value, "error"),
-      identical(names(actual$outputs), names(expected$outputs)))
-    check_reference(paste(operation, "C", "full", sep = "__"),
-      expected, actual)
-    for (name in names(expected$outputs)) {
-      stopifnot(identical(actual$outputs[[name]]$kind,
-        expected$outputs[[name]]$kind),
-        identical(actual$outputs[[name]]$table_type,
-          expected$outputs[[name]]$table_type),
-        identical(actual$outputs[[name]]$table,
-        expected$outputs[[name]]$table),
-        identical(actual$outputs[[name]]$meta,
-          expected$outputs[[name]]$meta))
-      want <- trajectory_identity(x$bundle, expected$outputs[[name]])
-      got <- trajectory_identity(x$bundle, actual$outputs[[name]])
-      stopifnot(identical(got$content_sha256, want$content_sha256),
-        identical(got$structural_fingerprint,
-          want$structural_fingerprint))
-    }
+    stopifnot(!inherits(actual$value, "error"))
+    check_reference(paste(operation, "C", "full", sep = "__"), actual)
     alternate <- params
     alternate$lineage <- "root:A::lineage:D"
-    expected_alt <- .trajectory_s2_monocle3_core(x, operation, model,
-      alternate)
     actual_alt <- .trajectory_s2_run_model_direct(x, operation,
       alternate, model = cds)
     stopifnot(!inherits(actual_alt$value, "error"))
     check_reference(paste(operation, "D", "full", sep = "__"),
-      expected_alt, actual_alt)
-    for (name in names(expected_alt$outputs)) stopifnot(identical(
-      trajectory_identity(x$bundle, actual_alt$outputs[[name]])$
-        content_sha256,
-      trajectory_identity(x$bundle, expected_alt$outputs[[name]])$
-        content_sha256))
+      actual_alt)
     session_cells <- x$cells[-(13:16)]
-    expected_subset <- .trajectory_s2_monocle3_core(x, operation,
-      model, params, cells = session_cells)
     actual_subset <- .trajectory_s2_run_model_direct(x, operation,
       params, model = cds, effective_cells = session_cells)
-    stopifnot(!inherits(actual_subset$value, "error"),
-      identical(names(actual_subset$outputs),
-        names(expected_subset$outputs)))
+    stopifnot(!inherits(actual_subset$value, "error"))
     check_reference(paste(operation, "C", "subset", sep = "__"),
-      expected_subset, actual_subset)
-    for (name in names(expected_subset$outputs)) stopifnot(identical(
-      trajectory_identity(x$bundle, actual_subset$outputs[[name]])$
-        content_sha256,
-      trajectory_identity(x$bundle, expected_subset$outputs[[name]])$
-        content_sha256))
+      actual_subset)
   }
   TRUE
 }

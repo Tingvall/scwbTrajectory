@@ -158,16 +158,10 @@ test_trajectory_s2_real_g1_reopen_contract <- function() {
   stopifnot(!inherits(observed$value, "error"),
     identical(names(observed$outputs), c("trend_table", "fit_summary")),
     identical(state$model_payload_calls$fitted_model, 1L))
-  old_model <- x$model
-  old_model$pseudotime_table <- NULL
-  old_model$model_obj <- .trajectory_s2_synthetic_slingshot(fitted)
-  expected <- scworkbench::wb_op_trajectory_smooth(x$bundle, "RNA",
-    old_model, cells = fitted, lineage = "L1",
-    features = x$features[1:3], n_bins = 4L,
-    min_cells_per_bin = 1L)$outputs
-  for (name in names(expected)) stopifnot(identical(
-    trajectory_identity(x$bundle, observed$outputs[[name]])$content_sha256,
-    trajectory_identity(x$bundle, expected[[name]])$content_sha256))
+  reference <- jsonlite::read_json(file.path(test_dir, "fixtures",
+    "trajectory_s2_parameter_reference.json"), simplifyVector = FALSE)
+  trajectory_s2_compare_outputs(x$bundle, "smooth_reopened",
+    list(outputs = observed$outputs), reference)
   stopifnot(length(durable$model_tree_root) == 1L,
     length(prepared$values[[1L]]$manifest$primary_path) == 1L,
     length(durable$model_source_linkage$selected_axis_evidence$relative_path) == 1L)

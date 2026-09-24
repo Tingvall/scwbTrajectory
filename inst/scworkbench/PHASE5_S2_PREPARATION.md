@@ -15,8 +15,11 @@ output closure, including empty driver terminals. The dynamics cases pin
 bootstrap and permutation seeds and check the source kind separately.
 The pack also owns an explicit-family selector and shared bin/aggregate
 equations, with focused comparisons against the old-core method helpers.
-One focused test executes the old-core operations to verify that the frozen
-fixture can be reproduced. Direct pack runners use the same comparator.
+The independent old-core run that produced the fixture is frozen; focused
+pack tests no longer execute the six legacy core methods. Direct pack runners
+use the same comparator. A second frozen old-core fixture,
+`trajectory_s2_parameter_reference.json`, covers ten parameter, lineage,
+membership, subset, and real G1 reopen cases plus shared summary equations.
 The pack manifest now declares eight grouped S2 entries: six canonical model
 names and two explicit-pseudotime dynamics names. The latter execute through
 registered dispatch and pass terminal publication checks. Model entries
@@ -158,8 +161,8 @@ The 18 old-core cases are frozen in
 `tests/fixtures/trajectory_s2_monocle3_reference.json` with an
 `exact_canonical_value` comparison policy. The test compares every
 terminal's table, metadata, canonical identity, kind, and output order with
-both the frozen record and the old core, and checks the old-core effective
-parameters against the record. Reordered or foreign fitted cells
+the frozen record, and checks effective parameters against the old-core
+record. Reordered or foreign fitted cells
 and invalid graph or membership fail with no terminal writes.
 
 ## G1 integration dependency
@@ -178,7 +181,8 @@ all four fixture files and fails on missing or changed inputs. It uses G1
 to seal a Slingshot RDS on a 12-of-24 fitted axis, promote and finalize its
 bundle, relocate the bundle, and obtain a verified private G1 reader with
 the reconstructed fitted axis. That read executes the
-`trajectory_smooth` runner directly, and both terminal identities match the old core.
+`trajectory_smooth` runner directly, and both terminal identities match the
+frozen old-core record.
 Altering either the retained model tree or
 selected-axis evidence rejects during G1 preparation, before S2 computation
 or terminal writes. This is a real retained-state reopen with a synthetic
@@ -222,10 +226,10 @@ the one affected test. The non-forced pack `R CMD check --no-manual` ended
 attempts were setup failures, not passing tests. The full command and log
 record is `/tmp/forge2-s2-exact-c897-d4fd/HANDOFF.md`.
 
-Remaining work is the independent S2 exact-pair audit, then separately
-authorized ownership migration and grouped integration with Forge-1's S3
-branch. This pack branch does not remove old-core owners or claim the
-combined catalog. Phase 5 remains **9/24**.
+Meridian-9 accepted the independent S2 exact-pair audit on 2026-09-25.
+Ownership migration remains separate from that technical qualification.
+This pack branch does not remove old-core owners or claim the combined
+catalog. Phase 5 remains **9/24**.
 
 ## Focused and package qualification
 
@@ -280,5 +284,23 @@ and one manifest contract. The new frozen DE oracle was generated
 with old core `ba24635611756240f21f6817044883b832f12701`, and old-core
 chunk sizes 2 and 3 produced identical identities for both cases. Changed
 R and JSON files parsed and `git diff --check` passed. The later exact-pair
-qualification and Sable focused review are recorded above; independent S2
-acceptance remains pending.
+qualification and Sable focused review are recorded above. Meridian-9
+subsequently accepted the exact pair for ownership-migration preparation.
+
+## Ownership migration stop at public chunking metadata
+
+The 2026-09-25 ownership migration attempt stopped on a generic ABI gap.
+On the accepted core/pack pair, `wb_op_interface("trajectory_de")` and
+`wb_op_interface("trajectory_smooth")` expose `chunking$axis == "features"`
+and `chunking$chunk_size_param == "chunk_size"`. The corresponding activated
+pack interfaces return `chunking == NULL`. The accepted v3 pack manifest has
+no generic way to carry this public metadata. The exact reproducer and output
+are in `/tmp/forge2-s2-migration-logs/chunking-gap-reproducer.R` and
+`chunking-gap.log`. No method-specific substitute or ABI change was made.
+
+The pack-only fixture update in this checkpoint removes live dependencies on
+the six legacy core methods from pack tests. It prepares a later ownership
+migration; it does not qualify a migrated catalog. The pending catalog test
+is kept outside the pack suite until the public interface gap is resolved
+and an exact migrated core/pack pair is available. No complete
+post-migration suite or package check has been run. Phase 5 remains **9/24**.

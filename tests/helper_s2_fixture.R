@@ -27,46 +27,6 @@ trajectory_s2_fixture <- function() {
   x
 }
 
-trajectory_s2_cases <- function(x) {
-  list(
-    trajectory_de = function() wb_op_trajectory_de(x$bundle, "RNA", x$model,
-      lineage = "L1", features = x$features[1:3], chunk_size = 2L),
-    trajectory_smooth = function() wb_op_trajectory_smooth(x$bundle, "RNA",
-      x$model, lineage = "L1", features = x$features[1:3], n_bins = 5L,
-      min_cells_per_bin = 1L, chunk_size = 2L),
-    trajectory_signature_smooth = function()
-      wb_op_trajectory_signature_smooth(x$bundle, "RNA", x$model,
-        feature_set = "selected", lineage = "L1", n_bins = 5L,
-        min_cells_per_bin = 1L),
-    trajectory_geneset_dynamics_model = function()
-      wb_op_trajectory_geneset_dynamics(x$bundle, "RNA", model = x$model,
-        namespace = "trajectory", lineage = "L1", min_set_size = 1L,
-        n_bins = 5L, min_cells_per_bin = 1L, min_bins_observed = 2L,
-        bootstrap_n = 8L, bootstrap_seed = 17L, n_permutations = 8L,
-        permutation_seed = 19L),
-    trajectory_geneset_dynamics_explicit = function()
-      wb_op_trajectory_geneset_dynamics(x$bundle, "RNA",
-        pseudotime = x$explicit, pseudotime_key = "L1",
-        membership = x$membership, namespace = "trajectory",
-        min_set_size = 1L, n_bins = 5L, min_cells_per_bin = 1L,
-        min_bins_observed = 2L, bootstrap_n = 8L, bootstrap_seed = 17L,
-        n_permutations = 8L, permutation_seed = 19L),
-    trajectory_vector_smooth = function()
-      wb_op_trajectory_vector_smooth(x$bundle, x$signal, x$model,
-        lineage = "L1", signal_keys = "rising", n_bins = 5L,
-        min_cells_per_bin = 1L),
-    trajectory_signal_dynamics_model = function()
-      wb_op_trajectory_signal_dynamics(x$bundle, x$signal, model = x$model,
-        lineage = "L1", n_bins = 5L, min_cells_per_bin = 1L,
-        min_bins_observed = 2L, bootstrap_n = 8L, bootstrap_seed = 17L),
-    trajectory_signal_dynamics_explicit = function()
-      wb_op_trajectory_signal_dynamics(x$bundle, x$signal,
-        pseudotime = x$explicit, pseudotime_key = "L1",
-        membership = x$membership, n_bins = 5L, min_cells_per_bin = 1L,
-        min_bins_observed = 2L, bootstrap_n = 8L, bootstrap_seed = 17L)
-  )
-}
-
 trajectory_s2_result_record <- function(bundle, result) {
   stopifnot(is.list(result), is.list(result$outputs),
     is.list(result$params), length(result$outputs) > 0L)

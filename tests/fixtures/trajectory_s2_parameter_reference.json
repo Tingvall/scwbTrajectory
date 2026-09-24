@@ -1,0 +1,615 @@
+{
+  "core_commit": "ba24635611756240f21f6817044883b832f12701",
+  "comparison_policy": "exact_canonical_value",
+  "cases": {
+    "de_variant": {
+      "outputs": {
+        "de_table": {
+          "kind": "feature_table",
+          "table_type": "trajectory_de",
+          "rows": 3,
+          "identity": {
+            "structural_fingerprint": "69f0e7709efef521f24c566bdf4ff351b1a24a3bc184756c4a9a75e3ed9fae27",
+            "content_sha256": "219fd23d692490d103c7123c977150e6f3e302be7be597fa4ef30b458128938f",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_de_summary",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "229f445f612863eff19e10b3d631cef7b113ab1dc6098bd26f546b93dc3191d3",
+            "content_sha256": "1442d5f2d26ca9e2d6efe5ad435dcfd226a642b7065585a2da2bbc97981cb767",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "matrix_id": "RNA",
+        "model_engine": "slingshot",
+        "lineage": "L2",
+        "n_lineages_input": 2,
+        "n_lineages_tested": 1,
+        "n_features_tested": 3,
+        "feature_set": "",
+        "min_pct_nonzero": 0,
+        "min_sd": 0.1,
+        "p_adjust_method": "bonferroni",
+        "test": "spearman"
+      }
+    },
+    "smooth_variant": {
+      "outputs": {
+        "trend_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_smooth",
+          "rows": 15,
+          "identity": {
+            "structural_fingerprint": "ccf432a7a35e2f6388c7138232442f8013a809852668e29e30c7a6b6c968b8e4",
+            "content_sha256": "fddf7186d676d75d87163df669a253cb405a60f2014f64bd7db5397665277b85",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_smooth_summary",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "00d48c2c3edfe177a13feef044d0e631bcbf0a705f4a07e87a880126b24323cd",
+            "content_sha256": "a0a63e4350b2450ce7f2de97cd913899271ba4e4194d3bdb9fe2e785755235cb",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "matrix_id": "RNA",
+        "feature_set": null,
+        "n_features_input": 3,
+        "n_lineages": 1,
+        "n_bins": 5,
+        "summary_fun": "median",
+        "min_cells_per_bin": 2
+      }
+    },
+    "signature_variant": {
+      "outputs": {
+        "signature_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_signature_smooth",
+          "rows": 5,
+          "identity": {
+            "structural_fingerprint": "d52364ec3f36874a82e49fefee8bf82caff65572a6f148b95c242360b2514d74",
+            "content_sha256": "f7276c661c2d01b6ad354f8bb830d5e6e69ef9f040168db87c1eea56211bc32e",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_signature_smooth_summary",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "0e47d24a17de455c4c7b4167ee0adb3faca338acd338917e532ceeebc05c4607",
+            "content_sha256": "f746ca2c594c08b01f809acd7b681d4632117702917f8703f24b3a84af3db14f",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "matrix_id": "RNA",
+        "feature_set": "selected",
+        "n_features": 2,
+        "n_lineages": 1,
+        "n_bins": 5,
+        "score_method": "sum",
+        "summary_fun": "mean",
+        "min_cells_per_bin": 2
+      }
+    },
+    "vector_variant": {
+      "outputs": {
+        "signal_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_vector_smooth",
+          "rows": 5,
+          "identity": {
+            "structural_fingerprint": "5575f06b00bbb276771688642a98d78f7ee213b8e96459cd12469c6cc24cb4a6",
+            "content_sha256": "261f89d13228241cd95b62553f5470909f4f31dc3b12b94d23bf1608a7b15133",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_vector_smooth_summary",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "05b9a8b5374ca531f67966c8fe740441ee0d532ab1838de19f6657b76d4c0c2e",
+            "content_sha256": "71f47605fabfdac4e8c4930b44cf77dfec0b16b86ae5bce69dab4c0d73475c8e",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "signal_kind": "cell_vector_family",
+        "signal_keys": "falling",
+        "n_signal_keys_input": 1,
+        "n_lineages": 1,
+        "n_bins": 5,
+        "summary_fun": "median",
+        "min_cells_per_bin": 2
+      }
+    },
+    "de_reordered_lineages": {
+      "outputs": {
+        "de_table": {
+          "kind": "feature_table",
+          "table_type": "trajectory_de",
+          "rows": 6,
+          "identity": {
+            "structural_fingerprint": "c859afaea04e3d81c03c5c5c9d20ce394805be5c6408ccf7614a778cbec4fafe",
+            "content_sha256": "a57db8c3a2b644cd37ce888d5cacdb95afb44e0162b4eb76c638eefc2184b255",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_de_summary",
+          "rows": 2,
+          "identity": {
+            "structural_fingerprint": "af0b91ebc1b4e30c6d0387b2376f6c016baa04c3587e0f7cccf062b876c9f6a3",
+            "content_sha256": "10a57c44666c2ce7e732cc3c9739bab684eb2b06636e0562bd87bbfdf2cabe03",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "matrix_id": "RNA",
+        "model_engine": "slingshot",
+        "lineage": ["L2", "L1"],
+        "n_lineages_input": 2,
+        "n_lineages_tested": 2,
+        "n_features_tested": 6,
+        "feature_set": "",
+        "min_pct_nonzero": 0,
+        "min_sd": 0,
+        "p_adjust_method": "BH",
+        "test": "spearman"
+      }
+    },
+    "smooth_reordered_lineages": {
+      "outputs": {
+        "trend_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_smooth",
+          "rows": 30,
+          "identity": {
+            "structural_fingerprint": "20348e2b5dc46ce6b32fa66b1785ec8a72d7549f609f51ec1dfdaa7f1a6b93a5",
+            "content_sha256": "bde53aea45633b88b754815d8a5a820136bec55dccef170e99309360bfb91d17",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_smooth_summary",
+          "rows": 2,
+          "identity": {
+            "structural_fingerprint": "c47b64b52281d1bdf2b01fdf6851c0cba6808d3b1aab628f3a4a2b3814a68921",
+            "content_sha256": "41db532d5a5951c9fae7464b9c7f6ecacc2e1eb1b0fa934c3eb9a28d55f26886",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "matrix_id": "RNA",
+        "feature_set": null,
+        "n_features_input": 3,
+        "n_lineages": 2,
+        "n_bins": 5,
+        "summary_fun": "mean",
+        "min_cells_per_bin": 1
+      }
+    },
+    "geneset_membership": {
+      "outputs": {
+        "signature_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_geneset_dynamics_curve",
+          "rows": 5,
+          "identity": {
+            "structural_fingerprint": "3f0a654a1f4cbe97fdf8affaa55ff2fe2cd0f0b6a5ff6cd4e96a971f1139a14e",
+            "content_sha256": "455c0391e0e03835016a944acc53ef4a1a995a0947fc0329103640270ae7a7e9",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "dynamics_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_geneset_dynamics",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "ec93f6bacc2eaf1e9b01c18e8c6a3516ebaef370107b0b9724ef42213f7c45b4",
+            "content_sha256": "eca2af5fdfe7ee332ef796c4fd85d27370af4584210b747aaee41b5f88a2ba66",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "top_sets": {
+          "kind": "obs_table",
+          "table_type": "trajectory_geneset_dynamics_top",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "125bbbfa9cc80166fc9e8963d83db13a5fb436a650f595b4756c647a9d9634c5",
+            "content_sha256": "025631e68103b44ec1b433c4eb79b706fb9cdcc7671c051fd5de45c21d3df2b1",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "driver_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_geneset_dynamics_drivers",
+          "rows": 2,
+          "identity": {
+            "structural_fingerprint": "0b934ff046cbe71c1f34b82466bf224392137d8033299a005ecf9690952b2394",
+            "content_sha256": "312d5199935977bcc313d9c750152a5a7950ff6952b70fe0e0fdf8e8b556e9c4",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "driver_curve_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_geneset_dynamics_driver_curve",
+          "rows": 10,
+          "identity": {
+            "structural_fingerprint": "ee87fe5781b46f7cd62238284489598a93646d23051f62bebdda731e55e8bec6",
+            "content_sha256": "bb90d4ff4f4ed958094bd23d76153b89215f8181f98822ffa38a8b171f662b87",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_geneset_dynamics_summary",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "1351a78b941899996e5f6fd098fd1c54e5819ac272d41c411677f32b16562b9d",
+            "content_sha256": "f0f11b55ef8bba9201e8ec66293df6f8c6bd360621150fd8713b0be99b9938c4",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "matrix_id": "RNA",
+        "namespace": "trajectory",
+        "pseudotime_source_kind": "model_ref",
+        "pseudotime_artifact_id": "",
+        "pseudotime_key": "L1",
+        "membership_artifact_id": "",
+        "n_feature_sets_input": 1,
+        "n_feature_sets_screened": 1,
+        "n_lineages": 1,
+        "n_bins": 5,
+        "score_method": "mean",
+        "summary_fun": "mean",
+        "min_cells_per_bin": 1,
+        "min_set_size": 1,
+        "max_set_size": 5000,
+        "top_n": 50,
+        "on_off_min_delta": 0,
+        "monotonic_min_abs_rho": 0.5,
+        "top_driver_genes": 5,
+        "pseudotime_direction": "as_is",
+        "start_label": null,
+        "end_label": null,
+        "min_amplitude": 0,
+        "min_bins_observed": 2,
+        "min_features_detected": 1,
+        "min_detected_fraction": 0,
+        "min_mean_score": 0,
+        "min_max_score": 0,
+        "min_signal_to_noise": 0,
+        "low_abundance_max_score": 0.1,
+        "smooth_method": "none",
+        "loess_span": 0.5,
+        "bootstrap_n": 8,
+        "ci_level": 0.95,
+        "class_min_amplitude": 0,
+        "n_permutations": 8,
+        "permutation_seed": 19,
+        "p_adjust_method": "BH"
+      }
+    },
+    "signal_membership": {
+      "outputs": {
+        "signal_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_signal_dynamics_curve",
+          "rows": 10,
+          "identity": {
+            "structural_fingerprint": "e25229b54ac0ea3321824b1059ba9ebf741779d1ad963e983f1846b91d960d9e",
+            "content_sha256": "442b9fc75bb004446c68416d861c83d1d042c057987d6b0643f21272213d4d93",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "dynamics_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_signal_dynamics",
+          "rows": 2,
+          "identity": {
+            "structural_fingerprint": "b83501f3ed2f7e7dd987b521b5b239735c90c813742400280b44a8dd7998dbe8",
+            "content_sha256": "233ded8e9c3a07dc0944c32529c5e1ad6a14cfda8ca12bea0144939fd35a0eb2",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "top_signals": {
+          "kind": "obs_table",
+          "table_type": "trajectory_signal_dynamics_top",
+          "rows": 2,
+          "identity": {
+            "structural_fingerprint": "c9f1ef94a836414bfc37034cd6acc632aa1f2db445c0beb30a7c3b8d759a9cc0",
+            "content_sha256": "add32307ff92a99eb7ebce8499137d285534960f22f64128286e7f087df871fd",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_signal_dynamics_summary",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "b9ddbde11e902ba221dd223e6a0dc083cad073d0b615c2d19c8f0a0210af0f19",
+            "content_sha256": "d76f2f0a67fbe046e95d42537c268ea90cb213b2ca321b7744d5da960e95279f",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "signal_kind": "cell_vector_family",
+        "pseudotime_source_kind": "model_ref",
+        "pseudotime_artifact_id": "",
+        "pseudotime_key": "L1",
+        "membership_artifact_id": "",
+        "signal_keys": ["rising", "falling"],
+        "n_signal_keys_input": 2,
+        "n_lineages": 1,
+        "n_bins": 5,
+        "summary_fun": "mean",
+        "min_cells_per_bin": 1,
+        "top_n": 50,
+        "on_off_min_delta": 0,
+        "monotonic_min_abs_rho": 0.5,
+        "pseudotime_direction": "as_is",
+        "start_label": null,
+        "end_label": null,
+        "min_amplitude": 0,
+        "min_bins_observed": 2,
+        "smooth_method": "none",
+        "loess_span": 0.5,
+        "bootstrap_n": 8,
+        "ci_level": 0.95,
+        "class_min_amplitude": 0
+      }
+    },
+    "smooth_subset": {
+      "outputs": {
+        "trend_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_smooth",
+          "rows": 15,
+          "identity": {
+            "structural_fingerprint": "ccf432a7a35e2f6388c7138232442f8013a809852668e29e30c7a6b6c968b8e4",
+            "content_sha256": "c61a9e2352a4cc40d148151a9593f84595958434ede0458a5de1e38f31afe12a",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_smooth_summary",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "00d48c2c3edfe177a13feef044d0e631bcbf0a705f4a07e87a880126b24323cd",
+            "content_sha256": "399c3ce0a601734769035a480864fa3f5adb306ea90c18cec96c54b8c6913f0e",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "matrix_id": "RNA",
+        "feature_set": null,
+        "n_features_input": 3,
+        "n_lineages": 1,
+        "n_bins": 5,
+        "summary_fun": "mean",
+        "min_cells_per_bin": 1
+      }
+    },
+    "smooth_reopened": {
+      "outputs": {
+        "trend_table": {
+          "kind": "obs_table",
+          "table_type": "trajectory_smooth",
+          "rows": 36,
+          "identity": {
+            "structural_fingerprint": "73bcf9e3cca9504e1eeb9957bb2ae89bc43c0e28ff5163e30ede37d837f1c3ae",
+            "content_sha256": "22037e81a888d1df4b0357f921b58a9ed88dcfde5b0734db613c66bee58ca1b9",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_smooth_summary",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "00d48c2c3edfe177a13feef044d0e631bcbf0a705f4a07e87a880126b24323cd",
+            "content_sha256": "955066a17de14624182730f5954e4b6b4b6d723beccc1fd914880d44eb641800",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "matrix_id": "RNA",
+        "feature_set": null,
+        "n_features_input": 3,
+        "n_lineages": 1,
+        "n_bins": 12,
+        "summary_fun": "mean",
+        "min_cells_per_bin": 1
+      }
+    }
+  },
+  "summary_equations": {
+    "bins": {
+      "bins": [1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5],
+      "n_bins": 5
+    },
+    "mean": [
+      {
+        "entity_id": "g1",
+        "lineage_id": "L1",
+        "bin": 1,
+        "pseudotime": 0.0869565217391304,
+        "expr": 3,
+        "n_cells": 5,
+        "pseudotime_min": 0,
+        "pseudotime_max": 0.173913043478261
+      },
+      {
+        "entity_id": "g1",
+        "lineage_id": "L1",
+        "bin": 2,
+        "pseudotime": 0.304347826086957,
+        "expr": 8,
+        "n_cells": 5,
+        "pseudotime_min": 0.217391304347826,
+        "pseudotime_max": 0.391304347826087
+      },
+      {
+        "entity_id": "g1",
+        "lineage_id": "L1",
+        "bin": 3,
+        "pseudotime": 0.456521739130435,
+        "expr": 11.5,
+        "n_cells": 2,
+        "pseudotime_min": 0.434782608695652,
+        "pseudotime_max": 0.478260869565217
+      },
+      {
+        "entity_id": "g1",
+        "lineage_id": "L1",
+        "bin": 4,
+        "pseudotime": 0.695652173913043,
+        "expr": 15,
+        "n_cells": 5,
+        "pseudotime_min": 0.608695652173913,
+        "pseudotime_max": 0.782608695652174
+      },
+      {
+        "entity_id": "g1",
+        "lineage_id": "L1",
+        "bin": 5,
+        "pseudotime": 0.91304347826087,
+        "expr": 20,
+        "n_cells": 5,
+        "pseudotime_min": 0.826086956521739,
+        "pseudotime_max": 1
+      }
+    ],
+    "median": [
+      {
+        "entity_id": "g1",
+        "lineage_id": "L1",
+        "bin": 1,
+        "pseudotime": 0.0869565217391304,
+        "expr": 3,
+        "n_cells": 5,
+        "pseudotime_min": 0,
+        "pseudotime_max": 0.173913043478261
+      },
+      {
+        "entity_id": "g1",
+        "lineage_id": "L1",
+        "bin": 2,
+        "pseudotime": 0.304347826086957,
+        "expr": 8,
+        "n_cells": 5,
+        "pseudotime_min": 0.217391304347826,
+        "pseudotime_max": 0.391304347826087
+      },
+      {
+        "entity_id": "g1",
+        "lineage_id": "L1",
+        "bin": 3,
+        "pseudotime": 0.456521739130435,
+        "expr": 11.5,
+        "n_cells": 2,
+        "pseudotime_min": 0.434782608695652,
+        "pseudotime_max": 0.478260869565217
+      },
+      {
+        "entity_id": "g1",
+        "lineage_id": "L1",
+        "bin": 4,
+        "pseudotime": 0.695652173913043,
+        "expr": 15,
+        "n_cells": 5,
+        "pseudotime_min": 0.608695652173913,
+        "pseudotime_max": 0.782608695652174
+      },
+      {
+        "entity_id": "g1",
+        "lineage_id": "L1",
+        "bin": 5,
+        "pseudotime": 0.91304347826087,
+        "expr": 20,
+        "n_cells": 5,
+        "pseudotime_min": 0.826086956521739,
+        "pseudotime_max": 1
+      }
+    ]
+  }
+}
