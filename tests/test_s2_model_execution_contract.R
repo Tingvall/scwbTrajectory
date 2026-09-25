@@ -227,6 +227,9 @@ test_trajectory_s2_model_parameter_equivalence_contract <- function() {
     de_reordered_lineages = list(operation = "de", params = list(
       lineage = c("L2", "L1"), features = x$features[1:3],
       chunk_size = 2L)),
+    de_feature_intersection = list(operation = "de", params = list(
+      feature_set = "selected", features = c("g1", "g3"),
+      lineage = "L1", chunk_size = 2L)),
     smooth_reordered_lineages = list(operation = "smooth", params = list(
       lineage = c("L2", "L1"), features = x$features[1:3],
       n_bins = 5L, min_cells_per_bin = 1L, chunk_size = 2L)),
@@ -243,6 +246,9 @@ test_trajectory_s2_model_parameter_equivalence_contract <- function() {
     stopifnot(!inherits(observed$value, "error"))
     trajectory_s2_compare_outputs(x$bundle, case_name,
       list(outputs = observed$outputs), reference)
+    if (identical(case_name, "de_feature_intersection"))
+      stopifnot(identical(unique(as.character(observed$outputs$
+        de_table$table$feature_id)), "g1"))
     expected_params <- reference$cases[[case_name]]$params
     for (terminal in observed$outputs) {
       common <- intersect(names(terminal$meta), names(expected_params))

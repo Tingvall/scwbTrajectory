@@ -18,8 +18,9 @@ equations, with focused comparisons against the old-core method helpers.
 The independent old-core run that produced the fixture is frozen; focused
 pack tests no longer execute the six legacy core methods. Direct pack runners
 use the same comparator. A second frozen old-core fixture,
-`trajectory_s2_parameter_reference.json`, covers ten parameter, lineage,
-membership, subset, and real G1 reopen cases plus shared summary equations.
+`trajectory_s2_parameter_reference.json`, covers eleven parameter, lineage,
+feature-selection, membership, subset, and real G1 reopen cases plus shared
+summary equations.
 The pack manifest now declares eight grouped S2 entries: six canonical model
 names and two explicit-pseudotime dynamics names. The latter execute through
 registered dispatch and pass terminal publication checks. Model entries
@@ -287,7 +288,7 @@ R and JSON files parsed and `git diff --check` passed. The later exact-pair
 qualification and Sable focused review are recorded above. Meridian-9
 subsequently accepted the exact pair for ownership-migration preparation.
 
-## Ownership migration stop at public chunking metadata
+## Ownership migration and public chunking metadata
 
 The 2026-09-25 ownership migration attempt stopped on a generic ABI gap.
 On the accepted core/pack pair, `wb_op_interface("trajectory_de")` and
@@ -296,11 +297,14 @@ and `chunking$chunk_size_param == "chunk_size"`. The corresponding activated
 pack interfaces return `chunking == NULL`. The accepted v3 pack manifest has
 no generic way to carry this public metadata. The exact reproducer and output
 are in `/tmp/forge2-s2-migration-logs/chunking-gap-reproducer.R` and
-`chunking-gap.log`. No method-specific substitute or ABI change was made.
+`chunking-gap.log`. Generic v3 chunking-interface projection in scworkbench
+`b8d53a55d9403e1fae813d08fba69125f22fbae6` closes this stop
+condition. It derives the public axis and size parameter from a single typed
+matrix-slice reader without claiming the old-core merge policy. No
+method-specific substitute or pack ABI change was made.
 
-The pack-only fixture update in this checkpoint removes live dependencies on
-the six legacy core methods from pack tests. It prepares a later ownership
-migration; it does not qualify a migrated catalog. The pending catalog test
-is kept outside the pack suite until the public interface gap is resolved
-and an exact migrated core/pack pair is available. No complete
-post-migration suite or package check has been run. Phase 5 remains **9/24**.
+The pack-only fixture update removes live dependencies on the six legacy core
+methods from pack tests. A further frozen old-core DE case pins the
+intersection of `feature_set` and explicit `features`. The catalog test now
+checks the no-pack and activated eight-name counts. Final migration
+qualification and independent audit remain pending. Phase 5 remains **9/24**.

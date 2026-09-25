@@ -500,6 +500,47 @@
         "summary_fun": "mean",
         "min_cells_per_bin": 1
       }
+    },
+    "de_feature_intersection": {
+      "outputs": {
+        "de_table": {
+          "kind": "feature_table",
+          "table_type": "trajectory_de",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "b94245c5f1a0e1901ff6ee780387ee19c791a4c99fbf92a47478ffb66700e5be",
+            "content_sha256": "fdbb7b429075194f0ea4d5eb1fb7f4dffdd47a8d91b050ef840ff4507734a04f",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        },
+        "fit_summary": {
+          "kind": "obs_table",
+          "table_type": "trajectory_de_summary",
+          "rows": 1,
+          "identity": {
+            "structural_fingerprint": "229f445f612863eff19e10b3d631cef7b113ab1dc6098bd26f546b93dc3191d3",
+            "content_sha256": "6b2780743500065a6ac3ec68a1a2512d7ccdcb11eedef962fc0c67e509cc89d7",
+            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "verification_level": "content",
+            "verification_status": "content_verified"
+          }
+        }
+      },
+      "params": {
+        "matrix_id": "RNA",
+        "model_engine": "slingshot",
+        "lineage": "L1",
+        "n_lineages_input": 2,
+        "n_lineages_tested": 1,
+        "n_features_tested": 1,
+        "feature_set": "selected",
+        "min_pct_nonzero": 0,
+        "min_sd": 0,
+        "p_adjust_method": "BH",
+        "test": "spearman"
+      }
     }
   },
   "summary_equations": {
