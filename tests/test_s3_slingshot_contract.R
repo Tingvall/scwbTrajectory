@@ -115,12 +115,16 @@ test_trajectory_s3_registered_fit_contract <- function() {
   weights <- scworkbench::wb_session_run_op(scworkbench::wb_session_new(),
     reopened, "scwbtrajectory::slingshot_lineage_weights",
     inputs = list(model = model_ref, min_cells = 1L))
-  stopifnot(length(weights$run$outputs$lineage_weights$key) > 0L)
+  stopifnot(length(weights$run$outputs$lineage_weights$key) > 0L,
+    identical(as.character(weights$run$outputs$lineage_weights$meta$fit_space_id),
+      "fit"))
   project <- scworkbench::wb_session_run_op(scworkbench::wb_session_new(),
     reopened, "scwbtrajectory::slingshot_project", inputs = list(
       model = model_ref, plot_space = "plot", approx_points = 20L,
       min_cells = 1L))
-  stopifnot(length(project$run$outputs$curves$key) > 0L)
+  stopifnot(length(project$run$outputs$curves$key) > 0L,
+    identical(as.character(project$run$outputs$curves$meta$fit_space_id),
+      "fit"))
   scworkbench::wb_session_discard(weights$session)
   scworkbench::wb_session_discard(project$session)
   TRUE

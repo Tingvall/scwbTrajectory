@@ -186,9 +186,10 @@
   verified <- readers$fitted_model()
   model <- .trajectory_slingshot_read_model(verified)
   bytes <- verified$read_bytes(verified$primary_path)
-  fitted_space <- verified$fitted_source_space
-  fit_space_id <- if (is.list(fitted_space))
-    as.character(fitted_space$space_id %||% "")[1L] else ""
+  fit_space_id <- as.character(verified$source_space_id)[1L]
+  .trajectory_assert(length(fit_space_id) == 1L && !is.na(fit_space_id) &&
+      nzchar(fit_space_id),
+    "Authenticated Slingshot model source-space ID is unavailable.")
   weights <- .trajectory_slingshot_family(model,
     slingshot::slingCurveWeights, .trajectory_slingshot_fit_id(bytes),
     fit_space_id, "trajectory_membership_weight",
@@ -211,9 +212,10 @@
     stretch = params$stretch %||% NULL,
     shrink = params$shrink %||% NULL,
     approx_points = as.integer(params$approx_points %||% 200L))
-  fitted_space <- verified$fitted_source_space
-  fit_space_id <- if (is.list(fitted_space))
-    as.character(fitted_space$space_id %||% "")[1L] else ""
+  fit_space_id <- as.character(verified$source_space_id)[1L]
+  .trajectory_assert(length(fit_space_id) == 1L && !is.na(fit_space_id) &&
+      nzchar(fit_space_id),
+    "Authenticated Slingshot model source-space ID is unavailable.")
   curves <- .trajectory_slingshot_curves(projected,
     .trajectory_slingshot_fit_id(verified$read_bytes(verified$primary_path)),
     fit_space_id,

@@ -67,6 +67,10 @@ if (identical(args[[1L]], "emit")) {
     fit_weights = family_rows(fit$run$outputs$lineage_weights),
     extracted_weights = family_rows(weights$run$outputs$lineage_weights),
     projected_curves = path_rows(project$run$outputs$curves),
+    fitted_source_ids = c(
+      fit_weights = as.character(fit$run$outputs$lineage_weights$meta$fit_space_id),
+      extracted_weights = as.character(weights$run$outputs$lineage_weights$meta$fit_space_id),
+      projected_curves = as.character(project$run$outputs$curves$meta$fit_space_id)),
     fit_cells = as.character(fit$run$outputs$model$cells),
     fit_engine = as.character(fit$run$outputs$model$engine),
     fit_lineages = as.integer(fit$run$outputs$model$n_lineages),
@@ -99,6 +103,8 @@ if (identical(args[[1L]], "emit")) {
     identical(old$fit_cells, pack$fit_cells),
     identical(old$fit_engine, pack$fit_engine),
     identical(old$fit_lineages, pack$fit_lineages),
+    identical(old$fitted_source_ids, pack$fitted_source_ids),
+    identical(unname(pack$fitted_source_ids), rep("fit", 3L)),
     identical(old$effective_parameters, pack$effective_parameters))
   for (name in c("legacy_pseudotime", "fit_pseudotime", "fit_weights",
     "extracted_weights")) {
@@ -113,5 +119,6 @@ if (identical(args[[1L]], "emit")) {
       isTRUE(all.equal(a$y, b$y, tolerance = 1e-8)))
   }
   cat("PASS S3 old-core/new-pack terminal closure, ordered axes, values,",
-    "effective parameters (numeric tolerance 1e-8)\n")
+    "authenticated fit-space metadata, effective parameters",
+    "(numeric tolerance 1e-8)\n")
 }
