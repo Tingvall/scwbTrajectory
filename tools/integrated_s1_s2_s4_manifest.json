@@ -1,0 +1,4778 @@
+{
+  "schema_version": "scworkbench.operation_pack.v3",
+  "pack_abi_version": "3",
+  "identity_scheme": "scworkbench.operation_pack.canonical_json.v1",
+  "namespace": "scwbtrajectory",
+  "package": {
+    "name": "scwbTrajectory",
+    "version": "0.1.1"
+  },
+  "backend": "R",
+  "compatibility": {
+    "scworkbench": {
+      "minimum": "0.1.0",
+      "maximum_exclusive": "0.2.0"
+    },
+    "pack_abi": {
+      "minimum": "3",
+      "maximum": "3"
+    }
+  },
+  "entry_point": "scwbTrajectory::register_operation_pack",
+  "operations": [
+    {
+      "name": "trajectory_branch_compare",
+      "qualified_name": "scwbtrajectory::trajectory_branch_compare",
+      "title": "Trajectory Branch Compare",
+      "description": "Compare two trajectory branches feature-by-feature using authenticated matrix, pseudotime, and branch-membership inputs.",
+      "runner": ".run_trajectory_branch_compare",
+      "inputs": [
+        {
+          "name": "matrix",
+          "kind": "matrix",
+          "required": true,
+          "alignment": "cell_and_feature_ordered"
+        },
+        {
+          "name": "pseudotime",
+          "kind": "cell_vector_family",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "branch_membership",
+          "kind": "relation_family",
+          "required": true,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "branch_a": {
+            "type": ["string", "null"]
+          },
+          "branch_b": {
+            "type": ["string", "null"]
+          },
+          "feature_set": {
+            "type": ["string", "null"]
+          },
+          "features": {
+            "type": ["array", "null"],
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "min_pct": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0,
+            "maximum": 1
+          },
+          "p_adjust_method": {
+            "type": "string",
+            "default": "BH"
+          },
+          "chunk_size": {
+            "type": "integer",
+            "default": 128,
+            "minimum": 1,
+            "maximum": 100000
+          }
+        },
+        "additionalProperties": false
+      },
+      "registry_reads": [
+        {
+          "name": "feature_sets",
+          "category": "authenticated_core_registry_snapshot",
+          "kind": "feature_set_registry",
+          "reader": "read_feature_set_registry",
+          "matrix_input": "matrix",
+          "no_selector_policy": "all_namespaces",
+          "empty_match_policy": "allow"
+        }
+      ],
+      "dimension_policies": [
+        {
+          "output": "branch_de_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "branch_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "branch_de_table",
+          "category": "terminal_artifact",
+          "kind": "feature_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "branch_de_table_id",
+          "required": true,
+          "promotion_group": "branch",
+          "table_type": "trajectory_branch_compare"
+        },
+        {
+          "name": "branch_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "branch_summary_id",
+          "required": true,
+          "promotion_group": "branch",
+          "table_type": "trajectory_branch_compare_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_feature_table"
+        }
+      ],
+      "promotion_closure": {
+        "branch_de_table": [
+          "branch_de_table",
+          "branch_summary"
+        ],
+        "branch_summary": [
+          "branch_de_table",
+          "branch_summary"
+        ]
+      },
+      "replay_equivalence": {
+        "branch_de_table": "exact_canonical_value",
+        "branch_summary": "exact_canonical_value"
+      },
+      "typed_slice_reads": [
+        {
+          "name": "matrix_chunks",
+          "input": "matrix",
+          "reader": "read_typed_slices",
+          "kind": "matrix",
+          "supported_axes": [
+            "features"
+          ],
+          "chunk_axis": "features",
+          "chunk_size_parameter": "chunk_size",
+          "call_discipline": "ordered_partition_exactly_once",
+          "empty_selection_policy": "reject",
+          "duplicate_policy": "reject",
+          "selection": {
+            "cells": {
+              "policy": "effective_input_axis_v1"
+            },
+            "features": {
+              "policy": "effective_input_axis_v1"
+            }
+          }
+        }
+      ],
+      "retained_parameters": [
+        {
+          "name": "matrix_id",
+          "source": "output_meta",
+          "output": "branch_de_table",
+          "field": "matrix_id"
+        },
+        {
+          "name": "branch_a",
+          "source": "parameter_value",
+          "required": true,
+          "parameter": "branch_a"
+        },
+        {
+          "name": "branch_b",
+          "source": "parameter_value",
+          "required": true,
+          "parameter": "branch_b"
+        },
+        {
+          "name": "n_cells_a",
+          "source": "output_first_row",
+          "output": "branch_summary",
+          "field": "n_cells_a"
+        },
+        {
+          "name": "n_cells_b",
+          "source": "output_first_row",
+          "output": "branch_summary",
+          "field": "n_cells_b"
+        },
+        {
+          "name": "n_overlap_dropped",
+          "source": "output_first_row",
+          "output": "branch_summary",
+          "field": "n_overlap_dropped"
+        },
+        {
+          "name": "n_features",
+          "source": "output_first_row",
+          "output": "branch_summary",
+          "field": "n_features_tested"
+        },
+        {
+          "name": "min_pct",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "min_pct"
+        },
+        {
+          "name": "p_adjust_method",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "p_adjust_method"
+        }
+      ],
+      "public_interface": {
+        "intent": [
+          "trajectory",
+          "comparison",
+          "statistics"
+        ],
+        "inputs": [
+          {
+            "name": "matrix",
+            "label": "matrix",
+            "help": "Typed matrix input."
+          },
+          {
+            "name": "pseudotime",
+            "label": "pseudotime",
+            "help": "Typed pseudotime input."
+          },
+          {
+            "name": "branch_membership",
+            "label": "branch_membership",
+            "help": "Typed branch_membership input."
+          }
+        ],
+        "parameters": [
+          {
+            "name": "branch_a",
+            "type": "string",
+            "help": "Branch/lineage key A."
+          },
+          {
+            "name": "branch_b",
+            "type": "string",
+            "help": "Branch/lineage key B."
+          },
+          {
+            "name": "feature_set",
+            "type": "string",
+            "help": "Optional matrix feature-set name."
+          },
+          {
+            "name": "features",
+            "type": "string_vec",
+            "help": "Optional explicit feature IDs."
+          },
+          {
+            "name": "min_pct",
+            "type": "dbl",
+            "help": "Minimum detection fraction."
+          },
+          {
+            "name": "p_adjust_method",
+            "type": "string",
+            "help": "P-value adjustment method."
+          },
+          {
+            "name": "chunk_size",
+            "type": "int",
+            "help": "Authenticated feature chunk size."
+          }
+        ],
+        "outputs": [
+          {
+            "name": "branch_de_table",
+            "description": "Declared branch_de_table terminal."
+          },
+          {
+            "name": "branch_summary",
+            "description": "Declared branch_summary terminal."
+          }
+        ]
+      }
+    },
+    {
+      "name": "trajectory_route_smooth",
+      "qualified_name": "scwbtrajectory::trajectory_route_smooth",
+      "title": "Trajectory Route Smoothing",
+      "description": "Summarize feature expression along an authenticated pseudotime route.",
+      "runner": ".run_trajectory_route_smooth",
+      "inputs": [
+        {
+          "name": "matrix",
+          "kind": "matrix",
+          "required": true,
+          "alignment": "cell_and_feature_ordered"
+        },
+        {
+          "name": "pseudotime",
+          "kind": "cell_vector",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "branch_membership",
+          "kind": "relation_family",
+          "required": true,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "route_key": {
+            "type": ["string", "null"]
+          },
+          "feature_set": {
+            "type": ["string", "null"]
+          },
+          "features": {
+            "type": ["array", "null"],
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "n_bins": {
+            "type": "integer",
+            "default": 50,
+            "minimum": 5,
+            "maximum": 1000
+          },
+          "summary_fun": {
+            "type": "string",
+            "default": "mean",
+            "enum": [
+              "mean",
+              "median"
+            ]
+          },
+          "min_cells_per_bin": {
+            "type": "integer",
+            "default": 5,
+            "minimum": 1,
+            "maximum": 100000
+          },
+          "weight_mode": {
+            "type": "string",
+            "default": "probability",
+            "enum": [
+              "probability",
+              "binary_threshold"
+            ]
+          },
+          "prob_min": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0,
+            "maximum": 1
+          },
+          "chunk_size": {
+            "type": "integer",
+            "default": 128,
+            "minimum": 1,
+            "maximum": 100000
+          }
+        },
+        "additionalProperties": false
+      },
+      "registry_reads": [
+        {
+          "name": "feature_sets",
+          "category": "authenticated_core_registry_snapshot",
+          "kind": "feature_set_registry",
+          "reader": "read_feature_set_registry",
+          "matrix_input": "matrix",
+          "no_selector_policy": "all_namespaces",
+          "empty_match_policy": "allow"
+        }
+      ],
+      "dimension_policies": [
+        {
+          "output": "trend_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "fit_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "trend_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "trend_table_id",
+          "required": true,
+          "promotion_group": "route",
+          "table_type": "trajectory_route_smooth"
+        },
+        {
+          "name": "fit_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "fit_summary_id",
+          "required": true,
+          "promotion_group": "route",
+          "table_type": "trajectory_route_smooth_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_obs_table"
+        }
+      ],
+      "promotion_closure": {
+        "trend_table": [
+          "fit_summary",
+          "trend_table"
+        ],
+        "fit_summary": [
+          "fit_summary",
+          "trend_table"
+        ]
+      },
+      "replay_equivalence": {
+        "trend_table": "exact_canonical_value",
+        "fit_summary": "exact_canonical_value"
+      },
+      "typed_slice_reads": [
+        {
+          "name": "matrix_chunks",
+          "input": "matrix",
+          "reader": "read_typed_slices",
+          "kind": "matrix",
+          "supported_axes": [
+            "features"
+          ],
+          "chunk_axis": "features",
+          "chunk_size_parameter": "chunk_size",
+          "call_discipline": "ordered_partition_exactly_once",
+          "empty_selection_policy": "reject",
+          "duplicate_policy": "reject",
+          "selection": {
+            "cells": {
+              "policy": "effective_input_axis_v1"
+            },
+            "features": {
+              "policy": "effective_input_axis_v1"
+            }
+          }
+        }
+      ],
+      "retained_parameters": [
+        {
+          "name": "matrix_id",
+          "source": "output_first_row",
+          "output": "fit_summary",
+          "field": "matrix_id"
+        },
+        {
+          "name": "route_key",
+          "source": "parameter_value",
+          "required": true,
+          "parameter": "route_key"
+        },
+        {
+          "name": "feature_set",
+          "source": "parameter_value",
+          "required": false,
+          "parameter": "feature_set"
+        },
+        {
+          "name": "n_features_input",
+          "source": "output_first_row",
+          "output": "fit_summary",
+          "field": "n_features_input"
+        },
+        {
+          "name": "n_cells_route",
+          "source": "output_first_row",
+          "output": "fit_summary",
+          "field": "n_cells_route"
+        },
+        {
+          "name": "n_bins",
+          "source": "output_first_row",
+          "output": "fit_summary",
+          "field": "n_bins"
+        },
+        {
+          "name": "summary_fun",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "summary_fun"
+        },
+        {
+          "name": "min_cells_per_bin",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "min_cells_per_bin"
+        },
+        {
+          "name": "weight_mode",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "weight_mode"
+        },
+        {
+          "name": "prob_min",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "prob_min"
+        }
+      ],
+      "public_interface": {
+        "intent": [
+          "trajectory",
+          "summary",
+          "route"
+        ],
+        "inputs": [
+          {
+            "name": "matrix",
+            "label": "matrix",
+            "help": "Typed matrix input."
+          },
+          {
+            "name": "pseudotime",
+            "label": "pseudotime",
+            "help": "Typed pseudotime input."
+          },
+          {
+            "name": "branch_membership",
+            "label": "branch_membership",
+            "help": "Typed branch_membership input."
+          }
+        ],
+        "parameters": [
+          {
+            "name": "route_key",
+            "type": "string",
+            "help": "Route key in branch membership."
+          },
+          {
+            "name": "feature_set",
+            "type": "string",
+            "help": "Optional matrix feature-set name."
+          },
+          {
+            "name": "features",
+            "type": "string_vec",
+            "help": "Optional explicit feature IDs."
+          },
+          {
+            "name": "n_bins",
+            "type": "int",
+            "help": "Number of pseudotime bins."
+          },
+          {
+            "name": "summary_fun",
+            "type": "choice",
+            "help": "Mean or median summary."
+          },
+          {
+            "name": "min_cells_per_bin",
+            "type": "int",
+            "help": "Minimum cells per bin."
+          },
+          {
+            "name": "weight_mode",
+            "type": "choice",
+            "help": "Probability or binary weights."
+          },
+          {
+            "name": "prob_min",
+            "type": "dbl",
+            "help": "Minimum route probability."
+          },
+          {
+            "name": "chunk_size",
+            "type": "int",
+            "help": "Authenticated feature chunk size."
+          }
+        ],
+        "outputs": [
+          {
+            "name": "trend_table",
+            "description": "Declared trend_table terminal."
+          },
+          {
+            "name": "fit_summary",
+            "description": "Declared fit_summary terminal."
+          }
+        ]
+      }
+    },
+    {
+      "name": "space_path_score",
+      "qualified_name": "scwbtrajectory::space_path_score",
+      "title": "Score cells against analytical path",
+      "description": "Score authenticated space cells by projection onto an analytical path.",
+      "runner": ".run_space_path_score",
+      "inputs": [
+        {
+          "name": "space",
+          "kind": "space",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "path",
+          "kind": "space_path_family",
+          "required": true,
+          "alignment": "associated_space"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "score_mode": {
+            "type": "string",
+            "default": "orthogonal_projection",
+            "enum": [
+              "orthogonal_projection"
+            ]
+          },
+          "distance_metric": {
+            "type": "string",
+            "default": "euclidean",
+            "enum": [
+              "euclidean"
+            ]
+          },
+          "score_prefix": {
+            "type": ["string", "null"]
+          }
+        },
+        "additionalProperties": false
+      },
+      "dimension_policies": [
+        {
+          "output": "path_scores",
+          "policy": "authenticated_output_axes_v1",
+          "shape": "cell_key_cartesian",
+          "cell_axis": {
+            "source": "effective_cells_v1",
+            "input": "space"
+          },
+          "key_axis": {
+            "source": "declared_keys_with_optional_prefix_v1",
+            "keys": [
+              "progress",
+              "distance",
+              "nearest_segment",
+              "nearest_anchor"
+            ],
+            "prefix_parameter": "score_prefix"
+          },
+          "row_order": "key_major_then_cell_v1",
+          "missing_values": "forbidden"
+        },
+        {
+          "output": "fit_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "path_scores",
+          "category": "terminal_artifact",
+          "kind": "cell_vector_family",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "path_scores_id",
+          "required": true,
+          "promotion_group": "score",
+          "value_kind": "continuous"
+        },
+        {
+          "name": "fit_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "fit_summary_id",
+          "required": true,
+          "promotion_group": "score",
+          "table_type": "space_path_score_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_cell_vector_family"
+        }
+      ],
+      "promotion_closure": {
+        "path_scores": [
+          "fit_summary",
+          "path_scores"
+        ],
+        "fit_summary": [
+          "fit_summary",
+          "path_scores"
+        ]
+      },
+      "replay_equivalence": {
+        "path_scores": "exact_canonical_value",
+        "fit_summary": "exact_canonical_value"
+      },
+      "retained_parameters": [
+        {
+          "name": "space_id",
+          "source": "output_first_row",
+          "output": "fit_summary",
+          "field": "space_id"
+        },
+        {
+          "name": "path_id",
+          "source": "output_first_row",
+          "output": "fit_summary",
+          "field": "path_id"
+        },
+        {
+          "name": "score_mode",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "score_mode"
+        },
+        {
+          "name": "distance_metric",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "distance_metric"
+        },
+        {
+          "name": "n_cells",
+          "source": "output_first_row",
+          "output": "fit_summary",
+          "field": "cells_scored"
+        }
+      ],
+      "public_interface": {
+        "intent": [
+          "trajectory",
+          "geometry",
+          "path"
+        ],
+        "inputs": [
+          {
+            "name": "space",
+            "label": "space",
+            "help": "Typed space input."
+          },
+          {
+            "name": "path",
+            "label": "path",
+            "help": "Typed path input."
+          }
+        ],
+        "parameters": [
+          {
+            "name": "score_mode",
+            "type": "choice",
+            "help": "Orthogonal-projection scoring mode."
+          },
+          {
+            "name": "distance_metric",
+            "type": "choice",
+            "help": "Euclidean distance metric."
+          },
+          {
+            "name": "score_prefix",
+            "type": "string",
+            "help": "Optional prefix for score keys."
+          }
+        ],
+        "outputs": [
+          {
+            "name": "path_scores",
+            "description": "Declared path_scores terminal."
+          },
+          {
+            "name": "fit_summary",
+            "description": "Declared fit_summary terminal."
+          }
+        ]
+      }
+    },
+    {
+      "name": "space_path_project_2d",
+      "qualified_name": "scwbtrajectory::space_path_project_2d",
+      "title": "Project analytical path into 2D",
+      "description": "Project an analytical path from its authenticated source space into an authenticated 2D display space.",
+      "runner": ".run_space_path_project_2d",
+      "inputs": [
+        {
+          "name": "path",
+          "kind": "space_path_family",
+          "required": true,
+          "alignment": "associated_space"
+        },
+        {
+          "name": "source_space",
+          "kind": "space",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "plot_space",
+          "kind": "space_2d",
+          "required": true,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "project_mode": {
+            "type": "string",
+            "default": "local_interpolation",
+            "enum": [
+              "local_interpolation"
+            ]
+          },
+          "approx_points": {
+            "type": ["integer", "null"],
+            "minimum": 2,
+            "maximum": 50000
+          }
+        },
+        "additionalProperties": false
+      },
+      "dimension_policies": [
+        {
+          "output": "curves",
+          "policy": "data_dependent_family_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "curves",
+          "category": "terminal_artifact",
+          "kind": "path_2d_family",
+          "storage_profile": "path_2d_family_v1",
+          "allocated_id_key": "curves_id",
+          "required": true,
+          "promotion_group": "projection"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_path_2d_family"
+        },
+        {
+          "requirement_id": "rann_runtime",
+          "kind": "r_package",
+          "name": "RANN",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=2.6.0,<3.0.0"
+          },
+          "disposition": "required",
+          "import_probe": "nn2"
+        }
+      ],
+      "promotion_closure": {
+        "curves": [
+          "curves"
+        ]
+      },
+      "replay_equivalence": {
+        "curves": "exact_canonical_value"
+      },
+      "retained_parameters": [
+        {
+          "name": "project_mode",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "project_mode"
+        },
+        {
+          "name": "approx_points",
+          "source": "effective_parameter_value",
+          "required": false,
+          "parameter": "approx_points"
+        }
+      ],
+      "public_interface": {
+        "intent": [
+          "trajectory",
+          "geometry",
+          "path",
+          "display"
+        ],
+        "inputs": [
+          {
+            "name": "path",
+            "label": "path",
+            "help": "Typed path input."
+          },
+          {
+            "name": "source_space",
+            "label": "source_space",
+            "help": "Typed source_space input."
+          },
+          {
+            "name": "plot_space",
+            "label": "plot_space",
+            "help": "Typed plot_space input."
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_mode",
+            "type": "choice",
+            "help": "Local-interpolation projection mode."
+          },
+          {
+            "name": "approx_points",
+            "type": "int",
+            "help": "Optional display point count."
+          }
+        ],
+        "outputs": [
+          {
+            "name": "curves",
+            "description": "Declared curves terminal."
+          }
+        ]
+      }
+    },
+    {
+      "name": "space_path_define",
+      "qualified_name": "scwbtrajectory::space_path_define",
+      "title": "Define analytical space path",
+      "description": "Construct a checkpoint-anchored analytical path from an authenticated space and ordered named cell axes.",
+      "runner": ".run_space_path_define",
+      "inputs": [
+        {
+          "name": "space",
+          "kind": "space",
+          "required": true,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "checkpoint_sets": {
+            "type": ["array", "null"],
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "fit_mode": {
+            "type": "string",
+            "default": "linear",
+            "enum": [
+              "linear",
+              "manifold_smooth"
+            ]
+          },
+          "checkpoint_summary": {
+            "type": "string",
+            "default": "centroid",
+            "enum": [
+              "centroid"
+            ]
+          },
+          "n_path_points": {
+            "type": ["integer", "null"],
+            "minimum": 2,
+            "maximum": 50000
+          },
+          "smooth_k": {
+            "type": "integer",
+            "default": 30,
+            "minimum": 2,
+            "maximum": 5000
+          },
+          "smooth_n_iter": {
+            "type": "integer",
+            "default": 2,
+            "minimum": 1,
+            "maximum": 50
+          },
+          "smooth_weight": {
+            "type": "string",
+            "default": "inverse_distance",
+            "enum": [
+              "inverse_distance",
+              "gaussian"
+            ]
+          },
+          "path_id_out": {
+            "type": "string",
+            "default": "space_path"
+          }
+        },
+        "additionalProperties": false
+      },
+      "dimension_policies": [
+        {
+          "output": "path",
+          "policy": "data_dependent_family_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "path",
+          "category": "terminal_artifact",
+          "kind": "space_path_family",
+          "storage_profile": "space_path_family_v1",
+          "allocated_id_key": "path_id",
+          "required": true,
+          "promotion_group": "path"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_space_path_family"
+        }
+      ],
+      "promotion_closure": {
+        "path": [
+          "path"
+        ]
+      },
+      "replay_equivalence": {
+        "path": "exact_canonical_value"
+      },
+      "named_cell_axis_collections": [
+        {
+          "name": "checkpoints",
+          "parameter": "checkpoint_sets",
+          "space_input": "space",
+          "reader": "read_named_cell_axis",
+          "minimum_axes": 2,
+          "maximum_axes": 64,
+          "minimum_cells_per_axis": 1,
+          "maximum_cells_per_axis": 10000000,
+          "maximum_total_memberships": 20000000,
+          "projection_policy": "bundle_membership_intersect_space_axis_v1",
+          "call_discipline": "axis_ordinal_exactly_once"
+        }
+      ],
+      "retained_parameters": [
+        {
+          "name": "space_id",
+          "source": "output_meta",
+          "output": "path",
+          "field": "space_id"
+        },
+        {
+          "name": "checkpoint_sets",
+          "source": "parameter_value",
+          "required": true,
+          "parameter": "checkpoint_sets"
+        },
+        {
+          "name": "fit_mode",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "fit_mode"
+        },
+        {
+          "name": "checkpoint_summary",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "checkpoint_summary"
+        },
+        {
+          "name": "n_path_points",
+          "source": "output_meta",
+          "output": "path",
+          "field": "n_points"
+        },
+        {
+          "name": "smooth_k",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "smooth_k"
+        },
+        {
+          "name": "smooth_n_iter",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "smooth_n_iter"
+        },
+        {
+          "name": "smooth_weight",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "smooth_weight"
+        },
+        {
+          "name": "path_id_out",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "path_id_out"
+        }
+      ],
+      "public_interface": {
+        "intent": [
+          "trajectory",
+          "geometry",
+          "path"
+        ],
+        "inputs": [
+          {
+            "name": "space",
+            "label": "space",
+            "help": "Typed space input."
+          }
+        ],
+        "parameters": [
+          {
+            "name": "checkpoint_sets",
+            "type": "string_vec",
+            "help": "Ordered named checkpoints."
+          },
+          {
+            "name": "fit_mode",
+            "type": "choice",
+            "help": "Linear or manifold-smoothed fitting."
+          },
+          {
+            "name": "checkpoint_summary",
+            "type": "choice",
+            "help": "Checkpoint summary rule."
+          },
+          {
+            "name": "n_path_points",
+            "type": "int",
+            "help": "Optional path point count."
+          },
+          {
+            "name": "smooth_k",
+            "type": "int",
+            "help": "Smoothing neighbourhood size."
+          },
+          {
+            "name": "smooth_n_iter",
+            "type": "int",
+            "help": "Smoothing iterations."
+          },
+          {
+            "name": "smooth_weight",
+            "type": "choice",
+            "help": "Smoothing weight rule."
+          },
+          {
+            "name": "path_id_out",
+            "type": "string",
+            "help": "Output path key."
+          }
+        ],
+        "outputs": [
+          {
+            "name": "path",
+            "description": "Declared path terminal."
+          }
+        ]
+      }
+    },
+    {
+      "name": "trajectory_segment_from_artifacts",
+      "qualified_name": "scwbtrajectory::trajectory_segment_from_artifacts",
+      "title": "Trajectory fitted-artifact segment",
+      "description": "Materialize one fitted-model segment from authenticated trajectory primitives. Output metadata contract canonical_value_semantics_v2.",
+      "runner": ".run_trajectory_segment_from_artifacts",
+      "inputs": [
+        {
+          "name": "pseudotime",
+          "kind": "cell_vector_family",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "model",
+          "kind": "model_ref",
+          "required": false,
+          "alignment": "model_linked"
+        },
+        {
+          "name": "lineage_weights",
+          "kind": "cell_vector_family",
+          "required": false,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "membership",
+          "kind": "cell_vector",
+          "required": false,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "confidence",
+          "kind": "cell_vector_family",
+          "required": false,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "path",
+          "kind": "path_2d_family",
+          "required": false,
+          "alignment": "canonical_row_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "segment_id": {
+            "type": ["string", "null"]
+          },
+          "segment_order": {
+            "type": "number",
+            "default": 1
+          },
+          "lineage": {
+            "type": ["string", "null"]
+          },
+          "confidence_key": {
+            "type": ["string", "null"]
+          },
+          "source_engine": {
+            "type": ["string", "null"]
+          },
+          "start_label": {
+            "type": ["string", "null"]
+          },
+          "end_label": {
+            "type": ["string", "null"]
+          },
+          "composite_id": {
+            "type": ["string", "null"]
+          },
+          "allow_legacy": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "dimension_policies": [
+        {
+          "output": "segment_manifest",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "pseudotime",
+          "category": "terminal_artifact",
+          "kind": "cell_vector_family",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "pseudotime_id",
+          "required": true,
+          "promotion_group": "segment",
+          "value_kind": "continuous"
+        },
+        {
+          "name": "membership",
+          "category": "terminal_artifact",
+          "kind": "cell_vector",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "membership_id",
+          "required": true,
+          "promotion_group": "segment"
+        },
+        {
+          "name": "confidence",
+          "category": "terminal_artifact",
+          "kind": "cell_vector_family",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "confidence_id",
+          "required": true,
+          "promotion_group": "segment",
+          "value_kind": "continuous"
+        },
+        {
+          "name": "segment_manifest",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "segment_manifest_id",
+          "required": true,
+          "promotion_group": "segment",
+          "table_type": "trajectory_segment_manifest"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_cell_vector_family"
+        }
+      ],
+      "promotion_closure": {
+        "pseudotime": [
+          "confidence",
+          "membership",
+          "pseudotime",
+          "segment_manifest"
+        ],
+        "membership": [
+          "confidence",
+          "membership",
+          "pseudotime",
+          "segment_manifest"
+        ],
+        "confidence": [
+          "confidence",
+          "membership",
+          "pseudotime",
+          "segment_manifest"
+        ],
+        "segment_manifest": [
+          "confidence",
+          "membership",
+          "pseudotime",
+          "segment_manifest"
+        ]
+      },
+      "replay_equivalence": {
+        "pseudotime": "exact_canonical_value",
+        "membership": "exact_canonical_value",
+        "confidence": "exact_canonical_value",
+        "segment_manifest": "exact_canonical_value"
+      },
+      "derived_cell_output_axes": [
+        {
+          "schema": "scworkbench.operation_pack.derived_cell_output_axis.v1",
+          "name": "segment_cells",
+          "derivation_mode": "ordered_unique_subset_v1",
+          "source": {
+            "mode": "static_input_axis",
+            "input": "pseudotime",
+            "projection": "family_key_cell_axis_v1",
+            "family_key_selector": {
+              "mode": "operation_parameter",
+              "parameter": "lineage"
+            }
+          },
+          "linked_outputs": [
+            {
+              "name": "pseudotime",
+              "shape": "cell_key_cartesian",
+              "row_order": "key_major_then_sealed_cell_v1",
+              "missing_values": "forbidden",
+              "key_axis": {
+                "source": "resolved_effective_parameter_key_v1",
+                "parameter_candidates": [
+                  "lineage"
+                ],
+                "null_policy": "first_non_null_v1",
+                "invalid_value_policy": "error"
+              }
+            },
+            {
+              "name": "membership",
+              "shape": "one_per_cell",
+              "row_order": "sealed_cell_axis_order_v1",
+              "missing_values": "forbidden"
+            },
+            {
+              "name": "confidence",
+              "shape": "cell_key_cartesian",
+              "row_order": "key_major_then_sealed_cell_v1",
+              "missing_values": "forbidden",
+              "key_axis": {
+                "source": "resolved_effective_parameter_key_v1",
+                "parameter_candidates": [
+                  "confidence_key",
+                  "lineage"
+                ],
+                "null_policy": "first_non_null_v1",
+                "invalid_value_policy": "error",
+                "input_presence_override": {
+                  "present": "lineage_weights",
+                  "absent": "confidence",
+                  "use_parameter": "lineage"
+                }
+              }
+            }
+          ],
+          "limits": {
+            "minimum_cells": 1,
+            "maximum_cells": 10000000,
+            "maximum_source_axes": 1,
+            "maximum_source_memberships": 20000000,
+            "maximum_linked_outputs": 3
+          },
+          "call_discipline": "declare_once_seal_before_linked_output_v1",
+          "closure_policy": "all_linked_outputs_and_axis_observation_required_v1",
+          "declaration_identity": {
+            "scheme": "scworkbench.operation_pack.derived_cell_output_axis.v1",
+            "scope": "derived cell output axis declaration excluding declaration_identity",
+            "sha256": "0f8adfa316df560334ede431ae4fab23a2e5d30f57cd2211f66a5699fb920e8b"
+          }
+        }
+      ],
+      "retained_parameters": [
+        {
+          "name": "segment_id",
+          "source": "output_first_row",
+          "output": "segment_manifest",
+          "field": "segment_id"
+        },
+        {
+          "name": "segment_order",
+          "source": "output_first_row",
+          "output": "segment_manifest",
+          "field": "segment_order"
+        },
+        {
+          "name": "source_kind",
+          "source": "output_first_row",
+          "output": "segment_manifest",
+          "field": "source_kind"
+        },
+        {
+          "name": "source_engine",
+          "source": "output_first_row",
+          "output": "segment_manifest",
+          "field": "source_engine"
+        },
+        {
+          "name": "pseudotime_key",
+          "source": "output_first_row",
+          "output": "segment_manifest",
+          "field": "source_pseudotime_key"
+        },
+        {
+          "name": "confidence_key",
+          "source": "output_first_row",
+          "output": "segment_manifest",
+          "field": "confidence_key"
+        },
+        {
+          "name": "trajectory_fit_id",
+          "source": "output_first_row",
+          "output": "segment_manifest",
+          "field": "trajectory_fit_id"
+        },
+        {
+          "name": "n_cells",
+          "source": "output_first_row",
+          "output": "segment_manifest",
+          "field": "n_segment_cells"
+        }
+      ],
+      "public_interface": {
+        "intent": [
+          "trajectory",
+          "adapter",
+          "composition"
+        ],
+        "inputs": [
+          {
+            "name": "pseudotime",
+            "label": "pseudotime",
+            "help": "Typed pseudotime input."
+          },
+          {
+            "name": "model",
+            "label": "model",
+            "help": "Typed model input."
+          },
+          {
+            "name": "lineage_weights",
+            "label": "lineage_weights",
+            "help": "Typed lineage_weights input."
+          },
+          {
+            "name": "membership",
+            "label": "membership",
+            "help": "Typed membership input."
+          },
+          {
+            "name": "confidence",
+            "label": "confidence",
+            "help": "Typed confidence input."
+          },
+          {
+            "name": "path",
+            "label": "path",
+            "help": "Typed path input."
+          }
+        ],
+        "parameters": [
+          {
+            "name": "segment_id",
+            "type": "string",
+            "help": "Segment identifier."
+          },
+          {
+            "name": "segment_order",
+            "type": "dbl",
+            "help": "Composite order."
+          },
+          {
+            "name": "lineage",
+            "type": "string",
+            "help": "Selected lineage key."
+          },
+          {
+            "name": "confidence_key",
+            "type": "string",
+            "help": "Optional confidence key."
+          },
+          {
+            "name": "source_engine",
+            "type": "string",
+            "help": "Fitted trajectory engine."
+          },
+          {
+            "name": "start_label",
+            "type": "string",
+            "help": "Start label."
+          },
+          {
+            "name": "end_label",
+            "type": "string",
+            "help": "End label."
+          },
+          {
+            "name": "composite_id",
+            "type": "string",
+            "help": "Optional composite identity."
+          },
+          {
+            "name": "allow_legacy",
+            "type": "bool",
+            "help": "Allow absent fit identity."
+          }
+        ],
+        "outputs": [
+          {
+            "name": "pseudotime",
+            "description": "Declared pseudotime terminal."
+          },
+          {
+            "name": "membership",
+            "description": "Declared membership terminal."
+          },
+          {
+            "name": "confidence",
+            "description": "Declared confidence terminal."
+          },
+          {
+            "name": "segment_manifest",
+            "description": "Declared segment_manifest terminal."
+          }
+        ]
+      }
+    },
+    {
+      "name": "trajectory_space_path_segment",
+      "qualified_name": "scwbtrajectory::trajectory_space_path_segment",
+      "title": "Trajectory space-path segment",
+      "description": "Convert analytical path scores into a segment and optionally authenticate display endpoint QC. Output metadata contract canonical_value_semantics_v2.",
+      "runner": ".run_trajectory_space_path_segment",
+      "inputs": [
+        {
+          "name": "path_scores",
+          "kind": "cell_vector_family",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "path",
+          "kind": "path_2d_family",
+          "required": false,
+          "alignment": "canonical_row_ordered"
+        },
+        {
+          "name": "display_path",
+          "kind": "path_2d_family",
+          "required": false,
+          "alignment": "canonical_row_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "segment_id": {
+            "type": ["string", "null"]
+          },
+          "segment_order": {
+            "type": "number",
+            "default": 1
+          },
+          "score_prefix": {
+            "type": ["string", "null"]
+          },
+          "candidate_cells": {
+            "type": ["array", "null"],
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "distance_threshold": {
+            "type": ["number", "null"]
+          },
+          "distance_quantile": {
+            "type": ["number", "null"],
+            "minimum": 0,
+            "maximum": 1
+          },
+          "start_label": {
+            "type": ["string", "null"]
+          },
+          "end_label": {
+            "type": ["string", "null"]
+          },
+          "display_lineage": {
+            "type": ["string", "null"]
+          },
+          "display_space_id": {
+            "type": ["string", "null"]
+          },
+          "start_endpoint": {
+            "type": ["object", "string", "null"]
+          },
+          "end_endpoint": {
+            "type": ["object", "string", "null"]
+          },
+          "start_cell_set": {
+            "type": ["string", "null"]
+          },
+          "end_cell_set": {
+            "type": ["string", "null"]
+          },
+          "endpoint_summary_method": {
+            "type": "string",
+            "default": "centroid",
+            "enum": [
+              "centroid",
+              "medoid"
+            ]
+          },
+          "endpoint_max_distance": {
+            "type": ["number", "null"],
+            "minimum": 0
+          },
+          "endpoint_qc_action": {
+            "type": "string",
+            "default": "fail",
+            "enum": [
+              "fail",
+              "warn",
+              "none"
+            ]
+          },
+          "composite_id": {
+            "type": ["string", "null"]
+          },
+          "pseudotime_key": {
+            "type": ["string", "null"]
+          },
+          "confidence_key": {
+            "type": ["string", "null"]
+          }
+        },
+        "additionalProperties": false
+      },
+      "dimension_policies": [
+        {
+          "output": "segment_manifest",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "display_endpoint_qc",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "pseudotime",
+          "category": "terminal_artifact",
+          "kind": "cell_vector_family",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "pseudotime_id",
+          "required": true,
+          "promotion_group": "segment",
+          "value_kind": "continuous"
+        },
+        {
+          "name": "membership",
+          "category": "terminal_artifact",
+          "kind": "cell_vector",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "membership_id",
+          "required": true,
+          "promotion_group": "segment"
+        },
+        {
+          "name": "confidence",
+          "category": "terminal_artifact",
+          "kind": "cell_vector_family",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "confidence_id",
+          "required": true,
+          "promotion_group": "segment",
+          "value_kind": "continuous"
+        },
+        {
+          "name": "segment_manifest",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "segment_manifest_id",
+          "required": true,
+          "promotion_group": "segment",
+          "table_type": "trajectory_segment_manifest"
+        },
+        {
+          "name": "display_endpoint_qc",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "display_endpoint_qc_id",
+          "required": true,
+          "promotion_group": "segment",
+          "table_type": "trajectory_segment_display_path_endpoint_qc"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_cell_vector_family"
+        }
+      ],
+      "promotion_closure": {
+        "pseudotime": [
+          "confidence",
+          "display_endpoint_qc",
+          "membership",
+          "pseudotime",
+          "segment_manifest"
+        ],
+        "membership": [
+          "confidence",
+          "display_endpoint_qc",
+          "membership",
+          "pseudotime",
+          "segment_manifest"
+        ],
+        "confidence": [
+          "confidence",
+          "display_endpoint_qc",
+          "membership",
+          "pseudotime",
+          "segment_manifest"
+        ],
+        "segment_manifest": [
+          "confidence",
+          "display_endpoint_qc",
+          "membership",
+          "pseudotime",
+          "segment_manifest"
+        ],
+        "display_endpoint_qc": [
+          "confidence",
+          "display_endpoint_qc",
+          "membership",
+          "pseudotime",
+          "segment_manifest"
+        ]
+      },
+      "replay_equivalence": {
+        "pseudotime": "exact_canonical_value",
+        "membership": "exact_canonical_value",
+        "confidence": "exact_canonical_value",
+        "segment_manifest": "exact_canonical_value",
+        "display_endpoint_qc": "exact_canonical_value"
+      },
+      "derived_cell_output_axes": [
+        {
+          "schema": "scworkbench.operation_pack.derived_cell_output_axis.v1",
+          "name": "segment_cells",
+          "derivation_mode": "ordered_unique_subset_v1",
+          "source": {
+            "mode": "static_input_axis",
+            "input": "path_scores",
+            "projection": "family_key_cell_axis_v1",
+            "family_key_selector": {
+              "mode": "parameter_prefix_plus_literal_suffix",
+              "prefix_parameter": "score_prefix",
+              "literal_suffix": "progress"
+            }
+          },
+          "linked_outputs": [
+            {
+              "name": "pseudotime",
+              "shape": "cell_key_cartesian",
+              "row_order": "key_major_then_sealed_cell_v1",
+              "missing_values": "forbidden",
+              "key_axis": {
+                "source": "resolved_effective_parameter_key_v1",
+                "parameter_candidates": [
+                  "pseudotime_key",
+                  "segment_id"
+                ],
+                "null_policy": "first_non_null_v1",
+                "invalid_value_policy": "error"
+              }
+            },
+            {
+              "name": "membership",
+              "shape": "one_per_cell",
+              "row_order": "sealed_cell_axis_order_v1",
+              "missing_values": "forbidden"
+            },
+            {
+              "name": "confidence",
+              "shape": "cell_key_cartesian",
+              "row_order": "key_major_then_sealed_cell_v1",
+              "missing_values": "forbidden",
+              "key_axis": {
+                "source": "resolved_effective_parameter_key_v1",
+                "parameter_candidates": [
+                  "confidence_key",
+                  "segment_id"
+                ],
+                "null_policy": "first_non_null_v1",
+                "invalid_value_policy": "error"
+              }
+            }
+          ],
+          "limits": {
+            "minimum_cells": 1,
+            "maximum_cells": 10000000,
+            "maximum_source_axes": 1,
+            "maximum_source_memberships": 20000000,
+            "maximum_linked_outputs": 3
+          },
+          "call_discipline": "declare_once_seal_before_linked_output_v1",
+          "closure_policy": "all_linked_outputs_and_axis_observation_required_v1",
+          "declaration_identity": {
+            "scheme": "scworkbench.operation_pack.derived_cell_output_axis.v1",
+            "scope": "derived cell output axis declaration excluding declaration_identity",
+            "sha256": "f7a5d068258588ee2e0a081d725444d6244e98e2097d4c62bf23c1927ad18521"
+          }
+        }
+      ],
+      "optional_display_axis_groups": [
+        {
+          "name": "display_endpoint_qc",
+          "scope": "operation",
+          "collection_read": null,
+          "activation": {
+            "start": {
+              "endpoint_parameter": "start_endpoint",
+              "top_level_cell_set_parameter": "start_cell_set"
+            },
+            "end": {
+              "endpoint_parameter": "end_endpoint",
+              "top_level_cell_set_parameter": "end_cell_set"
+            }
+          },
+          "display_space_selector": {
+            "operation_parameter": "display_space_id",
+            "item_field": null
+          },
+          "endpoint_roles": [
+            "start",
+            "end"
+          ],
+          "dimension_count": 2,
+          "maximum_groups": 1,
+          "maximum_display_cells": 10000000,
+          "maximum_cells_per_endpoint_axis": 10000000,
+          "maximum_total_endpoint_memberships": 20000000,
+          "call_discipline": "display_partition_then_endpoint_ordinal_exactly_once"
+        }
+      ],
+      "retained_parameters": [
+        {
+          "name": "segment_id",
+          "source": "output_first_row",
+          "output": "segment_manifest",
+          "field": "segment_id"
+        },
+        {
+          "name": "segment_order",
+          "source": "output_first_row",
+          "output": "segment_manifest",
+          "field": "segment_order"
+        },
+        {
+          "name": "source_kind",
+          "source": "output_first_row",
+          "output": "segment_manifest",
+          "field": "source_kind"
+        },
+        {
+          "name": "source_engine",
+          "source": "output_first_row",
+          "output": "segment_manifest",
+          "field": "source_engine"
+        },
+        {
+          "name": "pseudotime_key",
+          "source": "output_first_row",
+          "output": "segment_manifest",
+          "field": "lineage_id"
+        },
+        {
+          "name": "confidence_key",
+          "source": "output_first_row",
+          "output": "segment_manifest",
+          "field": "confidence_key"
+        },
+        {
+          "name": "membership_rule",
+          "source": "output_first_row",
+          "output": "segment_manifest",
+          "field": "membership_rule"
+        },
+        {
+          "name": "distance_threshold",
+          "source": "output_first_row",
+          "output": "segment_manifest",
+          "field": "distance_threshold"
+        },
+        {
+          "name": "n_cells",
+          "source": "output_first_row",
+          "output": "segment_manifest",
+          "field": "n_segment_cells"
+        },
+        {
+          "name": "endpoint_qc_action",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "endpoint_qc_action"
+        }
+      ],
+      "public_interface": {
+        "intent": [
+          "trajectory",
+          "bridge",
+          "composition"
+        ],
+        "inputs": [
+          {
+            "name": "path_scores",
+            "label": "path_scores",
+            "help": "Typed path_scores input."
+          },
+          {
+            "name": "path",
+            "label": "path",
+            "help": "Typed path input."
+          },
+          {
+            "name": "display_path",
+            "label": "display_path",
+            "help": "Typed display_path input."
+          }
+        ],
+        "parameters": [
+          {
+            "name": "segment_id",
+            "type": "string",
+            "help": "Segment identifier."
+          },
+          {
+            "name": "segment_order",
+            "type": "dbl",
+            "help": "Composite order."
+          },
+          {
+            "name": "score_prefix",
+            "type": "string",
+            "help": "Path-score key prefix."
+          },
+          {
+            "name": "candidate_cells",
+            "type": "string_vec",
+            "help": "Candidate cells."
+          },
+          {
+            "name": "distance_threshold",
+            "type": "dbl",
+            "help": "Distance threshold."
+          },
+          {
+            "name": "distance_quantile",
+            "type": "dbl",
+            "help": "Distance quantile."
+          },
+          {
+            "name": "display_space_id",
+            "type": "string",
+            "help": "Authenticated 2D display space."
+          },
+          {
+            "name": "start_endpoint",
+            "type": "string",
+            "help": "Start endpoint selector."
+          },
+          {
+            "name": "end_endpoint",
+            "type": "string",
+            "help": "End endpoint selector."
+          },
+          {
+            "name": "endpoint_qc_action",
+            "type": "choice",
+            "help": "Endpoint QC action."
+          }
+        ],
+        "outputs": [
+          {
+            "name": "pseudotime",
+            "description": "Declared pseudotime terminal."
+          },
+          {
+            "name": "membership",
+            "description": "Declared membership terminal."
+          },
+          {
+            "name": "confidence",
+            "description": "Declared confidence terminal."
+          },
+          {
+            "name": "segment_manifest",
+            "description": "Declared segment_manifest terminal."
+          },
+          {
+            "name": "display_endpoint_qc",
+            "description": "Declared display_endpoint_qc terminal."
+          }
+        ]
+      }
+    },
+    {
+      "name": "trajectory_segment_join",
+      "qualified_name": "scwbtrajectory::trajectory_segment_join",
+      "title": "Trajectory segment join",
+      "description": "Join ordered authenticated segments without merging parent fitted models. Output metadata contract canonical_value_semantics_v2.",
+      "runner": ".run_trajectory_segment_join",
+      "inputs": [],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "segments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "pseudotime": {
+                  "type": ["object", "string", "null"]
+                }
+              }
+            }
+          },
+          "composite_id": {
+            "type": ["string", "null"]
+          },
+          "composite_key": {
+            "type": "string",
+            "default": "composite_L1"
+          },
+          "join_policy": {
+            "type": "string",
+            "default": "exact_boundary_collapse",
+            "enum": [
+              "exact_boundary_collapse"
+            ]
+          },
+          "min_weight": {
+            "type": ["number", "null"],
+            "minimum": 0
+          },
+          "allow_legacy": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "dimension_policies": [
+        {
+          "output": "segment_local_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "composite_manifest",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "composite_pseudotime_unit_segment",
+          "category": "terminal_artifact",
+          "kind": "cell_vector_family",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "composite_pseudotime_unit_segment_id",
+          "required": true,
+          "promotion_group": "join",
+          "value_kind": "continuous"
+        },
+        {
+          "name": "composite_pseudotime_cell_weighted_0_1",
+          "category": "terminal_artifact",
+          "kind": "cell_vector_family",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "composite_pseudotime_cell_weighted_0_1_id",
+          "required": true,
+          "promotion_group": "join",
+          "value_kind": "continuous"
+        },
+        {
+          "name": "segment_local_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "segment_local_table_id",
+          "required": true,
+          "promotion_group": "join",
+          "table_type": "trajectory_segment_local_membership"
+        },
+        {
+          "name": "composite_manifest",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "composite_manifest_id",
+          "required": true,
+          "promotion_group": "join",
+          "table_type": "trajectory_segment_join_manifest"
+        },
+        {
+          "name": "composite_membership",
+          "category": "terminal_artifact",
+          "kind": "cell_vector",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "composite_membership_id",
+          "required": true,
+          "promotion_group": "join"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_cell_vector_family"
+        }
+      ],
+      "promotion_closure": {
+        "composite_pseudotime_unit_segment": [
+          "composite_manifest",
+          "composite_membership",
+          "composite_pseudotime_cell_weighted_0_1",
+          "composite_pseudotime_unit_segment",
+          "segment_local_table"
+        ],
+        "composite_pseudotime_cell_weighted_0_1": [
+          "composite_manifest",
+          "composite_membership",
+          "composite_pseudotime_cell_weighted_0_1",
+          "composite_pseudotime_unit_segment",
+          "segment_local_table"
+        ],
+        "segment_local_table": [
+          "composite_manifest",
+          "composite_membership",
+          "composite_pseudotime_cell_weighted_0_1",
+          "composite_pseudotime_unit_segment",
+          "segment_local_table"
+        ],
+        "composite_manifest": [
+          "composite_manifest",
+          "composite_membership",
+          "composite_pseudotime_cell_weighted_0_1",
+          "composite_pseudotime_unit_segment",
+          "segment_local_table"
+        ],
+        "composite_membership": [
+          "composite_manifest",
+          "composite_membership",
+          "composite_pseudotime_cell_weighted_0_1",
+          "composite_pseudotime_unit_segment",
+          "segment_local_table"
+        ]
+      },
+      "replay_equivalence": {
+        "composite_pseudotime_unit_segment": "exact_canonical_value",
+        "composite_pseudotime_cell_weighted_0_1": "exact_canonical_value",
+        "segment_local_table": "exact_canonical_value",
+        "composite_manifest": "exact_canonical_value",
+        "composite_membership": "exact_canonical_value"
+      },
+      "derived_cell_output_axes": [
+        {
+          "schema": "scworkbench.operation_pack.derived_cell_output_axis.v1",
+          "name": "composite_cells",
+          "derivation_mode": "declared_ordered_unique_union_v1",
+          "source": {
+            "mode": "g4_collection_member_axis",
+            "collection": "segments",
+            "slot": "pseudotime",
+            "projection": "family_key_cell_axis_v1",
+            "family_key_selector": {
+              "mode": "collection_item_field",
+              "field": "lineage"
+            }
+          },
+          "linked_outputs": [
+            {
+              "name": "composite_pseudotime_unit_segment",
+              "shape": "cell_key_cartesian",
+              "row_order": "key_major_then_sealed_cell_v1",
+              "missing_values": "forbidden",
+              "key_axis": {
+                "source": "resolved_effective_parameter_key_v1",
+                "parameter_candidates": [
+                  "composite_key"
+                ],
+                "null_policy": "first_non_null_v1",
+                "invalid_value_policy": "error"
+              }
+            },
+            {
+              "name": "composite_pseudotime_cell_weighted_0_1",
+              "shape": "cell_key_cartesian",
+              "row_order": "key_major_then_sealed_cell_v1",
+              "missing_values": "forbidden",
+              "key_axis": {
+                "source": "resolved_effective_parameter_key_v1",
+                "parameter_candidates": [
+                  "composite_key"
+                ],
+                "null_policy": "first_non_null_v1",
+                "invalid_value_policy": "error"
+              }
+            },
+            {
+              "name": "composite_membership",
+              "shape": "one_per_cell",
+              "row_order": "sealed_cell_axis_order_v1",
+              "missing_values": "forbidden"
+            }
+          ],
+          "limits": {
+            "minimum_cells": 1,
+            "maximum_cells": 10000000,
+            "maximum_source_axes": 64,
+            "maximum_source_memberships": 20000000,
+            "maximum_linked_outputs": 3
+          },
+          "call_discipline": "declare_once_seal_before_linked_output_v1",
+          "closure_policy": "all_linked_outputs_and_axis_observation_required_v1",
+          "declaration_identity": {
+            "scheme": "scworkbench.operation_pack.derived_cell_output_axis.v1",
+            "scope": "derived cell output axis declaration excluding declaration_identity",
+            "sha256": "d73ccffdd547a7f6734df5e883c1788953a84318ba4db4c661ea0f6b8c766b1b"
+          }
+        }
+      ],
+      "artifact_collection_reads": [
+        {
+          "name": "segments",
+          "parameter": "segments",
+          "reader": "read_retained_artifact_collection_item",
+          "item_key_field": "segment_id",
+          "order_field": "order",
+          "minimum_items": 2,
+          "maximum_items": 64,
+          "reference_slots": [
+            {
+              "slot": "pseudotime",
+              "field": "pseudotime",
+              "required": true,
+              "allowed_kinds": [
+                "cell_vector_family"
+              ],
+              "activation": "always",
+              "lifecycle_policy": "require_current",
+              "ancestry_policy": "require_content_verified_producer"
+            },
+            {
+              "slot": "model",
+              "field": "model",
+              "required": false,
+              "allowed_kinds": [
+                "model_ref"
+              ],
+              "activation": "when_present",
+              "lifecycle_policy": "require_current",
+              "ancestry_policy": "require_content_verified_producer"
+            },
+            {
+              "slot": "lineage_weights",
+              "field": "lineage_weights",
+              "required": false,
+              "allowed_kinds": [
+                "cell_vector_family"
+              ],
+              "activation": "when_present",
+              "lifecycle_policy": "require_current",
+              "ancestry_policy": "require_content_verified_producer"
+            },
+            {
+              "slot": "membership",
+              "field": "membership",
+              "required": false,
+              "allowed_kinds": [
+                "cell_vector"
+              ],
+              "activation": "when_present",
+              "lifecycle_policy": "require_current",
+              "ancestry_policy": "require_content_verified_producer"
+            },
+            {
+              "slot": "confidence",
+              "field": "confidence",
+              "required": false,
+              "allowed_kinds": [
+                "cell_vector",
+                "cell_vector_family"
+              ],
+              "activation": "when_present",
+              "lifecycle_policy": "require_current",
+              "ancestry_policy": "require_content_verified_producer"
+            },
+            {
+              "slot": "path",
+              "field": "path",
+              "required": false,
+              "allowed_kinds": [
+                "path_2d_family"
+              ],
+              "activation": "when_present",
+              "lifecycle_policy": "require_current",
+              "ancestry_policy": "require_content_verified_producer"
+            },
+            {
+              "slot": "segment_manifest",
+              "field": "segment_manifest",
+              "required": false,
+              "allowed_kinds": [
+                "obs_table"
+              ],
+              "activation": "when_present",
+              "lifecycle_policy": "require_current",
+              "ancestry_policy": "require_content_verified_producer"
+            }
+          ],
+          "maximum_references": 256,
+          "maximum_single_payload_bytes": 268435456,
+          "maximum_total_payload_bytes": 1073741824,
+          "call_discipline": "resolved_ordinal_slot_exactly_once"
+        }
+      ],
+      "retained_parameters": [
+        {
+          "name": "trajectory_composite_id",
+          "source": "output_meta",
+          "output": "composite_pseudotime_unit_segment",
+          "field": "trajectory_composite_id"
+        },
+        {
+          "name": "composite_key",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "composite_key"
+        },
+        {
+          "name": "join_policy",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "join_policy"
+        },
+        {
+          "name": "min_weight",
+          "source": "effective_parameter_value",
+          "required": false,
+          "parameter": "min_weight"
+        }
+      ],
+      "public_interface": {
+        "intent": [
+          "trajectory",
+          "composition",
+          "provenance"
+        ],
+        "inputs": [],
+        "parameters": [
+          {
+            "name": "segments",
+            "type": "list",
+            "help": "Ordered retained segments."
+          },
+          {
+            "name": "composite_id",
+            "type": "string",
+            "help": "Composite identity."
+          },
+          {
+            "name": "composite_key",
+            "type": "string",
+            "help": "Composite key."
+          },
+          {
+            "name": "join_policy",
+            "type": "choice",
+            "help": "Boundary policy."
+          },
+          {
+            "name": "min_weight",
+            "type": "dbl",
+            "help": "Lineage-weight floor."
+          },
+          {
+            "name": "allow_legacy",
+            "type": "bool",
+            "help": "Allow absent fit identity."
+          }
+        ],
+        "outputs": [
+          {
+            "name": "composite_pseudotime_unit_segment",
+            "description": "Declared composite_pseudotime_unit_segment terminal."
+          },
+          {
+            "name": "composite_pseudotime_cell_weighted_0_1",
+            "description": "Declared composite_pseudotime_cell_weighted_0_1 terminal."
+          },
+          {
+            "name": "segment_local_table",
+            "description": "Declared segment_local_table terminal."
+          },
+          {
+            "name": "composite_manifest",
+            "description": "Declared composite_manifest terminal."
+          },
+          {
+            "name": "composite_membership",
+            "description": "Declared composite_membership terminal."
+          }
+        ]
+      }
+    },
+    {
+      "name": "trajectory_segment_path_join",
+      "qualified_name": "scwbtrajectory::trajectory_segment_path_join",
+      "title": "Trajectory segment path join",
+      "description": "Join authenticated display paths while retaining display geometry as distinct from fitted model state.",
+      "runner": ".run_trajectory_segment_path_join",
+      "inputs": [],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "paths": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "path": {
+                  "type": ["object", "string", "null"]
+                },
+                "segment_id": {
+                  "type": ["string", "null"]
+                },
+                "order": {
+                  "type": "number"
+                },
+                "lineage": {
+                  "type": ["string", "null"]
+                },
+                "start_endpoint": {
+                  "type": ["object", "string", "null"]
+                },
+                "end_endpoint": {
+                  "type": ["object", "string", "null"]
+                },
+                "display_space_id": {
+                  "type": ["string", "null"]
+                },
+                "source_kind": {
+                  "type": ["string", "null"]
+                },
+                "source_engine": {
+                  "type": ["string", "null"]
+                },
+                "start_label": {
+                  "type": ["string", "null"]
+                },
+                "end_label": {
+                  "type": ["string", "null"]
+                },
+                "start_cell_set": {
+                  "type": ["string", "null"]
+                },
+                "end_cell_set": {
+                  "type": ["string", "null"]
+                },
+                "endpoint_summary_method": {
+                  "type": ["string", "null"]
+                },
+                "endpoint_max_distance": {
+                  "type": ["number", "null"]
+                },
+                "endpoint_qc_action": {
+                  "type": ["string", "null"]
+                }
+              }
+            }
+          },
+          "composite_id": {
+            "type": ["string", "null"]
+          },
+          "composite_key": {
+            "type": "string",
+            "default": "composite_path"
+          },
+          "display_space_id": {
+            "type": ["string", "null"]
+          },
+          "endpoint_summary_method": {
+            "type": "string",
+            "default": "centroid",
+            "enum": [
+              "centroid",
+              "medoid"
+            ]
+          },
+          "endpoint_max_distance": {
+            "type": ["number", "null"],
+            "minimum": 0
+          },
+          "endpoint_qc_action": {
+            "type": "string",
+            "default": "fail",
+            "enum": [
+              "fail",
+              "warn",
+              "none"
+            ]
+          },
+          "allow_legacy": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "dimension_policies": [
+        {
+          "output": "curves",
+          "policy": "data_dependent_family_v1"
+        },
+        {
+          "output": "path_manifest",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "endpoint_qc",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "curves",
+          "category": "terminal_artifact",
+          "kind": "path_2d_family",
+          "storage_profile": "path_2d_family_v1",
+          "allocated_id_key": "curves_id",
+          "required": true,
+          "promotion_group": "path_join"
+        },
+        {
+          "name": "path_manifest",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "path_manifest_id",
+          "required": true,
+          "promotion_group": "path_join",
+          "table_type": "trajectory_segment_path_join_manifest"
+        },
+        {
+          "name": "endpoint_qc",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "endpoint_qc_id",
+          "required": true,
+          "promotion_group": "path_join",
+          "table_type": "trajectory_segment_display_path_endpoint_qc"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_path_2d_family"
+        }
+      ],
+      "promotion_closure": {
+        "curves": [
+          "curves",
+          "endpoint_qc",
+          "path_manifest"
+        ],
+        "path_manifest": [
+          "curves",
+          "endpoint_qc",
+          "path_manifest"
+        ],
+        "endpoint_qc": [
+          "curves",
+          "endpoint_qc",
+          "path_manifest"
+        ]
+      },
+      "replay_equivalence": {
+        "curves": "exact_canonical_value",
+        "path_manifest": "exact_canonical_value",
+        "endpoint_qc": "exact_canonical_value"
+      },
+      "artifact_collection_reads": [
+        {
+          "name": "paths",
+          "parameter": "paths",
+          "reader": "read_retained_artifact_collection_item",
+          "item_key_field": "segment_id",
+          "order_field": "order",
+          "minimum_items": 2,
+          "maximum_items": 64,
+          "reference_slots": [
+            {
+              "slot": "path",
+              "field": "path",
+              "required": true,
+              "allowed_kinds": [
+                "path_2d_family"
+              ],
+              "activation": "always",
+              "lifecycle_policy": "require_current",
+              "ancestry_policy": "require_content_verified_producer"
+            }
+          ],
+          "maximum_references": 256,
+          "maximum_single_payload_bytes": 268435456,
+          "maximum_total_payload_bytes": 1073741824,
+          "call_discipline": "resolved_ordinal_slot_exactly_once"
+        }
+      ],
+      "optional_display_axis_groups": [
+        {
+          "name": "path_endpoint_qc",
+          "scope": "collection_item",
+          "collection_read": "paths",
+          "activation": {
+            "start": {
+              "endpoint_parameter": "start_endpoint",
+              "top_level_cell_set_parameter": null
+            },
+            "end": {
+              "endpoint_parameter": "end_endpoint",
+              "top_level_cell_set_parameter": null
+            }
+          },
+          "display_space_selector": {
+            "operation_parameter": "display_space_id",
+            "item_field": "display_space_id"
+          },
+          "endpoint_roles": [
+            "start",
+            "end"
+          ],
+          "dimension_count": 2,
+          "maximum_groups": 64,
+          "maximum_display_cells": 10000000,
+          "maximum_cells_per_endpoint_axis": 10000000,
+          "maximum_total_endpoint_memberships": 20000000,
+          "call_discipline": "display_partition_then_endpoint_ordinal_exactly_once"
+        }
+      ],
+      "retained_parameters": [
+        {
+          "name": "trajectory_composite_id",
+          "source": "output_meta",
+          "output": "curves",
+          "field": "trajectory_composite_id"
+        },
+        {
+          "name": "composite_key",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "composite_key"
+        },
+        {
+          "name": "n_segments",
+          "source": "output_meta",
+          "output": "curves",
+          "field": "n_segments"
+        },
+        {
+          "name": "n_points",
+          "source": "output_meta",
+          "output": "curves",
+          "field": "n_points"
+        }
+      ],
+      "public_interface": {
+        "intent": [
+          "trajectory",
+          "display",
+          "composition"
+        ],
+        "inputs": [],
+        "parameters": [
+          {
+            "name": "paths",
+            "type": "list",
+            "help": "Ordered retained paths."
+          },
+          {
+            "name": "composite_id",
+            "type": "string",
+            "help": "Composite identity."
+          },
+          {
+            "name": "composite_key",
+            "type": "string",
+            "help": "Composite path key."
+          },
+          {
+            "name": "display_space_id",
+            "type": "string",
+            "help": "Fallback 2D space."
+          },
+          {
+            "name": "endpoint_summary_method",
+            "type": "choice",
+            "help": "Centroid or medoid."
+          },
+          {
+            "name": "endpoint_max_distance",
+            "type": "dbl",
+            "help": "Endpoint tolerance."
+          },
+          {
+            "name": "endpoint_qc_action",
+            "type": "choice",
+            "help": "Endpoint QC action."
+          },
+          {
+            "name": "allow_legacy",
+            "type": "bool",
+            "help": "Allow absent fit identity."
+          }
+        ],
+        "outputs": [
+          {
+            "name": "curves",
+            "description": "Declared curves terminal."
+          },
+          {
+            "name": "path_manifest",
+            "description": "Declared path_manifest terminal."
+          },
+          {
+            "name": "endpoint_qc",
+            "description": "Declared endpoint_qc terminal."
+          }
+        ]
+      }
+    },
+    {
+      "name": "trajectory_de",
+      "qualified_name": "scwbtrajectory::trajectory_de",
+      "title": "Trajectory De",
+      "description": "Grouped S2 model trajectory consumer with authenticated typed inputs.",
+      "runner": ".run_trajectory_de_model",
+      "inputs": [
+        {
+          "name": "matrix",
+          "kind": "matrix",
+          "required": true,
+          "alignment": "cell_and_feature_ordered"
+        },
+        {
+          "name": "model",
+          "kind": "model_ref",
+          "required": true,
+          "alignment": "model_linked"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "chunk_size": {
+            "type": "integer",
+            "default": 128,
+            "minimum": 1,
+            "maximum": 100000
+          },
+          "feature_set": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "features": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "lineage": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "min_pct_nonzero": {
+            "type": "number"
+          },
+          "min_sd": {
+            "type": "number"
+          },
+          "p_adjust_method": {
+            "type": "string"
+          },
+          "test": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "registry_reads": [
+        {
+          "name": "feature_sets",
+          "category": "authenticated_core_registry_snapshot",
+          "kind": "feature_set_registry",
+          "reader": "read_feature_set_registry",
+          "matrix_input": "matrix",
+          "no_selector_policy": "all_namespaces",
+          "empty_match_policy": "allow"
+        }
+      ],
+      "typed_slice_reads": [
+        {
+          "name": "matrix_chunks",
+          "input": "matrix",
+          "reader": "read_typed_slices",
+          "kind": "matrix",
+          "supported_axes": [
+            "features"
+          ],
+          "chunk_axis": "features",
+          "chunk_size_parameter": "chunk_size",
+          "call_discipline": "ordered_partition_exactly_once",
+          "empty_selection_policy": "reject",
+          "duplicate_policy": "reject",
+          "selection": {
+            "cells": {
+              "policy": "effective_input_axis_v1"
+            },
+            "features": {
+              "policy": "effective_input_axis_v1"
+            }
+          }
+        }
+      ],
+      "self_linked_contained_model_reads": [
+        {
+          "name": "model_payload",
+          "input": "model",
+          "reader": "read_self_linked_contained_model_payload",
+          "allowed_models": [
+            {
+              "engine": "slingshot",
+              "model_type": "slingshot"
+            },
+            {
+              "engine": "monocle3",
+              "model_type": "monocle3_cds"
+            }
+          ],
+          "linkage_policy": "authenticated_existing_source_and_cell_linkage_v1",
+          "maximum_file_count": 32,
+          "maximum_total_bytes": 1073741824,
+          "call_discipline": "exactly_once"
+        }
+      ],
+      "dimension_policies": [
+        {
+          "output": "de_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "fit_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "de_table",
+          "category": "terminal_artifact",
+          "kind": "feature_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "de_table_id",
+          "required": true,
+          "promotion_group": "trajectory_de",
+          "table_type": "trajectory_de"
+        },
+        {
+          "name": "fit_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "fit_summary_id",
+          "required": true,
+          "promotion_group": "trajectory_de",
+          "table_type": "trajectory_de_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_feature_table"
+        }
+      ],
+      "promotion_closure": {
+        "de_table": [
+          "de_table",
+          "fit_summary"
+        ],
+        "fit_summary": [
+          "de_table",
+          "fit_summary"
+        ]
+      },
+      "replay_equivalence": {
+        "de_table": "exact_canonical_value",
+        "fit_summary": "exact_canonical_value"
+      }
+    },
+    {
+      "name": "trajectory_smooth",
+      "qualified_name": "scwbtrajectory::trajectory_smooth",
+      "title": "Trajectory Smooth",
+      "description": "Grouped S2 model trajectory consumer with authenticated typed inputs.",
+      "runner": ".run_trajectory_smooth_model",
+      "inputs": [
+        {
+          "name": "matrix",
+          "kind": "matrix",
+          "required": true,
+          "alignment": "cell_and_feature_ordered"
+        },
+        {
+          "name": "model",
+          "kind": "model_ref",
+          "required": true,
+          "alignment": "model_linked"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "chunk_size": {
+            "type": "integer",
+            "default": 128,
+            "minimum": 1,
+            "maximum": 100000
+          },
+          "feature_set": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "features": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "lineage": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "min_cells_per_bin": {
+            "type": "integer"
+          },
+          "n_bins": {
+            "type": "integer"
+          },
+          "summary_fun": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "registry_reads": [
+        {
+          "name": "feature_sets",
+          "category": "authenticated_core_registry_snapshot",
+          "kind": "feature_set_registry",
+          "reader": "read_feature_set_registry",
+          "matrix_input": "matrix",
+          "no_selector_policy": "all_namespaces",
+          "empty_match_policy": "allow"
+        }
+      ],
+      "typed_slice_reads": [
+        {
+          "name": "matrix_chunks",
+          "input": "matrix",
+          "reader": "read_typed_slices",
+          "kind": "matrix",
+          "supported_axes": [
+            "features"
+          ],
+          "chunk_axis": "features",
+          "chunk_size_parameter": "chunk_size",
+          "call_discipline": "ordered_partition_exactly_once",
+          "empty_selection_policy": "reject",
+          "duplicate_policy": "reject",
+          "selection": {
+            "cells": {
+              "policy": "effective_input_axis_v1"
+            },
+            "features": {
+              "policy": "effective_input_axis_v1"
+            }
+          }
+        }
+      ],
+      "self_linked_contained_model_reads": [
+        {
+          "name": "model_payload",
+          "input": "model",
+          "reader": "read_self_linked_contained_model_payload",
+          "allowed_models": [
+            {
+              "engine": "slingshot",
+              "model_type": "slingshot"
+            },
+            {
+              "engine": "monocle3",
+              "model_type": "monocle3_cds"
+            }
+          ],
+          "linkage_policy": "authenticated_existing_source_and_cell_linkage_v1",
+          "maximum_file_count": 32,
+          "maximum_total_bytes": 1073741824,
+          "call_discipline": "exactly_once"
+        }
+      ],
+      "dimension_policies": [
+        {
+          "output": "trend_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "fit_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "trend_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "trend_table_id",
+          "required": true,
+          "promotion_group": "trajectory_smooth",
+          "table_type": "trajectory_smooth"
+        },
+        {
+          "name": "fit_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "fit_summary_id",
+          "required": true,
+          "promotion_group": "trajectory_smooth",
+          "table_type": "trajectory_smooth_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_feature_table"
+        }
+      ],
+      "promotion_closure": {
+        "trend_table": [
+          "fit_summary",
+          "trend_table"
+        ],
+        "fit_summary": [
+          "fit_summary",
+          "trend_table"
+        ]
+      },
+      "replay_equivalence": {
+        "trend_table": "exact_canonical_value",
+        "fit_summary": "exact_canonical_value"
+      }
+    },
+    {
+      "name": "trajectory_signature_smooth",
+      "qualified_name": "scwbtrajectory::trajectory_signature_smooth",
+      "title": "Trajectory Signature Smooth",
+      "description": "Grouped S2 model trajectory consumer with authenticated typed inputs.",
+      "runner": ".run_trajectory_signature_smooth_model",
+      "inputs": [
+        {
+          "name": "matrix",
+          "kind": "matrix",
+          "required": true,
+          "alignment": "cell_and_feature_ordered"
+        },
+        {
+          "name": "model",
+          "kind": "model_ref",
+          "required": true,
+          "alignment": "model_linked"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "chunk_size": {
+            "type": "integer",
+            "default": 128,
+            "minimum": 1,
+            "maximum": 100000
+          },
+          "feature_set": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "features": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "lineage": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "min_cells_per_bin": {
+            "type": "integer"
+          },
+          "n_bins": {
+            "type": "integer"
+          },
+          "score_method": {
+            "type": "string"
+          },
+          "summary_fun": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "feature_set"
+        ]
+      },
+      "registry_reads": [
+        {
+          "name": "feature_sets",
+          "category": "authenticated_core_registry_snapshot",
+          "kind": "feature_set_registry",
+          "reader": "read_feature_set_registry",
+          "matrix_input": "matrix",
+          "no_selector_policy": "all_namespaces",
+          "empty_match_policy": "allow"
+        }
+      ],
+      "typed_slice_reads": [
+        {
+          "name": "matrix_chunks",
+          "input": "matrix",
+          "reader": "read_typed_slices",
+          "kind": "matrix",
+          "supported_axes": [
+            "features"
+          ],
+          "chunk_axis": "features",
+          "chunk_size_parameter": "chunk_size",
+          "call_discipline": "ordered_partition_exactly_once",
+          "empty_selection_policy": "reject",
+          "duplicate_policy": "reject",
+          "selection": {
+            "cells": {
+              "policy": "effective_input_axis_v1"
+            },
+            "features": {
+              "policy": "effective_input_axis_v1"
+            }
+          }
+        }
+      ],
+      "self_linked_contained_model_reads": [
+        {
+          "name": "model_payload",
+          "input": "model",
+          "reader": "read_self_linked_contained_model_payload",
+          "allowed_models": [
+            {
+              "engine": "slingshot",
+              "model_type": "slingshot"
+            },
+            {
+              "engine": "monocle3",
+              "model_type": "monocle3_cds"
+            }
+          ],
+          "linkage_policy": "authenticated_existing_source_and_cell_linkage_v1",
+          "maximum_file_count": 32,
+          "maximum_total_bytes": 1073741824,
+          "call_discipline": "exactly_once"
+        }
+      ],
+      "dimension_policies": [
+        {
+          "output": "signature_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "fit_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "signature_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "signature_table_id",
+          "required": true,
+          "promotion_group": "trajectory_signature_smooth",
+          "table_type": "trajectory_signature_smooth"
+        },
+        {
+          "name": "fit_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "fit_summary_id",
+          "required": true,
+          "promotion_group": "trajectory_signature_smooth",
+          "table_type": "trajectory_signature_smooth_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_feature_table"
+        }
+      ],
+      "promotion_closure": {
+        "signature_table": [
+          "fit_summary",
+          "signature_table"
+        ],
+        "fit_summary": [
+          "fit_summary",
+          "signature_table"
+        ]
+      },
+      "replay_equivalence": {
+        "signature_table": "exact_canonical_value",
+        "fit_summary": "exact_canonical_value"
+      }
+    },
+    {
+      "name": "trajectory_geneset_dynamics",
+      "qualified_name": "scwbtrajectory::trajectory_geneset_dynamics",
+      "title": "Trajectory Geneset Dynamics",
+      "description": "Grouped S2 model trajectory consumer with authenticated typed inputs.",
+      "runner": ".run_trajectory_geneset_dynamics_model",
+      "inputs": [
+        {
+          "name": "matrix",
+          "kind": "matrix",
+          "required": true,
+          "alignment": "cell_and_feature_ordered"
+        },
+        {
+          "name": "model",
+          "kind": "model_ref",
+          "required": true,
+          "alignment": "model_linked"
+        },
+        {
+          "name": "membership",
+          "kind": "cell_vector",
+          "required": false,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "bootstrap_n": {
+            "type": "integer"
+          },
+          "bootstrap_seed": {
+            "type": "integer"
+          },
+          "chunk_size": {
+            "type": "integer",
+            "default": 128,
+            "minimum": 1,
+            "maximum": 100000
+          },
+          "ci_level": {
+            "type": "number"
+          },
+          "class_min_amplitude": {
+            "type": "number"
+          },
+          "end_label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "feature_sets": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "lineage": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "loess_span": {
+            "type": "number"
+          },
+          "low_abundance_max_score": {
+            "type": "number"
+          },
+          "max_set_size": {
+            "type": "integer"
+          },
+          "min_amplitude": {
+            "type": "number"
+          },
+          "min_bins_observed": {
+            "type": "integer"
+          },
+          "min_cells_per_bin": {
+            "type": "integer"
+          },
+          "min_detected_fraction": {
+            "type": "number"
+          },
+          "min_features_detected": {
+            "type": "integer"
+          },
+          "min_max_score": {
+            "type": "number"
+          },
+          "min_mean_score": {
+            "type": "number"
+          },
+          "min_set_size": {
+            "type": "integer"
+          },
+          "min_signal_to_noise": {
+            "type": "number"
+          },
+          "monotonic_min_abs_rho": {
+            "type": "number"
+          },
+          "n_bins": {
+            "type": "integer"
+          },
+          "n_permutations": {
+            "type": "integer"
+          },
+          "namespace": {
+            "type": "string",
+            "minLength": 1
+          },
+          "on_off_min_delta": {
+            "type": "number"
+          },
+          "p_adjust_method": {
+            "type": "string"
+          },
+          "permutation_seed": {
+            "type": "integer"
+          },
+          "pseudotime_direction": {
+            "type": "string"
+          },
+          "score_method": {
+            "type": "string"
+          },
+          "smooth_method": {
+            "type": "string"
+          },
+          "start_label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "summary_fun": {
+            "type": "string"
+          },
+          "top_driver_genes": {
+            "type": "integer"
+          },
+          "top_n": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "namespace"
+        ]
+      },
+      "registry_reads": [
+        {
+          "name": "feature_sets",
+          "category": "authenticated_core_registry_snapshot",
+          "kind": "feature_set_registry",
+          "reader": "read_feature_set_registry",
+          "matrix_input": "matrix",
+          "no_selector_policy": "all_namespaces",
+          "empty_match_policy": "allow"
+        }
+      ],
+      "typed_slice_reads": [
+        {
+          "name": "matrix_chunks",
+          "input": "matrix",
+          "reader": "read_typed_slices",
+          "kind": "matrix",
+          "supported_axes": [
+            "features"
+          ],
+          "chunk_axis": "features",
+          "chunk_size_parameter": "chunk_size",
+          "call_discipline": "ordered_partition_exactly_once",
+          "empty_selection_policy": "reject",
+          "duplicate_policy": "reject",
+          "selection": {
+            "cells": {
+              "policy": "effective_input_axis_v1"
+            },
+            "features": {
+              "policy": "effective_input_axis_v1"
+            }
+          }
+        }
+      ],
+      "self_linked_contained_model_reads": [
+        {
+          "name": "model_payload",
+          "input": "model",
+          "reader": "read_self_linked_contained_model_payload",
+          "allowed_models": [
+            {
+              "engine": "slingshot",
+              "model_type": "slingshot"
+            },
+            {
+              "engine": "monocle3",
+              "model_type": "monocle3_cds"
+            }
+          ],
+          "linkage_policy": "authenticated_existing_source_and_cell_linkage_v1",
+          "maximum_file_count": 32,
+          "maximum_total_bytes": 1073741824,
+          "call_discipline": "exactly_once"
+        }
+      ],
+      "dimension_policies": [
+        {
+          "output": "signature_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "dynamics_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "top_sets",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "driver_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "driver_curve_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "fit_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "signature_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "signature_table_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "table_type": "trajectory_geneset_dynamics_curve"
+        },
+        {
+          "name": "dynamics_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "dynamics_table_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "table_type": "trajectory_geneset_dynamics"
+        },
+        {
+          "name": "top_sets",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "top_sets_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "table_type": "trajectory_geneset_dynamics_top"
+        },
+        {
+          "name": "driver_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "driver_table_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "table_type": "trajectory_geneset_dynamics_drivers"
+        },
+        {
+          "name": "driver_curve_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "driver_curve_table_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "table_type": "trajectory_geneset_dynamics_driver_curve"
+        },
+        {
+          "name": "fit_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "fit_summary_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "table_type": "trajectory_geneset_dynamics_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_feature_table"
+        }
+      ],
+      "promotion_closure": {
+        "signature_table": [
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ],
+        "dynamics_table": [
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ],
+        "top_sets": [
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ],
+        "driver_table": [
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ],
+        "driver_curve_table": [
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ],
+        "fit_summary": [
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ]
+      },
+      "replay_equivalence": {
+        "signature_table": "exact_canonical_value",
+        "dynamics_table": "exact_canonical_value",
+        "top_sets": "exact_canonical_value",
+        "driver_table": "exact_canonical_value",
+        "driver_curve_table": "exact_canonical_value",
+        "fit_summary": "exact_canonical_value"
+      }
+    },
+    {
+      "name": "trajectory_vector_smooth",
+      "qualified_name": "scwbtrajectory::trajectory_vector_smooth",
+      "title": "Trajectory Vector Smooth",
+      "description": "Grouped S2 model trajectory consumer with authenticated typed inputs.",
+      "runner": ".run_trajectory_vector_smooth_model",
+      "inputs": [
+        {
+          "name": "signal",
+          "kind": "cell_vector_family",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "model",
+          "kind": "model_ref",
+          "required": true,
+          "alignment": "model_linked"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "lineage": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "min_cells_per_bin": {
+            "type": "integer"
+          },
+          "n_bins": {
+            "type": "integer"
+          },
+          "signal_keys": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "summary_fun": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "self_linked_contained_model_reads": [
+        {
+          "name": "model_payload",
+          "input": "model",
+          "reader": "read_self_linked_contained_model_payload",
+          "allowed_models": [
+            {
+              "engine": "slingshot",
+              "model_type": "slingshot"
+            },
+            {
+              "engine": "monocle3",
+              "model_type": "monocle3_cds"
+            }
+          ],
+          "linkage_policy": "authenticated_existing_source_and_cell_linkage_v1",
+          "maximum_file_count": 32,
+          "maximum_total_bytes": 1073741824,
+          "call_discipline": "exactly_once"
+        }
+      ],
+      "dimension_policies": [
+        {
+          "output": "signal_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "fit_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "signal_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "signal_table_id",
+          "required": true,
+          "promotion_group": "trajectory_vector_smooth",
+          "table_type": "trajectory_vector_smooth"
+        },
+        {
+          "name": "fit_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "fit_summary_id",
+          "required": true,
+          "promotion_group": "trajectory_vector_smooth",
+          "table_type": "trajectory_vector_smooth_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_feature_table"
+        }
+      ],
+      "promotion_closure": {
+        "signal_table": [
+          "fit_summary",
+          "signal_table"
+        ],
+        "fit_summary": [
+          "fit_summary",
+          "signal_table"
+        ]
+      },
+      "replay_equivalence": {
+        "signal_table": "exact_canonical_value",
+        "fit_summary": "exact_canonical_value"
+      }
+    },
+    {
+      "name": "trajectory_signal_dynamics",
+      "qualified_name": "scwbtrajectory::trajectory_signal_dynamics",
+      "title": "Trajectory Signal Dynamics",
+      "description": "Grouped S2 model trajectory consumer with authenticated typed inputs.",
+      "runner": ".run_trajectory_signal_dynamics_model",
+      "inputs": [
+        {
+          "name": "signal",
+          "kind": "cell_vector_family",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "model",
+          "kind": "model_ref",
+          "required": true,
+          "alignment": "model_linked"
+        },
+        {
+          "name": "membership",
+          "kind": "cell_vector",
+          "required": false,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "bootstrap_n": {
+            "type": "integer"
+          },
+          "bootstrap_seed": {
+            "type": "integer"
+          },
+          "ci_level": {
+            "type": "number"
+          },
+          "class_min_amplitude": {
+            "type": "number"
+          },
+          "end_label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lineage": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "loess_span": {
+            "type": "number"
+          },
+          "min_amplitude": {
+            "type": "number"
+          },
+          "min_bins_observed": {
+            "type": "integer"
+          },
+          "min_cells_per_bin": {
+            "type": "integer"
+          },
+          "monotonic_min_abs_rho": {
+            "type": "number"
+          },
+          "n_bins": {
+            "type": "integer"
+          },
+          "on_off_min_delta": {
+            "type": "number"
+          },
+          "pseudotime_direction": {
+            "type": "string"
+          },
+          "signal_keys": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "smooth_method": {
+            "type": "string"
+          },
+          "start_label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "summary_fun": {
+            "type": "string"
+          },
+          "top_n": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      },
+      "self_linked_contained_model_reads": [
+        {
+          "name": "model_payload",
+          "input": "model",
+          "reader": "read_self_linked_contained_model_payload",
+          "allowed_models": [
+            {
+              "engine": "slingshot",
+              "model_type": "slingshot"
+            },
+            {
+              "engine": "monocle3",
+              "model_type": "monocle3_cds"
+            }
+          ],
+          "linkage_policy": "authenticated_existing_source_and_cell_linkage_v1",
+          "maximum_file_count": 32,
+          "maximum_total_bytes": 1073741824,
+          "call_discipline": "exactly_once"
+        }
+      ],
+      "dimension_policies": [
+        {
+          "output": "signal_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "dynamics_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "top_signals",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "fit_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "signal_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "signal_table_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_dynamics",
+          "table_type": "trajectory_signal_dynamics_curve"
+        },
+        {
+          "name": "dynamics_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "dynamics_table_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_dynamics",
+          "table_type": "trajectory_signal_dynamics"
+        },
+        {
+          "name": "top_signals",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "top_signals_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_dynamics",
+          "table_type": "trajectory_signal_dynamics_top"
+        },
+        {
+          "name": "fit_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "fit_summary_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_dynamics",
+          "table_type": "trajectory_signal_dynamics_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_feature_table"
+        }
+      ],
+      "promotion_closure": {
+        "signal_table": [
+          "dynamics_table",
+          "fit_summary",
+          "signal_table",
+          "top_signals"
+        ],
+        "dynamics_table": [
+          "dynamics_table",
+          "fit_summary",
+          "signal_table",
+          "top_signals"
+        ],
+        "top_signals": [
+          "dynamics_table",
+          "fit_summary",
+          "signal_table",
+          "top_signals"
+        ],
+        "fit_summary": [
+          "dynamics_table",
+          "fit_summary",
+          "signal_table",
+          "top_signals"
+        ]
+      },
+      "replay_equivalence": {
+        "signal_table": "exact_canonical_value",
+        "dynamics_table": "exact_canonical_value",
+        "top_signals": "exact_canonical_value",
+        "fit_summary": "exact_canonical_value"
+      }
+    },
+    {
+      "name": "trajectory_geneset_dynamics_explicit",
+      "qualified_name": "scwbtrajectory::trajectory_geneset_dynamics_explicit",
+      "title": "Trajectory Geneset Dynamics Explicit",
+      "description": "Grouped S2 explicit trajectory consumer with authenticated typed inputs.",
+      "runner": ".run_trajectory_geneset_dynamics_explicit",
+      "inputs": [
+        {
+          "name": "matrix",
+          "kind": "matrix",
+          "required": true,
+          "alignment": "cell_and_feature_ordered"
+        },
+        {
+          "name": "pseudotime",
+          "kind": "cell_vector_family",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "membership",
+          "kind": "cell_vector",
+          "required": false,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "bootstrap_n": {
+            "type": "integer"
+          },
+          "bootstrap_seed": {
+            "type": "integer"
+          },
+          "chunk_size": {
+            "type": "integer",
+            "default": 128,
+            "minimum": 1,
+            "maximum": 100000
+          },
+          "ci_level": {
+            "type": "number"
+          },
+          "class_min_amplitude": {
+            "type": "number"
+          },
+          "end_label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "feature_sets": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "loess_span": {
+            "type": "number"
+          },
+          "low_abundance_max_score": {
+            "type": "number"
+          },
+          "max_set_size": {
+            "type": "integer"
+          },
+          "min_amplitude": {
+            "type": "number"
+          },
+          "min_bins_observed": {
+            "type": "integer"
+          },
+          "min_cells_per_bin": {
+            "type": "integer"
+          },
+          "min_detected_fraction": {
+            "type": "number"
+          },
+          "min_features_detected": {
+            "type": "integer"
+          },
+          "min_max_score": {
+            "type": "number"
+          },
+          "min_mean_score": {
+            "type": "number"
+          },
+          "min_set_size": {
+            "type": "integer"
+          },
+          "min_signal_to_noise": {
+            "type": "number"
+          },
+          "monotonic_min_abs_rho": {
+            "type": "number"
+          },
+          "n_bins": {
+            "type": "integer"
+          },
+          "n_permutations": {
+            "type": "integer"
+          },
+          "namespace": {
+            "type": "string",
+            "minLength": 1
+          },
+          "on_off_min_delta": {
+            "type": "number"
+          },
+          "p_adjust_method": {
+            "type": "string"
+          },
+          "permutation_seed": {
+            "type": "integer"
+          },
+          "pseudotime_direction": {
+            "type": "string"
+          },
+          "pseudotime_key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "score_method": {
+            "type": "string"
+          },
+          "smooth_method": {
+            "type": "string"
+          },
+          "start_label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "summary_fun": {
+            "type": "string"
+          },
+          "top_driver_genes": {
+            "type": "integer"
+          },
+          "top_n": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "namespace",
+          "pseudotime_key"
+        ]
+      },
+      "provenance_reads": [
+        {
+          "name": "pseudotime_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "pseudotime",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        },
+        {
+          "name": "membership_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "membership",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        }
+      ],
+      "registry_reads": [
+        {
+          "name": "feature_sets",
+          "category": "authenticated_core_registry_snapshot",
+          "kind": "feature_set_registry",
+          "reader": "read_feature_set_registry",
+          "matrix_input": "matrix",
+          "no_selector_policy": "all_namespaces",
+          "empty_match_policy": "allow"
+        }
+      ],
+      "typed_slice_reads": [
+        {
+          "name": "matrix_chunks",
+          "input": "matrix",
+          "reader": "read_typed_slices",
+          "kind": "matrix",
+          "supported_axes": [
+            "features"
+          ],
+          "chunk_axis": "features",
+          "chunk_size_parameter": "chunk_size",
+          "call_discipline": "ordered_partition_exactly_once",
+          "empty_selection_policy": "reject",
+          "duplicate_policy": "reject",
+          "selection": {
+            "cells": {
+              "policy": "effective_input_axis_v1"
+            },
+            "features": {
+              "policy": "effective_input_axis_v1"
+            }
+          }
+        }
+      ],
+      "dimension_policies": [
+        {
+          "output": "signature_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "dynamics_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "top_sets",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "driver_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "driver_curve_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "fit_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "signature_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "signature_table_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "table_type": "trajectory_geneset_dynamics_curve"
+        },
+        {
+          "name": "dynamics_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "dynamics_table_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "table_type": "trajectory_geneset_dynamics"
+        },
+        {
+          "name": "top_sets",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "top_sets_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "table_type": "trajectory_geneset_dynamics_top"
+        },
+        {
+          "name": "driver_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "driver_table_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "table_type": "trajectory_geneset_dynamics_drivers"
+        },
+        {
+          "name": "driver_curve_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "driver_curve_table_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "table_type": "trajectory_geneset_dynamics_driver_curve"
+        },
+        {
+          "name": "fit_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "fit_summary_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "table_type": "trajectory_geneset_dynamics_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_feature_table"
+        }
+      ],
+      "promotion_closure": {
+        "signature_table": [
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ],
+        "dynamics_table": [
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ],
+        "top_sets": [
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ],
+        "driver_table": [
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ],
+        "driver_curve_table": [
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ],
+        "fit_summary": [
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ]
+      },
+      "replay_equivalence": {
+        "signature_table": "exact_canonical_value",
+        "dynamics_table": "exact_canonical_value",
+        "top_sets": "exact_canonical_value",
+        "driver_table": "exact_canonical_value",
+        "driver_curve_table": "exact_canonical_value",
+        "fit_summary": "exact_canonical_value"
+      }
+    },
+    {
+      "name": "trajectory_signal_dynamics_explicit",
+      "qualified_name": "scwbtrajectory::trajectory_signal_dynamics_explicit",
+      "title": "Trajectory Signal Dynamics Explicit",
+      "description": "Grouped S2 explicit trajectory consumer with authenticated typed inputs.",
+      "runner": ".run_trajectory_signal_dynamics_explicit",
+      "inputs": [
+        {
+          "name": "signal",
+          "kind": "cell_vector_family",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "pseudotime",
+          "kind": "cell_vector_family",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "membership",
+          "kind": "cell_vector",
+          "required": false,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "bootstrap_n": {
+            "type": "integer"
+          },
+          "bootstrap_seed": {
+            "type": "integer"
+          },
+          "ci_level": {
+            "type": "number"
+          },
+          "class_min_amplitude": {
+            "type": "number"
+          },
+          "end_label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "loess_span": {
+            "type": "number"
+          },
+          "min_amplitude": {
+            "type": "number"
+          },
+          "min_bins_observed": {
+            "type": "integer"
+          },
+          "min_cells_per_bin": {
+            "type": "integer"
+          },
+          "monotonic_min_abs_rho": {
+            "type": "number"
+          },
+          "n_bins": {
+            "type": "integer"
+          },
+          "on_off_min_delta": {
+            "type": "number"
+          },
+          "pseudotime_direction": {
+            "type": "string"
+          },
+          "pseudotime_key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "signal_keys": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "smooth_method": {
+            "type": "string"
+          },
+          "start_label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "summary_fun": {
+            "type": "string"
+          },
+          "top_n": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "pseudotime_key"
+        ]
+      },
+      "provenance_reads": [
+        {
+          "name": "pseudotime_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "pseudotime",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        },
+        {
+          "name": "membership_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "membership",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        }
+      ],
+      "dimension_policies": [
+        {
+          "output": "signal_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "dynamics_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "top_signals",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "fit_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "signal_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "signal_table_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_dynamics",
+          "table_type": "trajectory_signal_dynamics_curve"
+        },
+        {
+          "name": "dynamics_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "dynamics_table_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_dynamics",
+          "table_type": "trajectory_signal_dynamics"
+        },
+        {
+          "name": "top_signals",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "top_signals_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_dynamics",
+          "table_type": "trajectory_signal_dynamics_top"
+        },
+        {
+          "name": "fit_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "fit_summary_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_dynamics",
+          "table_type": "trajectory_signal_dynamics_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_feature_table"
+        }
+      ],
+      "promotion_closure": {
+        "signal_table": [
+          "dynamics_table",
+          "fit_summary",
+          "signal_table",
+          "top_signals"
+        ],
+        "dynamics_table": [
+          "dynamics_table",
+          "fit_summary",
+          "signal_table",
+          "top_signals"
+        ],
+        "top_signals": [
+          "dynamics_table",
+          "fit_summary",
+          "signal_table",
+          "top_signals"
+        ],
+        "fit_summary": [
+          "dynamics_table",
+          "fit_summary",
+          "signal_table",
+          "top_signals"
+        ]
+      },
+      "replay_equivalence": {
+        "signal_table": "exact_canonical_value",
+        "dynamics_table": "exact_canonical_value",
+        "top_signals": "exact_canonical_value",
+        "fit_summary": "exact_canonical_value"
+      }
+    }
+  ]
+}

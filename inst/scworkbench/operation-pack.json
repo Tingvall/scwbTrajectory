@@ -50,16 +50,28 @@
         "type": "object",
         "properties": {
           "branch_a": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "branch_b": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "feature_set": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "features": {
-            "type": ["array", "null"],
+            "type": [
+              "array",
+              "null"
+            ],
             "uniqueItems": true,
             "items": {
               "type": "string",
@@ -337,13 +349,22 @@
         "type": "object",
         "properties": {
           "route_key": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "feature_set": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "features": {
-            "type": ["array", "null"],
+            "type": [
+              "array",
+              "null"
+            ],
             "uniqueItems": true,
             "items": {
               "type": "string",
@@ -669,7 +690,10 @@
             ]
           },
           "score_prefix": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "additionalProperties": false
@@ -866,7 +890,10 @@
             ]
           },
           "approx_points": {
-            "type": ["integer", "null"],
+            "type": [
+              "integer",
+              "null"
+            ],
             "minimum": 2,
             "maximum": 50000
           }
@@ -998,7 +1025,10 @@
         "type": "object",
         "properties": {
           "checkpoint_sets": {
-            "type": ["array", "null"],
+            "type": [
+              "array",
+              "null"
+            ],
             "uniqueItems": true,
             "items": {
               "type": "string",
@@ -1021,7 +1051,10 @@
             ]
           },
           "n_path_points": {
-            "type": ["integer", "null"],
+            "type": [
+              "integer",
+              "null"
+            ],
             "minimum": 2,
             "maximum": 50000
           },
@@ -1272,29 +1305,50 @@
         "type": "object",
         "properties": {
           "segment_id": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "segment_order": {
             "type": "number",
             "default": 1
           },
           "lineage": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "confidence_key": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "source_engine": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "start_label": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "end_label": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "composite_id": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "allow_legacy": {
             "type": "boolean",
@@ -1652,17 +1706,26 @@
         "type": "object",
         "properties": {
           "segment_id": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "segment_order": {
             "type": "number",
             "default": 1
           },
           "score_prefix": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "candidate_cells": {
-            "type": ["array", "null"],
+            "type": [
+              "array",
+              "null"
+            ],
             "uniqueItems": true,
             "items": {
               "type": "string",
@@ -1670,36 +1733,68 @@
             }
           },
           "distance_threshold": {
-            "type": ["number", "null"]
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "distance_quantile": {
-            "type": ["number", "null"],
+            "type": [
+              "number",
+              "null"
+            ],
             "minimum": 0,
             "maximum": 1
           },
           "start_label": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "end_label": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "display_lineage": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "display_space_id": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "start_endpoint": {
-            "type": ["object", "string", "null"]
+            "type": [
+              "object",
+              "string",
+              "null"
+            ]
           },
           "end_endpoint": {
-            "type": ["object", "string", "null"]
+            "type": [
+              "object",
+              "string",
+              "null"
+            ]
           },
           "start_cell_set": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "end_cell_set": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "endpoint_summary_method": {
             "type": "string",
@@ -1710,7 +1805,10 @@
             ]
           },
           "endpoint_max_distance": {
-            "type": ["number", "null"],
+            "type": [
+              "number",
+              "null"
+            ],
             "minimum": 0
           },
           "endpoint_qc_action": {
@@ -1723,13 +1821,22 @@
             ]
           },
           "composite_id": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "pseudotime_key": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "confidence_key": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "additionalProperties": false
@@ -2130,13 +2237,20 @@
               "additionalProperties": true,
               "properties": {
                 "pseudotime": {
-                  "type": ["object", "string", "null"]
+                  "type": [
+                    "object",
+                    "string",
+                    "null"
+                  ]
                 }
               }
             }
           },
           "composite_id": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "composite_key": {
             "type": "string",
@@ -2150,7 +2264,10 @@
             ]
           },
           "min_weight": {
-            "type": ["number", "null"],
+            "type": [
+              "number",
+              "null"
+            ],
             "minimum": 0
           },
           "allow_legacy": {
@@ -2546,65 +2663,119 @@
               "additionalProperties": true,
               "properties": {
                 "path": {
-                  "type": ["object", "string", "null"]
+                  "type": [
+                    "object",
+                    "string",
+                    "null"
+                  ]
                 },
                 "segment_id": {
-                  "type": ["string", "null"]
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
                 "order": {
                   "type": "number"
                 },
                 "lineage": {
-                  "type": ["string", "null"]
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
                 "start_endpoint": {
-                  "type": ["object", "string", "null"]
+                  "type": [
+                    "object",
+                    "string",
+                    "null"
+                  ]
                 },
                 "end_endpoint": {
-                  "type": ["object", "string", "null"]
+                  "type": [
+                    "object",
+                    "string",
+                    "null"
+                  ]
                 },
                 "display_space_id": {
-                  "type": ["string", "null"]
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
                 "source_kind": {
-                  "type": ["string", "null"]
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
                 "source_engine": {
-                  "type": ["string", "null"]
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
                 "start_label": {
-                  "type": ["string", "null"]
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
                 "end_label": {
-                  "type": ["string", "null"]
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
                 "start_cell_set": {
-                  "type": ["string", "null"]
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
                 "end_cell_set": {
-                  "type": ["string", "null"]
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
                 "endpoint_summary_method": {
-                  "type": ["string", "null"]
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
                 "endpoint_max_distance": {
-                  "type": ["number", "null"]
+                  "type": [
+                    "number",
+                    "null"
+                  ]
                 },
                 "endpoint_qc_action": {
-                  "type": ["string", "null"]
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               }
             }
           },
           "composite_id": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "composite_key": {
             "type": "string",
             "default": "composite_path"
           },
           "display_space_id": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "endpoint_summary_method": {
             "type": "string",
@@ -2615,7 +2786,10 @@
             ]
           },
           "endpoint_max_distance": {
-            "type": ["number", "null"],
+            "type": [
+              "number",
+              "null"
+            ],
             "minimum": 0
           },
           "endpoint_qc_action": {
@@ -4773,6 +4947,616 @@
         "top_signals": "exact_canonical_value",
         "fit_summary": "exact_canonical_value"
       }
+    },
+    {
+      "name": "slingshot",
+      "qualified_name": "scwbtrajectory::slingshot",
+      "title": "Slingshot trajectory",
+      "description": "Infer lineage pseudotime and display curves in an authenticated 2D space.",
+      "runner": ".run_slingshot",
+      "inputs": [
+        {
+          "name": "space_2d",
+          "kind": "space_2d",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "clusters",
+          "kind": "cell_vector",
+          "required": true,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "start.clus": {
+            "type": ["string", "null"]
+          },
+          "end.clus": {
+            "type": ["array", "null"],
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "exclude_clusters": {
+            "type": ["array", "null"],
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "stretch": {
+            "type": "number",
+            "default": 2,
+            "minimum": 0,
+            "maximum": 10
+          },
+          "reweight": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "dimension_policies": [
+        {
+          "schema": "scworkbench.operation_pack.standalone_sparse_cell_family_policy.v1",
+          "output": "pseudotime",
+          "policy": "standalone_sparse_cell_family_v1",
+          "axis_source": {
+            "source": "typed_space_input_v1",
+            "input": "space_2d"
+          },
+          "key_order": "declared_verbatim_v1",
+          "row_order": "key_major_then_source_relative_cell_v1",
+          "per_key_coverage": "per_key_source_relative_subset_v1",
+          "missing_values": "forbidden",
+          "declaration_discipline": "exactly_once_before_write",
+          "maximum_axis_cells": 1000000,
+          "maximum_keys": 64,
+          "maximum_rows": 1000000,
+          "maximum_id_bytes": 1024,
+          "maximum_control_bytes": 67108864,
+          "policy_identity": {
+            "scheme": "scworkbench.operation_pack.standalone_sparse_cell_family_policy.v1",
+            "scope": "policy excluding policy_identity",
+            "sha256": "15de8e9104f0d4987356ecbc2011f79a063fcb22f75e9a6fc45c64323204746e"
+          }
+        },
+        {
+          "output": "curves",
+          "policy": "data_dependent_family_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "pseudotime",
+          "category": "terminal_artifact",
+          "kind": "cell_vector_family",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "pseudotime_id",
+          "required": true,
+          "promotion_group": "trajectory",
+          "value_kind": "continuous"
+        },
+        {
+          "name": "curves",
+          "category": "terminal_artifact",
+          "kind": "path_2d_family",
+          "storage_profile": "path_2d_family_v1",
+          "allocated_id_key": "curves_id",
+          "required": true,
+          "promotion_group": "trajectory"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_model_ref"
+        },
+        {
+          "requirement_id": "slingshot_runtime",
+          "kind": "r_package",
+          "name": "slingshot",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=2.8.0,<3.0.0"
+          },
+          "disposition": "required",
+          "import_probe": "slingshot"
+        },
+        {
+          "requirement_id": "singlecellexperiment_runtime",
+          "kind": "r_package",
+          "name": "SingleCellExperiment",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=1.0.0,<3.0.0"
+          },
+          "disposition": "required",
+          "import_probe": "SingleCellExperiment"
+        }
+      ],
+      "promotion_closure": {
+        "pseudotime": [
+          "curves",
+          "pseudotime"
+        ],
+        "curves": [
+          "curves",
+          "pseudotime"
+        ]
+      },
+      "replay_equivalence": {
+        "pseudotime": "exact_canonical_value",
+        "curves": "exact_canonical_value"
+      }
+    },
+    {
+      "name": "slingshot_fit",
+      "qualified_name": "scwbtrajectory::slingshot_fit",
+      "title": "Slingshot fitted model",
+      "description": "Fit Slingshot to an authenticated space and publish a contained model with its lineage families.",
+      "runner": ".run_slingshot_fit",
+      "inputs": [
+        {
+          "name": "fit_space",
+          "kind": "space",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "clusters",
+          "kind": "cell_vector",
+          "required": true,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "start.clus": {
+            "type": ["string", "null"]
+          },
+          "end.clus": {
+            "type": ["array", "null"],
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "exclude_clusters": {
+            "type": ["array", "null"],
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "stretch": {
+            "type": "number",
+            "default": 2,
+            "minimum": 0,
+            "maximum": 10
+          },
+          "reweight": {
+            "type": "boolean",
+            "default": true
+          },
+          "include_clusters": {
+            "type": ["array", "null"],
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "exclude_cells": {
+            "type": ["array", "null"],
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "shrink": {
+            "type": "number",
+            "default": 1,
+            "minimum": 0,
+            "maximum": 1
+          },
+          "maxit": {
+            "type": "integer",
+            "default": 10,
+            "minimum": 1,
+            "maximum": 200
+          }
+        },
+        "additionalProperties": false
+      },
+      "dimension_policies": [],
+      "outputs": [
+        {
+          "name": "model",
+          "category": "terminal_artifact",
+          "kind": "model_ref",
+          "storage_profile": "model_ref_contained_tree_v1",
+          "allocated_id_key": "model_id",
+          "required": true,
+          "promotion_group": "fit",
+          "contained_model_sibling_closure_policy": {
+            "policy": "staged_contained_model_sibling_closure_v1",
+            "engine": "slingshot",
+            "model_type": "slingshot",
+            "primary_path": "model.rds",
+            "source_space_input": "fit_space",
+            "dimensions_parameter": null,
+            "required_sibling_terminals": [
+              "pseudotime",
+              "lineage_weights"
+            ],
+            "file_order": "utf8_path_lexicographic_v1",
+            "maximum_file_count": 8,
+            "maximum_total_bytes": 1073741824
+          },
+          "derived_fitted_axis_policy": {
+            "schema": "scworkbench.operation_pack.derived_fitted_axis_policy.v1",
+            "mode": "source_relative_subset_v1",
+            "source_space_input": "fit_space",
+            "model_output": "model",
+            "required_siblings": [
+              {
+                "name": "pseudotime",
+                "kind": "cell_vector_family",
+                "coverage_policy": "per_key_source_relative_subset_v1"
+              },
+              {
+                "name": "lineage_weights",
+                "kind": "cell_vector_family",
+                "coverage_policy": "per_key_source_relative_subset_v1"
+              }
+            ],
+            "declaration_discipline": "exactly_once_before_cell_indexed_writes",
+            "maximum_selected_cells": 1000000,
+            "maximum_combined_id_bytes": 67108864,
+            "maximum_id_bytes": 1024,
+            "maximum_family_keys": 64,
+            "policy_identity": {
+              "scheme": "scworkbench.operation_pack.derived_fitted_axis_policy.v1",
+              "scope": "policy excluding policy_identity",
+              "sha256": "be42fc0788077c362e3f92da3db620e52a42ee571b2fba1a065a35ffe822ebfa"
+            }
+          }
+        },
+        {
+          "name": "pseudotime",
+          "category": "terminal_artifact",
+          "kind": "cell_vector_family",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "pseudotime_id",
+          "required": true,
+          "promotion_group": "fit",
+          "value_kind": "continuous"
+        },
+        {
+          "name": "lineage_weights",
+          "category": "terminal_artifact",
+          "kind": "cell_vector_family",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "lineage_weights_id",
+          "required": true,
+          "promotion_group": "fit",
+          "value_kind": "continuous"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_model_ref"
+        },
+        {
+          "requirement_id": "slingshot_runtime",
+          "kind": "r_package",
+          "name": "slingshot",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=2.8.0,<3.0.0"
+          },
+          "disposition": "required",
+          "import_probe": "slingshot"
+        },
+        {
+          "requirement_id": "singlecellexperiment_runtime",
+          "kind": "r_package",
+          "name": "SingleCellExperiment",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=1.0.0,<3.0.0"
+          },
+          "disposition": "required",
+          "import_probe": "SingleCellExperiment"
+        }
+      ],
+      "promotion_closure": {
+        "model": [
+          "lineage_weights",
+          "model",
+          "pseudotime"
+        ],
+        "pseudotime": [
+          "lineage_weights",
+          "model",
+          "pseudotime"
+        ],
+        "lineage_weights": [
+          "lineage_weights",
+          "model",
+          "pseudotime"
+        ]
+      },
+      "replay_equivalence": {
+        "model": "loadable_reference",
+        "pseudotime": "exact_canonical_value",
+        "lineage_weights": "exact_canonical_value"
+      }
+    },
+    {
+      "name": "slingshot_lineage_weights",
+      "qualified_name": "scwbtrajectory::slingshot_lineage_weights",
+      "title": "Slingshot lineage weights",
+      "description": "Extract sparse lineage weights from an authenticated fitted model without refitting.",
+      "runner": ".run_slingshot_lineage_weights",
+      "inputs": [
+        {
+          "name": "model",
+          "kind": "model_ref",
+          "required": true,
+          "alignment": "model_linked"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": [],
+        "additionalProperties": false
+      },
+      "dimension_policies": [
+        {
+          "schema": "scworkbench.operation_pack.standalone_sparse_cell_family_policy.v1",
+          "output": "lineage_weights",
+          "policy": "standalone_sparse_cell_family_v1",
+          "axis_source": {
+            "source": "verified_g1_model_fitted_axis_v1",
+            "model_read": "fitted_model"
+          },
+          "key_order": "declared_verbatim_v1",
+          "row_order": "key_major_then_source_relative_cell_v1",
+          "per_key_coverage": "per_key_source_relative_subset_v1",
+          "missing_values": "forbidden",
+          "declaration_discipline": "exactly_once_before_write",
+          "maximum_axis_cells": 1000000,
+          "maximum_keys": 64,
+          "maximum_rows": 1000000,
+          "maximum_id_bytes": 1024,
+          "maximum_control_bytes": 67108864,
+          "policy_identity": {
+            "scheme": "scworkbench.operation_pack.standalone_sparse_cell_family_policy.v1",
+            "scope": "policy excluding policy_identity",
+            "sha256": "542139b368bcd6763dba4de7bf000ea10d6b50cfe1c4fb8e85c9e51c477d615b"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "lineage_weights",
+          "category": "terminal_artifact",
+          "kind": "cell_vector_family",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "lineage_weights_id",
+          "required": true,
+          "promotion_group": "weights",
+          "value_kind": "continuous"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_model_ref"
+        },
+        {
+          "requirement_id": "slingshot_runtime",
+          "kind": "r_package",
+          "name": "slingshot",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=2.8.0,<3.0.0"
+          },
+          "disposition": "required",
+          "import_probe": "slingshot"
+        },
+        {
+          "requirement_id": "singlecellexperiment_runtime",
+          "kind": "r_package",
+          "name": "SingleCellExperiment",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=1.0.0,<3.0.0"
+          },
+          "disposition": "required",
+          "import_probe": "SingleCellExperiment"
+        }
+      ],
+      "promotion_closure": {
+        "lineage_weights": [
+          "lineage_weights"
+        ]
+      },
+      "replay_equivalence": {
+        "lineage_weights": "exact_canonical_value"
+      },
+      "self_linked_contained_model_reads": [
+        {
+          "name": "fitted_model",
+          "input": "model",
+          "reader": "read_self_linked_contained_model_payload",
+          "allowed_models": [
+            {
+              "engine": "slingshot",
+              "model_type": "slingshot"
+            }
+          ],
+          "linkage_policy": "authenticated_existing_source_and_cell_linkage_v1",
+          "maximum_file_count": 8,
+          "maximum_total_bytes": 1073741824,
+          "call_discipline": "exactly_once"
+        }
+      ]
+    },
+    {
+      "name": "slingshot_project",
+      "qualified_name": "scwbtrajectory::slingshot_project",
+      "title": "Project Slingshot curves",
+      "description": "Project verified fitted curves into an authenticated two-dimensional display space.",
+      "runner": ".run_slingshot_project",
+      "inputs": [
+        {
+          "name": "model",
+          "kind": "model_ref",
+          "required": true,
+          "alignment": "model_linked"
+        },
+        {
+          "name": "plot_space",
+          "kind": "space_2d",
+          "required": true,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "stretch": {
+            "type": ["number", "null"],
+            "minimum": 0,
+            "maximum": 10
+          },
+          "shrink": {
+            "type": ["number", "null"],
+            "minimum": 0,
+            "maximum": 1
+          },
+          "approx_points": {
+            "type": "integer",
+            "default": 200,
+            "minimum": 0,
+            "maximum": 5000
+          }
+        },
+        "additionalProperties": false
+      },
+      "dimension_policies": [
+        {
+          "output": "curves",
+          "policy": "data_dependent_family_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "curves",
+          "category": "terminal_artifact",
+          "kind": "path_2d_family",
+          "storage_profile": "path_2d_family_v1",
+          "allocated_id_key": "curves_id",
+          "required": true,
+          "promotion_group": "projection"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_model_ref"
+        },
+        {
+          "requirement_id": "slingshot_runtime",
+          "kind": "r_package",
+          "name": "slingshot",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=2.8.0,<3.0.0"
+          },
+          "disposition": "required",
+          "import_probe": "slingshot"
+        },
+        {
+          "requirement_id": "singlecellexperiment_runtime",
+          "kind": "r_package",
+          "name": "SingleCellExperiment",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=1.0.0,<3.0.0"
+          },
+          "disposition": "required",
+          "import_probe": "SingleCellExperiment"
+        }
+      ],
+      "promotion_closure": {
+        "curves": [
+          "curves"
+        ]
+      },
+      "replay_equivalence": {
+        "curves": "exact_canonical_value"
+      },
+      "self_linked_contained_model_reads": [
+        {
+          "name": "fitted_model",
+          "input": "model",
+          "reader": "read_self_linked_contained_model_payload",
+          "allowed_models": [
+            {
+              "engine": "slingshot",
+              "model_type": "slingshot"
+            }
+          ],
+          "linkage_policy": "authenticated_existing_source_and_cell_linkage_v1",
+          "maximum_file_count": 8,
+          "maximum_total_bytes": 1073741824,
+          "call_discipline": "exactly_once"
+        }
+      ]
     }
   ]
 }

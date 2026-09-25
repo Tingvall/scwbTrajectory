@@ -202,8 +202,13 @@ test_trajectory_s4_metadata_identity_change_ledger_contract <- function() {
   manifest <- jsonlite::read_json(manifest_path, simplifyVector = FALSE)
   identity <- getFromNamespace(".wb_operation_pack_v3_id",
     "scworkbench")
+  # The S3 append changes the whole-pack identity. The accepted S1/S2/S4
+  # prefix must still reproduce its frozen manifest identity exactly.
+  stopifnot(length(manifest$operations) == 21L)
+  accepted_prefix <- manifest
+  accepted_prefix$operations <- manifest$operations[seq_len(17L)]
   manifest_identity <- identity(
-    "scworkbench.operation_pack.manifest.v3", manifest)$sha256
+    "scworkbench.operation_pack.manifest.v3", accepted_prefix)$sha256
   stopifnot(identical(manifest$package$version, "0.1.1"),
     identical(manifest_identity,
       "010cd012ac83ee2513c07c037e199c2d9f38295c10392d2a947f18b6f882d68c"),

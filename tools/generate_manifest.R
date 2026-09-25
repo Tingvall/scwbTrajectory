@@ -252,16 +252,23 @@ project <- list(name = "space_path_project_2d",
       c("approx_points", "int", "Optional display point count.")), "curves"))
 
 source(file.path(root, "tools", "s4_manifest.R"), local = TRUE)
+source(file.path(root, "tools", "s3_manifest.R"), local = TRUE)
 
-manifest <- list(schema_version = "scworkbench.operation_pack.v3",
-  pack_abi_version = "3",
-  identity_scheme = "scworkbench.operation_pack.canonical_json.v1",
-  namespace = "scwbtrajectory",
-  package = list(name = "scwbTrajectory", version = "0.1.0"), backend = "R",
-  compatibility = list(scworkbench = list(minimum = "0.1.0",
-    maximum_exclusive = "0.2.0"), pack_abi = list(minimum = "3", maximum = "3")),
-  entry_point = "scwbTrajectory::register_operation_pack",
-  operations = c(list(branch, route, score, project), s4_operations))
+# S1/S2/S4 were independently accepted as a single installed manifest. Keep
+# those definitions byte-stable while adding the separately generated S3 slice.
+manifest <- jsonlite::read_json(file.path(root, "tools",
+  "integrated_s1_s2_s4_manifest.json"), simplifyVector = FALSE)
+stopifnot(identical(length(manifest$operations), 17L),
+  identical(vapply(manifest$operations, `[[`, character(1),
+    "qualified_name"), c(vapply(list(branch, route, score, project),
+      `[[`, character(1), "qualified_name"),
+      vapply(s4_operations, `[[`, character(1), "qualified_name"),
+      paste0("scwbtrajectory::", c("trajectory_de", "trajectory_smooth",
+        "trajectory_signature_smooth", "trajectory_geneset_dynamics",
+        "trajectory_vector_smooth", "trajectory_signal_dynamics",
+        "trajectory_geneset_dynamics_explicit",
+        "trajectory_signal_dynamics_explicit")))))
+manifest$operations <- c(manifest$operations, s3_operations)
 
 path <- file.path(root, "inst", "scworkbench", "operation-pack.json")
 dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)

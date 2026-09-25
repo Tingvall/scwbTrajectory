@@ -1,9 +1,12 @@
 # scwbTrajectory
 
 This repository is the provisional, explicitly activated scworkbench
-Trajectory operation pack. Its Phase 5 S1 pilot owns four ABI-v3 operations:
-`trajectory_branch_compare`, `trajectory_route_smooth`, `space_path_score`,
-and `space_path_project_2d`.
+Trajectory operation pack. Its integrated ABI-v3 manifest retains the accepted
+S1/S2/S4 operations and adds the Phase 5 S3 non-adoption Slingshot methods:
+`slingshot`, `slingshot_fit`, `slingshot_lineage_weights`, and
+`slingshot_project`. Call them under the `scwbtrajectory::` namespace after
+explicit activation. `slingshot_adopt` remains a core operation; this pack
+does not claim external-state adoption.
 
 Installation is inert. Activate the installed manifest explicitly with
 `wb_operation_pack_activate()`. The pack consumes only authenticated typed
