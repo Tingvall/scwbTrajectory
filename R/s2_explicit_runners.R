@@ -20,6 +20,18 @@
   invisible(list(status = "ok"))
 }
 
+.trajectory_s2_source_artifact_id <- function(readers, name) {
+  reader <- readers[[name]]
+  if (is.null(reader)) return("")
+  .trajectory_assert(is.function(reader),
+    "S2 artifact ancestry capability is malformed.")
+  ancestry <- reader()
+  id <- as.character(ancestry$artifact_id %||% "")[1L]
+  .trajectory_assert(length(id) == 1L && !is.na(id) && nzchar(id),
+    "S2 artifact ancestry has no authenticated artifact ID.")
+  id
+}
+
 .run_trajectory_geneset_dynamics_explicit <- function(readers, writers,
                                                       params, context) {
   pseudotime <- readers$pseudotime()
@@ -54,10 +66,10 @@
     list(matrix = matrix, registry = registry, effective_cells = cells,
       matrix_id = as.character(registry$matrix_id)[1L],
       pseudotime = pseudotime, membership = membership,
-      pseudotime_artifact_id = as.character(
-        context$input_ids$pseudotime %||% "")[1L],
-      membership_artifact_id = as.character(
-        context$input_ids$membership %||% "")[1L]), params,
+      pseudotime_artifact_id = .trajectory_s2_source_artifact_id(readers,
+        "pseudotime_ancestry"),
+      membership_artifact_id = .trajectory_s2_source_artifact_id(readers,
+        "membership_ancestry")), params,
     extra_allowed = "chunk_size")
   .trajectory_s2_publish(result, writers, c("signature_table",
     "dynamics_table", "top_sets", "driver_table", "driver_curve_table",
@@ -73,10 +85,10 @@
   result <- .trajectory_s2_call(.trajectory_s2_signal_dynamics,
     list(effective_cells = as.character(context$effective_cells),
       signal = signal, pseudotime = pseudotime, membership = membership,
-      pseudotime_artifact_id = as.character(
-        context$input_ids$pseudotime %||% "")[1L],
-      membership_artifact_id = as.character(
-        context$input_ids$membership %||% "")[1L]),
+      pseudotime_artifact_id = .trajectory_s2_source_artifact_id(readers,
+        "pseudotime_ancestry"),
+      membership_artifact_id = .trajectory_s2_source_artifact_id(readers,
+        "membership_ancestry")),
     params)
   .trajectory_s2_publish(result, writers, c("signal_table",
     "dynamics_table", "top_signals", "fit_summary"))

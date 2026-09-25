@@ -57,6 +57,13 @@ database, registry handle, or committed path. The registered explicit modes
 also pass promotion fault rollback and retry through the core ABI. This
 preparation does not remove any core operation or assert migration completion.
 
+The two explicit entries also declare optional v3 artifact-ancestry readers
+for pseudotime and membership. When a typed input comes from a promoted
+artifact, core grants a single authenticated read and the runner records its
+artifact ID in `fit_summary`. A direct primitive has no ancestry grant and
+retains an empty source ID. This preserves the old-core source metadata in
+the pinned S2 composite without exposing a bundle or accepting a caller ID.
+
 The explicit runner tests compare all ten terminal identities against the
 frozen core oracle, reject absent or unknown pseudotime and method keys and
 insufficient or wrong-kind membership, and repeat seeded bootstrap and

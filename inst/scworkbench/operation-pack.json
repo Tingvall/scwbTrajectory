@@ -4327,6 +4327,26 @@
           "pseudotime_key"
         ]
       },
+      "provenance_reads": [
+        {
+          "name": "pseudotime_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "pseudotime",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        },
+        {
+          "name": "membership_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "membership",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        }
+      ],
       "registry_reads": [
         {
           "name": "feature_sets",
@@ -4628,6 +4648,26 @@
           "pseudotime_key"
         ]
       },
+      "provenance_reads": [
+        {
+          "name": "pseudotime_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "pseudotime",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        },
+        {
+          "name": "membership_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "membership",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        }
+      ],
       "dimension_policies": [
         {
           "output": "signal_table",

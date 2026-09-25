@@ -13,11 +13,25 @@ source(file.path(test_dir, "helper_s2_fixture.R"), local = .GlobalEnv)
 
 .trajectory_s2_run_direct <- function(x, operation, params = NULL,
                                       fault_terminal = NULL,
-                                      membership = NULL) {
+                                      membership = NULL,
+                                      ancestry_ids = list()) {
   boundary <- trajectory_s2_mock_boundary(x, fault_terminal)
   if (!is.null(membership)) {
     boundary$readers$membership <- function() membership
   }
+  stopifnot(all(names(ancestry_ids) %in% c("pseudotime", "membership")))
+  make_ancestry <- function(name, id) {
+    force(name); force(id)
+    function() {
+      key <- paste0(name, "_ancestry")
+      boundary$state$calls[[key]] <- as.integer(
+        boundary$state$calls[[key]] %||% 0L) + 1L
+      list(artifact_id = id)
+    }
+  }
+  for (name in names(ancestry_ids))
+    boundary$readers[[paste0(name, "_ancestry")]] <-
+      make_ancestry(name, ancestry_ids[[name]])
   runner <- getFromNamespace(paste0(".run_trajectory_", operation,
     "_dynamics_explicit"), "scwbTrajectory")
   if (is.null(params)) params <- .trajectory_s2_explicit_params(operation)
@@ -25,6 +39,27 @@ source(file.path(test_dir, "helper_s2_fixture.R"), local = .GlobalEnv)
     boundary$context), error = identity)
   list(value = value, boundary = boundary,
     outputs = boundary$state$writes)
+}
+
+test_trajectory_s2_explicit_ancestry_metadata_contract <- function() {
+  x <- trajectory_s2_fixture(); on.exit(trajectory_close(x), add = TRUE)
+  for (operation in c("geneset", "signal")) {
+    observed <- .trajectory_s2_run_direct(x, operation,
+      ancestry_ids = list(pseudotime = "pt_artifact",
+        membership = "membership_artifact"))
+    stopifnot(!inherits(observed$value, "error"),
+      identical(observed$outputs$fit_summary$table$
+        pseudotime_artifact_id, "pt_artifact"),
+      identical(observed$outputs$fit_summary$table$
+        membership_artifact_id, "membership_artifact"),
+      identical(observed$boundary$state$calls$pseudotime_ancestry, 1L),
+      identical(observed$boundary$state$calls$membership_ancestry, 1L))
+    invalid <- .trajectory_s2_run_direct(x, operation,
+      ancestry_ids = list(pseudotime = ""))
+    stopifnot(inherits(invalid$value, "error"),
+      length(invalid$outputs) == 0L)
+  }
+  TRUE
 }
 
 test_trajectory_s2_explicit_runners_oracle_and_seed_contract <- function() {
