@@ -1,6 +1,10 @@
-trajectory_s5_oracle <- function() jsonlite::read_json(
-  file.path("tests", "fixtures", "trajectory_s5_monocle3_old_core_oracle.json"),
-  simplifyVector = FALSE)
+trajectory_s5_oracle <- function() {
+  filename <- "trajectory_s5_monocle3_old_core_oracle.json"
+  directory <- if (file.exists(file.path("fixtures", filename)))
+    "." else "tests"
+  jsonlite::read_json(file.path(directory, "fixtures", filename),
+    simplifyVector = FALSE)
+}
 
 trajectory_s5_fixture <- function() {
   trajectory_activate_pack()
