@@ -1,0 +1,343 @@
+{
+  "schema": "scwbtrajectory.phase5_s5.monocle3_old_core_oracle.v1",
+  "old_core_commit": "6e0438c90fe51bacda1604aa7c5cc3b1cd1e5646",
+  "fit": {
+    "op": "monocle3_fit",
+    "source_cells": [
+      "z10",
+      "c2",
+      "a9",
+      "m1",
+      "b20",
+      "q3",
+      "d7",
+      "x4",
+      "e12",
+      "r5",
+      "f11",
+      "p6",
+      "g18",
+      "n8",
+      "h14",
+      "o13",
+      "i17",
+      "l15",
+      "j19",
+      "k16",
+      "u21",
+      "v22",
+      "w23",
+      "t24"
+    ],
+    "source_cell_count": 24,
+    "row_count": 25,
+    "ordered_keys": [
+      "root:Y_1::lineage:Y_7",
+      "root:Y_1::lineage:Y_8"
+    ],
+    "ordered_rows": [
+      {
+        "key": "root:Y_1::lineage:Y_7",
+        "cell_id": "z10",
+        "weight_hex": "0x1p+0"
+      },
+      {
+        "key": "root:Y_1::lineage:Y_7",
+        "cell_id": "c2",
+        "weight_hex": "0x1p+0"
+      },
+      {
+        "key": "root:Y_1::lineage:Y_7",
+        "cell_id": "a9",
+        "weight_hex": "0x1p+0"
+      },
+      {
+        "key": "root:Y_1::lineage:Y_7",
+        "cell_id": "m1",
+        "weight_hex": "0x1p+0"
+      },
+      {
+        "key": "root:Y_1::lineage:Y_7",
+        "cell_id": "b20",
+        "weight_hex": "0x1p+0"
+      },
+      {
+        "key": "root:Y_1::lineage:Y_7",
+        "cell_id": "q3",
+        "weight_hex": "0x1p+0"
+      },
+      {
+        "key": "root:Y_1::lineage:Y_7",
+        "cell_id": "d7",
+        "weight_hex": "0x1p+0"
+      },
+      {
+        "key": "root:Y_1::lineage:Y_7",
+        "cell_id": "x4",
+        "weight_hex": "0x1p+0"
+      },
+      {
+        "key": "root:Y_1::lineage:Y_8",
+        "cell_id": "z10",
+        "weight_hex": "0x1p+0"
+      },
+      {
+        "key": "root:Y_1::lineage:Y_8",
+        "cell_id": "e12",
+        "weight_hex": "0x1p+0"
+      },
+      {
+        "key": "root:Y_1::lineage:Y_8",
+        "cell_id": "r5",
+        "weight_hex": "0x1p+0"
+      },
+      {
+        "key": "root:Y_1::lineage:Y_8",
+        "cell_id": "f11",
+        "weight_hex": "0x1p+0"
+      },
+      {
+        "key": "root:Y_1::lineage:Y_8",
+        "cell_id": "p6",
+        "weight_hex": "0x1p+0"
+      },
+      {
+        "key": "root:Y_1::lineage:Y_8",
+        "cell_id": "g18",
+        "weight_hex": "0x1p+0"
+      },
+      {
+        "key": "root:Y_1::lineage:Y_8",
+        "cell_id": "n8",
+        "weight_hex": "0x1p+0"
+      },
+      {
+        "key": "root:Y_1::lineage:Y_8",
+        "cell_id": "h14",
+        "weight_hex": "0x1p+0"
+      },
+      {
+        "key": "root:Y_1::lineage:Y_8",
+        "cell_id": "o13",
+        "weight_hex": "0x1p+0"
+      },
+      {
+        "key": "root:Y_1::lineage:Y_8",
+        "cell_id": "i17",
+        "weight_hex": "0x1p+0"
+      },
+      {
+        "key": "root:Y_1::lineage:Y_8",
+        "cell_id": "l15",
+        "weight_hex": "0x1p+0"
+      },
+      {
+        "key": "root:Y_1::lineage:Y_8",
+        "cell_id": "j19",
+        "weight_hex": "0x1p+0"
+      },
+      {
+        "key": "root:Y_1::lineage:Y_8",
+        "cell_id": "k16",
+        "weight_hex": "0x1p+0"
+      },
+      {
+        "key": "root:Y_1::lineage:Y_8",
+        "cell_id": "u21",
+        "weight_hex": "0x1p+0"
+      },
+      {
+        "key": "root:Y_1::lineage:Y_8",
+        "cell_id": "v22",
+        "weight_hex": "0x1p+0"
+      },
+      {
+        "key": "root:Y_1::lineage:Y_8",
+        "cell_id": "w23",
+        "weight_hex": "0x1p+0"
+      },
+      {
+        "key": "root:Y_1::lineage:Y_8",
+        "cell_id": "t24",
+        "weight_hex": "0x1p+0"
+      }
+    ],
+    "optional_numeric_presence": {
+      "weight": true,
+      "value": false,
+      "distance": false
+    },
+    "content_identity": {
+      "scheme": "scworkbench.relation_family.content.v1",
+      "sha256": "66b286400e6151b651f74d0e294cf7c0a8ea70da5ce10c19f545b9598a24256a"
+    },
+    "reopened_content_identity": {
+      "scheme": "scworkbench.relation_family.content.v1",
+      "sha256": "66b286400e6151b651f74d0e294cf7c0a8ea70da5ce10c19f545b9598a24256a"
+    },
+    "terminal_content_identities": {
+      "pseudotime": {
+        "direct": {
+          "scheme": "scworkbench.cell_vector.content.v1",
+          "sha256": "3456da49a233aa75e6900a9891fbb7d801d660447cc230589cba4eba3b850a24"
+        },
+        "reopened": {
+          "scheme": "scworkbench.cell_vector.content.v1",
+          "sha256": "3456da49a233aa75e6900a9891fbb7d801d660447cc230589cba4eba3b850a24"
+        }
+      },
+      "branch_membership": {
+        "direct": {
+          "scheme": "scworkbench.relation_family.content.v1",
+          "sha256": "66b286400e6151b651f74d0e294cf7c0a8ea70da5ce10c19f545b9598a24256a"
+        },
+        "reopened": {
+          "scheme": "scworkbench.relation_family.content.v1",
+          "sha256": "66b286400e6151b651f74d0e294cf7c0a8ea70da5ce10c19f545b9598a24256a"
+        }
+      }
+    },
+    "closure": [
+      "pseudotime",
+      "branch_membership",
+      "model"
+    ],
+    "promoted_count": 3,
+    "model": {
+      "engine": "monocle3",
+      "model_type": "monocle3_cds",
+      "path_suffix": "rds"
+    }
+  },
+  "project": {
+    "schema": "scwbtrajectory.phase5_s5.monocle3_project_oracle.v1",
+    "old_core_commit": "6e0438c90fe51bacda1604aa7c5cc3b1cd1e5646",
+    "plot_transform": {
+      "x": "1.5*d1+0.2*d2",
+      "y": "0.8*d2-0.1*d1"
+    },
+    "approx_points": 200,
+    "comparison": {
+      "numeric_absolute_tolerance": 1e-08,
+      "numeric_relative_tolerance": 1e-08,
+      "key_and_point_order": "exact"
+    },
+    "fit_params": {
+      "fit_space_id": "latent",
+      "dims": [
+        "1",
+        "2"
+      ],
+      "source_dims": [
+        1,
+        2
+      ],
+      "cells_fit": 24,
+      "root_input_mode": "root_cells",
+      "root_cells": "z10",
+      "root_pr_nodes": "Y_1",
+      "k": 5,
+      "cluster_method": "leiden",
+      "num_iter": 2,
+      "partition_qval": 0.05,
+      "weight": false,
+      "resolution": {},
+      "random_seed": 13,
+      "use_partition": false,
+      "close_loop": false,
+      "n_lineages": 2,
+      "lineage_keys": [
+        "root:Y_1::lineage:Y_7",
+        "root:Y_1::lineage:Y_8"
+      ],
+      "lineage_roots": [
+        "Y_1",
+        "Y_1"
+      ],
+      "lineage_leaves": [
+        "Y_7",
+        "Y_8"
+      ],
+      "lineage_derivation_used_root_leaves": false,
+      "lineage_paths": {
+        "root:Y_1::lineage:Y_7": [
+          "Y_1",
+          "Y_2",
+          "Y_3",
+          "Y_4",
+          "Y_5",
+          "Y_6",
+          "Y_7"
+        ],
+        "root:Y_1::lineage:Y_8": [
+          "Y_1",
+          "Y_8"
+        ]
+      },
+      "branch_membership_key_type": "lineage",
+      "branch_membership_key_format": "root:<root_pr_node>::lineage:<leaf_pr_node>",
+      "branch_membership_method": "closest_vertex_path_membership_binary",
+      "lineage_root_assignment_method": "single_root",
+      "branch_membership_normalized_per_cell": false,
+      "n_pseudotime_na": 0,
+      "verbose": false
+    },
+    "project_params": {
+      "fit_space_id": "latent",
+      "plot_space_id": "plot",
+      "cells_projected": 24,
+      "n_lineages": 2,
+      "approx_points": 200
+    },
+    "curves": [
+      {
+        "key": "root:Y_1::lineage:Y_7",
+        "point": 1,
+        "x": 0.225,
+        "y": -0.015
+      },
+      {
+        "key": "root:Y_1::lineage:Y_7",
+        "point": 2,
+        "x": 0.45,
+        "y": -0.03
+      },
+      {
+        "key": "root:Y_1::lineage:Y_7",
+        "point": 3,
+        "x": 0.675,
+        "y": -0.045
+      },
+      {
+        "key": "root:Y_1::lineage:Y_7",
+        "point": 4,
+        "x": 0.9,
+        "y": -0.06
+      },
+      {
+        "key": "root:Y_1::lineage:Y_7",
+        "point": 5,
+        "x": 1.125,
+        "y": -0.075
+      },
+      {
+        "key": "root:Y_1::lineage:Y_7",
+        "point": 6,
+        "x": 1.575,
+        "y": -0.105
+      },
+      {
+        "key": "root:Y_1::lineage:Y_8",
+        "point": 1,
+        "x": 0.225,
+        "y": -0.015
+      },
+      {
+        "key": "root:Y_1::lineage:Y_8",
+        "point": 2,
+        "x": -0.556875,
+        "y": -0.16875
+      }
+    ]
+  }
+}

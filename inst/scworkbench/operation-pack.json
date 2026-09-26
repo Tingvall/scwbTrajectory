@@ -5557,6 +5557,387 @@
           "call_discipline": "exactly_once"
         }
       ]
+    },
+    {
+      "name": "monocle3_fit",
+      "qualified_name": "scwbtrajectory::monocle3_fit",
+      "title": "Monocle3 fit (hybrid space)",
+      "description": "Fit a Monocle3 tree and pseudotime on an authenticated scworkbench space.",
+      "runner": ".run_monocle3_fit",
+      "inputs": [
+        {
+          "name": "fit_space",
+          "kind": "space",
+          "required": true,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "dims": {
+            "type": ["array", "null"],
+            "uniqueItems": true,
+            "items": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "root_cells": {
+            "type": ["array", "null"],
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "root_pr_nodes": {
+            "type": ["array", "null"],
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "k": {
+            "type": "integer",
+            "default": 20,
+            "minimum": 2,
+            "maximum": 500
+          },
+          "cluster_method": {
+            "type": "string",
+            "default": "leiden",
+            "enum": [
+              "leiden",
+              "louvain"
+            ]
+          },
+          "num_iter": {
+            "type": "integer",
+            "default": 2,
+            "minimum": 1,
+            "maximum": 200
+          },
+          "partition_qval": {
+            "type": "number",
+            "default": 0.05,
+            "minimum": 0,
+            "maximum": 1
+          },
+          "weight": {
+            "type": "boolean",
+            "default": false
+          },
+          "resolution": {
+            "type": ["number", "null"],
+            "minimum": 0,
+            "maximum": 100
+          },
+          "random_seed": {
+            "type": "integer",
+            "default": 42,
+            "minimum": 1,
+            "maximum": 999999
+          },
+          "use_partition": {
+            "type": "boolean",
+            "default": false
+          },
+          "close_loop": {
+            "type": "boolean",
+            "default": false
+          },
+          "verbose": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "dimension_policies": [
+        {
+          "axis_source": {
+            "model_output": "model",
+            "source": "g2_derived_fitted_axis_v1"
+          },
+          "declaration_discipline": "exactly_once_before_write",
+          "key_order": "first_occurrence_v1",
+          "maximum_axis_cells": 1000000,
+          "maximum_chunk_pairs": 8192,
+          "maximum_control_bytes": 67108864,
+          "maximum_id_bytes": 1024,
+          "maximum_keys": 1024,
+          "maximum_rows": 1000000,
+          "numeric_fields": "declare_presence_finite_v1",
+          "output": "branch_membership",
+          "pair_multiplicity": "unique_key_cell_v1",
+          "policy": "sealed_relation_family_v1",
+          "row_order": "declared_exact_v1",
+          "schema": "scworkbench.operation_pack.sealed_relation_family_policy.v1",
+          "policy_identity": {
+            "scheme": "scworkbench.operation_pack.sealed_relation_family_policy.v1",
+            "scope": "policy excluding policy_identity",
+            "sha256": "9beeecaeacc84a3d8d8363dd9b1d63c1abdb2b06999afba803bf6c8e34685f3b"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "pseudotime",
+          "category": "terminal_artifact",
+          "kind": "cell_vector",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "pseudotime_id",
+          "required": true,
+          "promotion_group": "fit",
+          "value_kind": "continuous"
+        },
+        {
+          "allocated_id_key": "branch_membership_id",
+          "category": "terminal_artifact",
+          "kind": "relation_family",
+          "name": "branch_membership",
+          "promotion_group": "fit",
+          "required": true,
+          "storage_profile": "terminal_primitive_v1"
+        },
+        {
+          "allocated_id_key": "model_id",
+          "category": "terminal_artifact",
+          "contained_model_sibling_closure_policy": {
+            "dimensions_parameter": "dims",
+            "engine": "monocle3",
+            "file_order": "utf8_path_lexicographic_v1",
+            "maximum_file_count": 8,
+            "maximum_total_bytes": 1073741824,
+            "model_type": "monocle3_cds",
+            "policy": "staged_contained_model_sibling_closure_v1",
+            "primary_path": "model.rds",
+            "required_sibling_terminals": [
+              "pseudotime"
+            ],
+            "source_space_input": "fit_space"
+          },
+          "derived_fitted_axis_policy": {
+            "declaration_discipline": "exactly_once_before_cell_indexed_writes",
+            "maximum_combined_id_bytes": 67108864,
+            "maximum_family_keys": 64,
+            "maximum_id_bytes": 1024,
+            "maximum_selected_cells": 1000000,
+            "mode": "source_relative_subset_v1",
+            "model_output": "model",
+            "required_siblings": [
+              {
+                "name": "pseudotime",
+                "kind": "cell_vector",
+                "coverage_policy": "exact_fitted_axis_v1"
+              }
+            ],
+            "schema": "scworkbench.operation_pack.derived_fitted_axis_policy.v1",
+            "source_space_input": "fit_space",
+            "policy_identity": {
+              "scheme": "scworkbench.operation_pack.derived_fitted_axis_policy.v1",
+              "scope": "policy excluding policy_identity",
+              "sha256": "6a74c12f951f9cc22c65d5e01ee753241f003617dae910ff001fae688a915369"
+            }
+          },
+          "kind": "model_ref",
+          "name": "model",
+          "promotion_group": "fit",
+          "required": true,
+          "storage_profile": "model_ref_contained_tree_v1"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_model_ref"
+        },
+        {
+          "requirement_id": "monocle3_runtime",
+          "kind": "r_package",
+          "name": "monocle3",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=1.4.0,<2.0.0"
+          },
+          "disposition": "required",
+          "import_probe": "new_cell_data_set"
+        },
+        {
+          "requirement_id": "singlecellexperiment_runtime",
+          "kind": "r_package",
+          "name": "SingleCellExperiment",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=1.0.0,<3.0.0"
+          },
+          "disposition": "required",
+          "import_probe": "SingleCellExperiment"
+        },
+        {
+          "requirement_id": "igraph_runtime",
+          "kind": "r_package",
+          "name": "igraph",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=2.0.0,<3.0.0"
+          },
+          "disposition": "required",
+          "import_probe": "is_tree"
+        }
+      ],
+      "promotion_closure": {
+        "pseudotime": [
+          "branch_membership",
+          "model",
+          "pseudotime"
+        ],
+        "branch_membership": [
+          "branch_membership",
+          "model",
+          "pseudotime"
+        ],
+        "model": [
+          "branch_membership",
+          "model",
+          "pseudotime"
+        ]
+      },
+      "replay_equivalence": {
+        "pseudotime": "exact_canonical_value",
+        "branch_membership": "exact_canonical_value",
+        "model": "loadable_reference"
+      }
+    },
+    {
+      "name": "monocle3_project",
+      "qualified_name": "scwbtrajectory::monocle3_project",
+      "title": "Monocle3 project curves",
+      "description": "Project verified Monocle3 graph lineages into an authenticated two-dimensional display space.",
+      "runner": ".run_monocle3_project",
+      "inputs": [
+        {
+          "name": "model",
+          "kind": "model_ref",
+          "required": true,
+          "alignment": "model_linked"
+        },
+        {
+          "name": "plot_space",
+          "kind": "space_2d",
+          "required": true,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "approx_points": {
+            "type": "integer",
+            "default": 200,
+            "minimum": 0,
+            "maximum": 5000
+          }
+        },
+        "additionalProperties": false
+      },
+      "dimension_policies": [
+        {
+          "output": "curves",
+          "policy": "data_dependent_family_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "curves",
+          "category": "terminal_artifact",
+          "kind": "path_2d_family",
+          "storage_profile": "path_2d_family_v1",
+          "allocated_id_key": "curves_id",
+          "required": true,
+          "promotion_group": "projection"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_model_ref"
+        },
+        {
+          "requirement_id": "monocle3_runtime",
+          "kind": "r_package",
+          "name": "monocle3",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=1.4.0,<2.0.0"
+          },
+          "disposition": "required",
+          "import_probe": "new_cell_data_set"
+        },
+        {
+          "requirement_id": "singlecellexperiment_runtime",
+          "kind": "r_package",
+          "name": "SingleCellExperiment",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=1.0.0,<3.0.0"
+          },
+          "disposition": "required",
+          "import_probe": "SingleCellExperiment"
+        },
+        {
+          "requirement_id": "igraph_runtime",
+          "kind": "r_package",
+          "name": "igraph",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=2.0.0,<3.0.0"
+          },
+          "disposition": "required",
+          "import_probe": "is_tree"
+        }
+      ],
+      "promotion_closure": {
+        "curves": [
+          "curves"
+        ]
+      },
+      "replay_equivalence": {
+        "curves": "exact_canonical_value"
+      },
+      "self_linked_contained_model_reads": [
+        {
+          "name": "fitted_model",
+          "input": "model",
+          "reader": "read_self_linked_contained_model_payload",
+          "allowed_models": [
+            {
+              "engine": "monocle3",
+              "model_type": "monocle3_cds"
+            }
+          ],
+          "linkage_policy": "authenticated_existing_source_and_cell_linkage_v1",
+          "maximum_file_count": 8,
+          "maximum_total_bytes": 1073741824,
+          "call_discipline": "exactly_once"
+        }
+      ]
     }
   ]
 }
