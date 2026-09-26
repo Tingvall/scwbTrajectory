@@ -1,5 +1,5 @@
-# Candidate S5 definitions. Core retains the historical operations until a
-# separate ownership order; these names are qualified pack operations only.
+# Registered S5 definitions owned by scwbTrajectory. Historical core runs
+# remain inspectable without these live core operations.
 palantir_policy_identity <- function(value) {
   value$policy_identity <- getFromNamespace(
     ".wb_operation_pack_v2_identity_scoped", "scworkbench")(

@@ -1,6 +1,5 @@
-# Typed Phase 5 Palantir computation, initially proven as an unregistered
-# prototype and now wired to the isolated candidate pack manifest. Historical
-# core operations remain authoritative until a separate ownership order.
+# Typed Phase 5 Palantir computation, proven as a private prototype before
+# registration in this trajectory pack. Historical core runs remain inspectable.
 .trajectory_palantir_typed_schema <-
   "pybench.prototype.palantir_typed.v1"
 
@@ -60,7 +59,7 @@
 
 .trajectory_palantir_typed_call <- function(request, model_bytes = NULL) {
   .trajectory_assert(requireNamespace("jsonlite", quietly = TRUE),
-    "The unregistered Palantir prototype requires jsonlite.")
+    "The Palantir private-compute bridge requires jsonlite.")
   stage <- tempfile("scwb-palantir-private-")
   dir.create(stage, mode = "0700")
   on.exit(unlink(stage, recursive = TRUE, force = TRUE), add = TRUE)
@@ -294,7 +293,7 @@
   invisible(list(status = "ok"))
 }
 
-# These two production entry points remain pack-owned; core retains its
-# historical names until a separately authorized ownership migration.
+# Registered production entry points are pack-owned; historical core runs
+# remain inspectable without registering the removed core operations.
 .run_palantir_fit <- .trajectory_palantir_typed_fit
 .run_palantir_project <- .trajectory_palantir_typed_project
