@@ -2,9 +2,10 @@
 
 This repository is the provisional, explicitly activated scworkbench
 Trajectory operation pack. Its integrated ABI-v3 manifest retains the accepted
-S1/S2/S4 operations and adds the Phase 5 S3 non-adoption Slingshot methods:
+S1/S2/S4 and accepted Monocle3 operations and adds the Phase 5 S5 Palantir
+fit/project methods alongside the S3 non-adoption Slingshot methods:
 `slingshot`, `slingshot_fit`, `slingshot_lineage_weights`, and
-`slingshot_project`. Call them under the `scwbtrajectory::` namespace after
+`slingshot_project`. Call all methods under the `scwbtrajectory::` namespace after
 explicit activation. `slingshot_adopt` remains a core operation; this pack
 does not claim external-state adoption.
 
@@ -13,6 +14,12 @@ Installation is inert. Activate the installed manifest explicitly with
 inputs and publishes complete declared output closures through core-owned
 atomic staging. It does not receive a bundle, database, registry, SQL, or
 committed-path handle.
+
+`palantir_project` requires `pickle_execution_trust =
+"operator_verified_source_v1"`. This is an explicit operator trust decision,
+not a signature, sandbox, or proof that a hash-valid pickle is safe to execute.
+The private Python process receives bounded typed inputs and a checked
+stage-local model, never a bundle path or host model path.
 
 The 2D path projection declares its source space explicitly as a typed input.
 The old core surface inferred that source from `path$space_id`; callers should

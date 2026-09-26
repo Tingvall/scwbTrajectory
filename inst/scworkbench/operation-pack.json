@@ -5576,7 +5576,10 @@
         "type": "object",
         "properties": {
           "dims": {
-            "type": ["array", "null"],
+            "type": [
+              "array",
+              "null"
+            ],
             "uniqueItems": true,
             "items": {
               "type": "integer",
@@ -5584,7 +5587,10 @@
             }
           },
           "root_cells": {
-            "type": ["array", "null"],
+            "type": [
+              "array",
+              "null"
+            ],
             "uniqueItems": true,
             "items": {
               "type": "string",
@@ -5592,7 +5598,10 @@
             }
           },
           "root_pr_nodes": {
-            "type": ["array", "null"],
+            "type": [
+              "array",
+              "null"
+            ],
             "uniqueItems": true,
             "items": {
               "type": "string",
@@ -5630,7 +5639,10 @@
             "default": false
           },
           "resolution": {
-            "type": ["number", "null"],
+            "type": [
+              "number",
+              "null"
+            ],
             "minimum": 0,
             "maximum": 100
           },
@@ -5930,6 +5942,400 @@
             {
               "engine": "monocle3",
               "model_type": "monocle3_cds"
+            }
+          ],
+          "linkage_policy": "authenticated_existing_source_and_cell_linkage_v1",
+          "maximum_file_count": 8,
+          "maximum_total_bytes": 1073741824,
+          "call_discipline": "exactly_once"
+        }
+      ]
+    },
+    {
+      "name": "palantir_fit",
+      "qualified_name": "scwbtrajectory::palantir_fit",
+      "title": "Palantir fitted trajectory",
+      "description": "Fit Palantir from an authenticated typed space in private Python computation; publish one contained model, pseudotime, ordered branch probabilities, branch summary, and entropy atomically.",
+      "runner": ".run_palantir_fit",
+      "inputs": [
+        {
+          "name": "fit_space",
+          "kind": "space",
+          "required": true,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "root_cell": {
+            "type": "string",
+            "minLength": 1
+          },
+          "terminal_cells": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "dims": {
+            "type": "array",
+            "minItems": 2,
+            "uniqueItems": true,
+            "items": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "knn": {
+            "type": "integer",
+            "default": 30,
+            "minimum": 2,
+            "maximum": 1000
+          },
+          "n_diffusion_components": {
+            "type": "integer",
+            "default": 10,
+            "minimum": 2,
+            "maximum": 200
+          },
+          "n_waypoints": {
+            "type": "integer",
+            "default": 300,
+            "minimum": 1,
+            "maximum": 10000
+          },
+          "use_early_cell_as_start": {
+            "type": "boolean",
+            "default": true
+          },
+          "seed": {
+            "type": "integer",
+            "default": 20,
+            "minimum": 0,
+            "maximum": 999999
+          }
+        },
+        "required": [
+          "root_cell",
+          "terminal_cells",
+          "dims"
+        ],
+        "additionalProperties": false
+      },
+      "dimension_policies": [
+        {
+          "output": "pseudotime",
+          "policy": "authenticated_output_axes_v1",
+          "shape": "one_per_cell",
+          "cell_axis": {
+            "source": "effective_cells_v1",
+            "input": "fit_space"
+          },
+          "row_order": "input_cell_order_v1",
+          "missing_values": "forbidden"
+        },
+        {
+          "schema": "scworkbench.operation_pack.sealed_relation_family_policy.v1",
+          "output": "branch_membership",
+          "policy": "sealed_relation_family_v1",
+          "axis_source": {
+            "source": "g2_derived_fitted_axis_v1",
+            "model_output": "model"
+          },
+          "key_order": "first_occurrence_v1",
+          "row_order": "declared_exact_v1",
+          "pair_multiplicity": "unique_key_cell_v1",
+          "numeric_fields": "declare_presence_finite_v1",
+          "declaration_discipline": "exactly_once_before_write",
+          "maximum_axis_cells": 1000000,
+          "maximum_keys": 1024,
+          "maximum_rows": 1000000,
+          "maximum_id_bytes": 1024,
+          "maximum_control_bytes": 67108864,
+          "maximum_chunk_pairs": 8192,
+          "policy_identity": {
+            "scheme": "scworkbench.operation_pack.sealed_relation_family_policy.v1",
+            "scope": "policy excluding policy_identity",
+            "sha256": "9beeecaeacc84a3d8d8363dd9b1d63c1abdb2b06999afba803bf6c8e34685f3b"
+          }
+        },
+        {
+          "output": "branch_summary",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "entropy",
+          "policy": "authenticated_output_axes_v1",
+          "shape": "one_per_cell",
+          "cell_axis": {
+            "source": "effective_cells_v1",
+            "input": "fit_space"
+          },
+          "row_order": "input_cell_order_v1",
+          "missing_values": "forbidden"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "model",
+          "category": "terminal_artifact",
+          "kind": "model_ref",
+          "storage_profile": "model_ref_contained_tree_v1",
+          "allocated_id_key": "model_id",
+          "required": true,
+          "promotion_group": "palantir_fit",
+          "contained_model_sibling_closure_policy": {
+            "policy": "staged_contained_model_sibling_closure_v1",
+            "engine": "palantir",
+            "model_type": "palantir_fit",
+            "primary_path": "model.pkl",
+            "source_space_input": "fit_space",
+            "dimensions_parameter": "dims",
+            "required_sibling_terminals": [
+              "pseudotime",
+              "entropy"
+            ],
+            "file_order": "utf8_path_lexicographic_v1",
+            "maximum_file_count": 8,
+            "maximum_total_bytes": 1073741824
+          },
+          "derived_fitted_axis_policy": {
+            "schema": "scworkbench.operation_pack.derived_fitted_axis_policy.v1",
+            "mode": "source_relative_subset_v1",
+            "source_space_input": "fit_space",
+            "model_output": "model",
+            "required_siblings": [
+              {
+                "name": "pseudotime",
+                "kind": "cell_vector",
+                "coverage_policy": "exact_fitted_axis_v1"
+              },
+              {
+                "name": "entropy",
+                "kind": "cell_vector",
+                "coverage_policy": "exact_fitted_axis_v1"
+              }
+            ],
+            "declaration_discipline": "exactly_once_before_cell_indexed_writes",
+            "maximum_selected_cells": 1000000,
+            "maximum_combined_id_bytes": 67108864,
+            "maximum_id_bytes": 1024,
+            "maximum_family_keys": 64,
+            "policy_identity": {
+              "scheme": "scworkbench.operation_pack.derived_fitted_axis_policy.v1",
+              "scope": "policy excluding policy_identity",
+              "sha256": "e8507a7af754147a7a866ada2a0076d6a9068285c77b29eb10ac1f05002da3ad"
+            }
+          }
+        },
+        {
+          "name": "pseudotime",
+          "category": "terminal_artifact",
+          "kind": "cell_vector",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "pseudotime_id",
+          "required": true,
+          "promotion_group": "palantir_fit",
+          "value_kind": "continuous"
+        },
+        {
+          "name": "branch_membership",
+          "category": "terminal_artifact",
+          "kind": "relation_family",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "branch_membership_id",
+          "required": true,
+          "promotion_group": "palantir_fit"
+        },
+        {
+          "name": "branch_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "branch_summary_id",
+          "required": true,
+          "promotion_group": "palantir_fit",
+          "table_type": "palantir_branch_summary"
+        },
+        {
+          "name": "entropy",
+          "category": "terminal_artifact",
+          "kind": "cell_vector",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "entropy_id",
+          "required": true,
+          "promotion_group": "palantir_fit",
+          "value_kind": "continuous"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_model_ref"
+        }
+      ],
+      "promotion_closure": {
+        "pseudotime": [
+          "branch_membership",
+          "branch_summary",
+          "entropy",
+          "model",
+          "pseudotime"
+        ],
+        "branch_membership": [
+          "branch_membership",
+          "branch_summary",
+          "entropy",
+          "model",
+          "pseudotime"
+        ],
+        "branch_summary": [
+          "branch_membership",
+          "branch_summary",
+          "entropy",
+          "model",
+          "pseudotime"
+        ],
+        "entropy": [
+          "branch_membership",
+          "branch_summary",
+          "entropy",
+          "model",
+          "pseudotime"
+        ],
+        "model": [
+          "branch_membership",
+          "branch_summary",
+          "entropy",
+          "model",
+          "pseudotime"
+        ]
+      },
+      "replay_equivalence": {
+        "model": "loadable_reference",
+        "pseudotime": "exact_canonical_value",
+        "branch_membership": "exact_canonical_value",
+        "branch_summary": "exact_canonical_value",
+        "entropy": "exact_canonical_value"
+      }
+    },
+    {
+      "name": "palantir_project",
+      "qualified_name": "scwbtrajectory::palantir_project",
+      "title": "Project Palantir fitted branches",
+      "description": "Project a core-authenticated Palantir model into an authenticated 2D display space. Its contained pickle is executed only after an explicit operator-verified-source attestation; checksum validity alone never establishes safety for an untrusted bundle.",
+      "runner": ".run_palantir_project",
+      "inputs": [
+        {
+          "name": "model",
+          "kind": "model_ref",
+          "required": true,
+          "alignment": "model_linked"
+        },
+        {
+          "name": "plot_space",
+          "kind": "space_2d",
+          "required": true,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "prob_min": {
+            "type": "number",
+            "default": 0.05,
+            "minimum": 0,
+            "maximum": 1
+          },
+          "smoothness": {
+            "type": "number",
+            "default": 1,
+            "minimum": 0.05,
+            "maximum": 20
+          },
+          "min_cells_per_branch": {
+            "type": "integer",
+            "default": 50,
+            "minimum": 2,
+            "maximum": 1000000
+          },
+          "approx_points": {
+            "type": "integer",
+            "default": 200,
+            "minimum": 0,
+            "maximum": 5000
+          },
+          "pickle_execution_trust": {
+            "type": "string",
+            "enum": [
+              "operator_verified_source_v1"
+            ]
+          }
+        },
+        "required": [
+          "pickle_execution_trust"
+        ],
+        "additionalProperties": false
+      },
+      "dimension_policies": [
+        {
+          "output": "curves",
+          "policy": "data_dependent_family_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "curves",
+          "category": "terminal_artifact",
+          "kind": "path_2d_family",
+          "storage_profile": "path_2d_family_v1",
+          "allocated_id_key": "curves_id",
+          "required": true,
+          "promotion_group": "projection"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_model_ref"
+        }
+      ],
+      "promotion_closure": {
+        "curves": [
+          "curves"
+        ]
+      },
+      "replay_equivalence": {
+        "curves": "exact_canonical_value"
+      },
+      "self_linked_contained_model_reads": [
+        {
+          "name": "fitted_model",
+          "input": "model",
+          "reader": "read_self_linked_contained_model_payload",
+          "allowed_models": [
+            {
+              "engine": "palantir",
+              "model_type": "palantir_fit"
             }
           ],
           "linkage_policy": "authenticated_existing_source_and_cell_linkage_v1",

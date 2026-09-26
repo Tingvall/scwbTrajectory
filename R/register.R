@@ -45,7 +45,9 @@ register_operation_pack <- function() {
         .run_slingshot_lineage_weights,
       `scwbtrajectory::slingshot_project` = .run_slingshot_project,
       `scwbtrajectory::monocle3_fit` = .run_monocle3_fit,
-      `scwbtrajectory::monocle3_project` = .run_monocle3_project
+      `scwbtrajectory::monocle3_project` = .run_monocle3_project,
+      `scwbtrajectory::palantir_fit` = .run_palantir_fit,
+      `scwbtrajectory::palantir_project` = .run_palantir_project
     )
   )
 }

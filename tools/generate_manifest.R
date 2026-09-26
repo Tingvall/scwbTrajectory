@@ -253,9 +253,11 @@ project <- list(name = "space_path_project_2d",
 
 source(file.path(root, "tools", "s4_manifest.R"), local = TRUE)
 source(file.path(root, "tools", "s3_manifest.R"), local = TRUE)
+source(file.path(root, "tools", "palantir_manifest.R"), local = TRUE)
 
-# S1/S2/S4 were independently accepted as a single installed manifest. Keep
-# those definitions byte-stable while adding the separately generated S3 slice.
+# Preserve the independently accepted S1/S2/S4 and S3 definitions. The
+# accepted Monocle3 definitions are frozen from integrated commit 7e8c3fc;
+# never regenerate or reinterpret them while appending Palantir.
 manifest <- jsonlite::read_json(file.path(root, "tools",
   "integrated_s1_s2_s4_manifest.json"), simplifyVector = FALSE)
 stopifnot(identical(length(manifest$operations), 17L),
@@ -268,7 +270,20 @@ stopifnot(identical(length(manifest$operations), 17L),
         "trajectory_vector_smooth", "trajectory_signal_dynamics",
         "trajectory_geneset_dynamics_explicit",
         "trajectory_signal_dynamics_explicit")))))
-manifest$operations <- c(manifest$operations, s3_operations)
+monocle3_operations <- jsonlite::read_json(file.path(root, "tools",
+  "accepted_s5_monocle3_operations.json"), simplifyVector = FALSE)
+definition_identity <- getFromNamespace(".wb_operation_pack_v3_id",
+  "scworkbench")
+stopifnot(identical(vapply(monocle3_operations, `[[`, character(1),
+  "qualified_name"), c("scwbtrajectory::monocle3_fit",
+    "scwbtrajectory::monocle3_project")),
+  identical(vapply(monocle3_operations, function(operation)
+    definition_identity("scworkbench.operation_pack.definition.v3",
+      operation)$sha256, character(1)), c(
+        "5fb8c122ed1bee4edb1d0918b4cc89b288a61dd1b59218bdf021d76a92ca08e0",
+        "c6fd76e839d7d473b933d9edc7ada746998c73b5ad9750d1d82ce34916d8576e")))
+manifest$operations <- c(manifest$operations, s3_operations,
+  monocle3_operations, palantir_operations)
 
 path <- file.path(root, "inst", "scworkbench", "operation-pack.json")
 dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)

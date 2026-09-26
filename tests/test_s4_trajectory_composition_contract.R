@@ -202,11 +202,12 @@ test_trajectory_s4_metadata_identity_change_ledger_contract <- function() {
   manifest <- jsonlite::read_json(manifest_path, simplifyVector = FALSE)
   identity <- getFromNamespace(".wb_operation_pack_v3_id",
     "scworkbench")
-  # S3 and S5 append to the manifest. The accepted S1/S2/S4 prefix must
+  # S3 and both S5 slices append to the manifest. The accepted S1/S2/S4 prefix must
   # still reproduce its frozen manifest identity exactly.
-  stopifnot(length(manifest$operations) == 23L,
-    identical(vapply(tail(manifest$operations, 2L), `[[`, character(1),
-      "name"), c("monocle3_fit", "monocle3_project")))
+  stopifnot(length(manifest$operations) == 25L,
+    identical(vapply(tail(manifest$operations, 4L), `[[`, character(1),
+      "name"), c("monocle3_fit", "monocle3_project",
+        "palantir_fit", "palantir_project")))
   accepted_prefix <- manifest
   accepted_prefix$operations <- manifest$operations[seq_len(17L)]
   manifest_identity <- identity(

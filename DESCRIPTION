@@ -6,12 +6,12 @@ Authors@R: person("Hendrik A.", "de Weerd", role = c("aut", "cre"), email = "dir
 Description: Explicitly activated provisional ABI v3 operation pack containing
     branch comparison, route smoothing, analytical path construction and
     scoring, trajectory-segment composition, and grouped S2 trajectory
-    operations, Slingshot fitting/projection, and Monocle3 fitting/projection
-    for scworkbench.
+    operations, Slingshot fitting/projection, Monocle3 fitting/projection,
+    and Palantir fitting/projection for scworkbench.
     It is not a standard-profile dependency.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Depends: R (>= 4.1.0)
-Imports: digest, methods, scworkbench, RANN, stats, utils
-Suggests: DBI, fs, igraph, jsonlite, Matrix, monocle3, rhdf5, S4Vectors, SingleCellExperiment, slingshot
+Imports: digest, jsonlite, methods, scworkbench, RANN, stats, utils
+Suggests: DBI, fs, igraph, Matrix, monocle3, rhdf5, S4Vectors, SingleCellExperiment, slingshot
 RoxygenNote: 7.3.3
