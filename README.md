@@ -1,6 +1,6 @@
 # scwbTrajectory
 
-This repository is the provisional, explicitly activated scworkbench
+This repository is the explicitly activated scworkbench
 Trajectory operation pack. Its integrated ABI-v3 manifest retains the accepted
 S1/S2/S4 and accepted Monocle3 operations and adds the Phase 5 S5 Palantir
 fit/project methods alongside the S3 non-adoption Slingshot methods:
@@ -8,6 +8,12 @@ fit/project methods alongside the S3 non-adoption Slingshot methods:
 `slingshot_project`. Call all methods under the `scwbtrajectory::` namespace after
 explicit activation. `slingshot_adopt` remains a core operation; this pack
 does not claim external-state adoption.
+
+The standard profile selects this 25-operation pack. Model-backed
+`trajectory_geneset_dynamics` and `trajectory_signal_dynamics` require `model`.
+Their separate `_explicit` operations require typed pseudotime and
+`pseudotime_key`; these are distinct identities, not a shortcut through the
+model interface. Inspect the qualified live interface before execution.
 
 Installation is inert. Activate the installed manifest explicitly with
 `wb_operation_pack_activate()`. The pack consumes only authenticated typed
