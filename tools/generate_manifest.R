@@ -254,6 +254,7 @@ project <- list(name = "space_path_project_2d",
 source(file.path(root, "tools", "s4_manifest.R"), local = TRUE)
 source(file.path(root, "tools", "s3_manifest.R"), local = TRUE)
 source(file.path(root, "tools", "palantir_manifest.R"), local = TRUE)
+source(file.path(root, "tools", "changepoint_manifest.R"), local = TRUE)
 
 # Preserve the independently accepted S1/S2/S4 and S3 definitions. The
 # accepted Monocle3 definitions are frozen from integrated commit 7e8c3fc;
@@ -283,7 +284,10 @@ stopifnot(identical(vapply(monocle3_operations, `[[`, character(1),
         "5fb8c122ed1bee4edb1d0918b4cc89b288a61dd1b59218bdf021d76a92ca08e0",
         "c6fd76e839d7d473b933d9edc7ada746998c73b5ad9750d1d82ce34916d8576e")))
 manifest$operations <- c(manifest$operations, s3_operations,
-  monocle3_operations, palantir_operations)
+  monocle3_operations, palantir_operations, changepoint_operations)
+# The pack gained an operation, so the R package version and the manifest
+# version move together; DESCRIPTION carries the same string.
+manifest$package$version <- "0.1.2"
 
 path <- file.path(root, "inst", "scworkbench", "operation-pack.json")
 dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)

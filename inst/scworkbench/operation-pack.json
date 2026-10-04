@@ -5,7 +5,7 @@
   "namespace": "scwbtrajectory",
   "package": {
     "name": "scwbTrajectory",
-    "version": "0.1.1"
+    "version": "0.1.2"
   },
   "backend": "R",
   "compatibility": {
@@ -6344,6 +6344,550 @@
           "call_discipline": "exactly_once"
         }
       ]
+    },
+    {
+      "name": "trajectory_single_changepoint_regions",
+      "qualified_name": "scwbtrajectory::trajectory_single_changepoint_regions",
+      "title": "Single change-point regions along pseudotime",
+      "description": "Detect one interior L1 change point per matrix feature along an authenticated pseudotime axis in private Python compute, classify its direction from the mean signed difference across the boundary, aggregate breakpoint counts into an aligned density, and publish the features that exceed the density threshold inside each caller-declared directional rank window. Rank semantics are half-open and explicit; the notebook raw density convention is recorded in run_summary.",
+      "runner": ".run_trajectory_single_changepoint_regions",
+      "inputs": [
+        {
+          "name": "matrix",
+          "kind": "matrix",
+          "required": true,
+          "alignment": "cell_and_feature_ordered"
+        },
+        {
+          "name": "pseudotime",
+          "kind": "cell_vector",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "membership",
+          "kind": "cell_vector",
+          "required": false,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "features": {
+            "type": ["array", "null"],
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "feature_set": {
+            "type": ["string", "null"]
+          },
+          "pseudotime_direction": {
+            "type": "string",
+            "default": "ascending",
+            "enum": [
+              "ascending",
+              "descending"
+            ]
+          },
+          "membership_compartment": {
+            "type": ["string", "null"]
+          },
+          "smooth_window": {
+            "type": "integer",
+            "default": 200,
+            "minimum": 1,
+            "maximum": 1000000
+          },
+          "window_width": {
+            "type": "integer",
+            "default": 100,
+            "minimum": 2,
+            "maximum": 1000000
+          },
+          "window_jump": {
+            "type": "integer",
+            "default": 5,
+            "minimum": 1,
+            "maximum": 1000000
+          },
+          "window_min_size": {
+            "type": "integer",
+            "default": 2,
+            "minimum": 1,
+            "maximum": 1000000
+          },
+          "direction_window": {
+            "type": "integer",
+            "default": 100,
+            "minimum": 1,
+            "maximum": 1000000
+          },
+          "density_smooth_window": {
+            "type": "integer",
+            "default": 100,
+            "minimum": 1,
+            "maximum": 1000000
+          },
+          "density_scale": {
+            "type": "number",
+            "default": 20,
+            "minimum": 0
+          },
+          "change_threshold": {
+            "type": "number",
+            "default": 30,
+            "minimum": 0
+          },
+          "non_finite_policy": {
+            "type": "string",
+            "default": "error",
+            "enum": [
+              "error",
+              "drop"
+            ]
+          },
+          "degenerate_bkp_policy": {
+            "type": "string",
+            "default": "error",
+            "enum": [
+              "error",
+              "drop"
+            ]
+          },
+          "chunk_size": {
+            "type": "integer",
+            "default": 256,
+            "minimum": 1,
+            "maximum": 1000000
+          },
+          "region_windows": {
+            "type": ["array", "null"],
+            "items": {
+              "type": "object",
+              "properties": {
+                "region_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                },
+                "direction": {
+                  "type": "string",
+                  "enum": [
+                    "up",
+                    "down"
+                  ]
+                },
+                "rank_start": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "rank_end": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "region_id",
+                "direction",
+                "rank_start",
+                "rank_end"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "registry_reads": [
+        {
+          "name": "feature_sets",
+          "category": "authenticated_core_registry_snapshot",
+          "kind": "feature_set_registry",
+          "reader": "read_feature_set_registry",
+          "matrix_input": "matrix",
+          "no_selector_policy": "all_namespaces",
+          "empty_match_policy": "allow"
+        }
+      ],
+      "dimension_policies": [
+        {
+          "output": "feature_single_changepoints",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "trend_regions",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "trend_density",
+          "policy": "authenticated_output_axes_v1",
+          "shape": "bounded_grouped_cell_key_cartesian",
+          "cell_axis": {
+            "source": "effective_cells_v1",
+            "input": "matrix"
+          },
+          "key_axis": {
+            "source": "declared_bounded_key_groups_v1",
+            "required_keys": [
+              "all",
+              "up",
+              "down"
+            ],
+            "optional_groups": [],
+            "selection_owner": "operation_pack_v1",
+            "group_order": "manifest_order_v1"
+          },
+          "row_order": "key_major_then_cell_v1",
+          "missing_values": "canonical_null_allowed"
+        },
+        {
+          "output": "run_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "feature_single_changepoints",
+          "category": "terminal_artifact",
+          "kind": "feature_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "feature_single_changepoints_id",
+          "required": true,
+          "promotion_group": "single_changepoint",
+          "table_type": "trajectory_single_changepoints"
+        },
+        {
+          "name": "trend_regions",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "trend_regions_id",
+          "required": true,
+          "promotion_group": "single_changepoint",
+          "table_type": "trajectory_single_changepoint_regions"
+        },
+        {
+          "name": "trend_density",
+          "category": "terminal_artifact",
+          "kind": "cell_vector_family",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "trend_density_id",
+          "required": true,
+          "promotion_group": "single_changepoint",
+          "value_kind": "continuous"
+        },
+        {
+          "name": "run_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "run_summary_id",
+          "required": true,
+          "promotion_group": "single_changepoint",
+          "table_type": "trajectory_single_changepoint_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_obs_table"
+        }
+      ],
+      "promotion_closure": {
+        "feature_single_changepoints": [
+          "feature_single_changepoints",
+          "run_summary",
+          "trend_density",
+          "trend_regions"
+        ],
+        "trend_regions": [
+          "feature_single_changepoints",
+          "run_summary",
+          "trend_density",
+          "trend_regions"
+        ],
+        "trend_density": [
+          "feature_single_changepoints",
+          "run_summary",
+          "trend_density",
+          "trend_regions"
+        ],
+        "run_summary": [
+          "feature_single_changepoints",
+          "run_summary",
+          "trend_density",
+          "trend_regions"
+        ]
+      },
+      "replay_equivalence": {
+        "feature_single_changepoints": "exact_canonical_value",
+        "trend_regions": "exact_canonical_value",
+        "trend_density": "exact_canonical_value",
+        "run_summary": "exact_canonical_value"
+      },
+      "typed_slice_reads": [
+        {
+          "name": "matrix_chunks",
+          "input": "matrix",
+          "reader": "read_typed_slices",
+          "kind": "matrix",
+          "supported_axes": [
+            "features"
+          ],
+          "chunk_axis": "features",
+          "chunk_size_parameter": "chunk_size",
+          "call_discipline": "ordered_partition_exactly_once",
+          "empty_selection_policy": "reject",
+          "duplicate_policy": "reject",
+          "selection": {
+            "cells": {
+              "policy": "effective_input_axis_v1"
+            },
+            "features": {
+              "policy": "effective_input_axis_v1"
+            }
+          }
+        }
+      ],
+      "retained_parameters": [
+        {
+          "name": "matrix_id",
+          "source": "output_first_row",
+          "output": "run_summary",
+          "field": "matrix_id"
+        },
+        {
+          "name": "n_cells_analysed",
+          "source": "output_first_row",
+          "output": "run_summary",
+          "field": "n_cells_analysed"
+        },
+        {
+          "name": "n_features_analysed",
+          "source": "output_first_row",
+          "output": "run_summary",
+          "field": "n_features_analysed"
+        },
+        {
+          "name": "significant_rank_count",
+          "source": "output_first_row",
+          "output": "run_summary",
+          "field": "significant_rank_count"
+        },
+        {
+          "name": "feature_set",
+          "source": "parameter_value",
+          "required": false,
+          "parameter": "feature_set"
+        },
+        {
+          "name": "pseudotime_direction",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "pseudotime_direction"
+        },
+        {
+          "name": "smooth_window",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "smooth_window"
+        },
+        {
+          "name": "window_width",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "window_width"
+        },
+        {
+          "name": "window_jump",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "window_jump"
+        },
+        {
+          "name": "window_min_size",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "window_min_size"
+        },
+        {
+          "name": "direction_window",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "direction_window"
+        },
+        {
+          "name": "density_smooth_window",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "density_smooth_window"
+        },
+        {
+          "name": "density_scale",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "density_scale"
+        },
+        {
+          "name": "change_threshold",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "change_threshold"
+        },
+        {
+          "name": "non_finite_policy",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "non_finite_policy"
+        },
+        {
+          "name": "degenerate_bkp_policy",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "degenerate_bkp_policy"
+        },
+        {
+          "name": "chunk_size",
+          "source": "effective_parameter_value",
+          "required": false,
+          "parameter": "chunk_size"
+        }
+      ],
+      "public_interface": {
+        "intent": [
+          "trajectory",
+          "changepoint",
+          "pseudotime"
+        ],
+        "inputs": [
+          {
+            "name": "matrix",
+            "label": "matrix",
+            "help": "Typed matrix input."
+          },
+          {
+            "name": "pseudotime",
+            "label": "pseudotime",
+            "help": "Typed pseudotime input."
+          },
+          {
+            "name": "membership",
+            "label": "membership",
+            "help": "Typed membership input."
+          }
+        ],
+        "parameters": [
+          {
+            "name": "features",
+            "type": "string_vec",
+            "help": "Optional explicit feature IDs."
+          },
+          {
+            "name": "feature_set",
+            "type": "string",
+            "help": "Optional matrix feature-set name."
+          },
+          {
+            "name": "pseudotime_direction",
+            "type": "choice",
+            "help": "Ascending or descending axis."
+          },
+          {
+            "name": "membership_compartment",
+            "type": "string",
+            "help": "Optional cell-vector compartment restricting the axis."
+          },
+          {
+            "name": "smooth_window",
+            "type": "int",
+            "help": "Centred pre-smoothing window."
+          },
+          {
+            "name": "window_width",
+            "type": "int",
+            "help": "Sliding-window cost width."
+          },
+          {
+            "name": "window_jump",
+            "type": "int",
+            "help": "Breakpoint quantisation step."
+          },
+          {
+            "name": "window_min_size",
+            "type": "int",
+            "help": "Minimum segment length."
+          },
+          {
+            "name": "direction_window",
+            "type": "int",
+            "help": "Samples averaged either side."
+          },
+          {
+            "name": "density_smooth_window",
+            "type": "int",
+            "help": "Breakpoint histogram smoothing."
+          },
+          {
+            "name": "density_scale",
+            "type": "dbl",
+            "help": "Multiplier on the smoothed histogram."
+          },
+          {
+            "name": "change_threshold",
+            "type": "dbl",
+            "help": "Density value at which a rank is significant."
+          },
+          {
+            "name": "non_finite_policy",
+            "type": "choice",
+            "help": "Error or drop on non-finite input."
+          },
+          {
+            "name": "degenerate_bkp_policy",
+            "type": "choice",
+            "help": "Error or drop when no interior breakpoint exists."
+          },
+          {
+            "name": "chunk_size",
+            "type": "int",
+            "help": "Authenticated feature chunk size."
+          },
+          {
+            "name": "region_windows",
+            "type": "list",
+            "help": "Objects of region_id, direction, rank_start, rank_end; ranks are half-open [rank_start, rank_end). Omit to analyse the whole axis in both directions."
+          }
+        ],
+        "outputs": [
+          {
+            "name": "feature_single_changepoints",
+            "description": "Declared feature_single_changepoints terminal."
+          },
+          {
+            "name": "trend_regions",
+            "description": "Declared trend_regions terminal."
+          },
+          {
+            "name": "trend_density",
+            "description": "Declared trend_density terminal."
+          },
+          {
+            "name": "run_summary",
+            "description": "Declared run_summary terminal."
+          }
+        ]
+      }
     }
   ]
 }

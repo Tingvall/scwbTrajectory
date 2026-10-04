@@ -9,7 +9,18 @@ fit/project methods alongside the S3 non-adoption Slingshot methods:
 explicit activation. `slingshot_adopt` remains a core operation; this pack
 does not claim external-state adoption.
 
-The standard profile selects this 25-operation pack. Model-backed
+`trajectory_single_changepoint_regions` detects one change point per feature along
+an ordered pseudotime axis. Its numeric core runs in a private Python process using
+`ruptures`; the interpreter comes from `scwbTrajectory.changepoint_python`, else
+`SCWORKBENCH_CHANGEPPOINT_PYTHON`, else `python3`, and the probe publishes the
+interpreter path and the library versions it actually used in `run_summary`.
+Published ranks and pseudotime boundaries are half-open: boundary rank `b` sits
+before the cell at 0-based rank `b`, and `trend_density` publishes the count of
+boundary `b` at cell rank `b`.
+
+The accepted pack that the standard profile qualified has 25 operations at version
+0.1.1. This branch carries 26 operations at 0.1.2 and is experimental; it is not
+what that profile qualifies. Model-backed
 `trajectory_geneset_dynamics` and `trajectory_signal_dynamics` require `model`.
 Their separate `_explicit` operations require typed pseudotime and
 `pseudotime_key`; these are distinct identities, not a shortcut through the

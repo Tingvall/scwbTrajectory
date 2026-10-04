@@ -47,7 +47,9 @@ register_operation_pack <- function() {
       `scwbtrajectory::monocle3_fit` = .run_monocle3_fit,
       `scwbtrajectory::monocle3_project` = .run_monocle3_project,
       `scwbtrajectory::palantir_fit` = .run_palantir_fit,
-      `scwbtrajectory::palantir_project` = .run_palantir_project
+      `scwbtrajectory::palantir_project` = .run_palantir_project,
+      `scwbtrajectory::trajectory_single_changepoint_regions` =
+        .run_trajectory_single_changepoint_regions
     )
   )
 }
