@@ -103,6 +103,29 @@ def _predict_one(values, width, jump, min_size):
     return bkps
 
 
+def _to_vector(values, feature_id):
+    """A JSON null is a missing observation, not a Python error.
+
+    Null becomes NaN here so the caller's non_finite_policy decides what happens
+    to the feature; a value that is neither null nor a number is a malformed
+    request and is refused rather than silently turned into a missing value.
+    """
+    import numpy as np
+    out = []
+    missing = []
+    for index, value in enumerate(values):
+        if value is None:
+            missing.append(index)
+            out.append(float("nan"))
+        elif isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise CoreError(EXIT_REQUEST,
+                            "feature %r has a non-numeric value %r at position %d"
+                            % (feature_id, value, index))
+        else:
+            out.append(float(value))
+    return np.asarray(out, dtype="float64"), missing
+
+
 def _window_params(params):
     width = int(params["window_width"])
     jump = max(1, int(params["window_jump"]))
@@ -175,6 +198,13 @@ def rolling_mean(values, window):
     return series.rolling(window=window, center=True, min_periods=0).mean().tolist()
 
 
+def _record(feature_id, b=None, delta=None, direction=None, analysed=False,
+            reason=None, missing_values=0):
+    return {"feature_id": feature_id, "b": b, "delta": delta,
+            "direction": direction, "analysed": analysed, "reason": reason,
+            "missing_values": int(missing_values)}
+
+
 def phase_features(request):
     cells = request.get("cells")
     features = request.get("features")
@@ -213,15 +243,24 @@ def phase_features(request):
                             "feature %r has %s values for %d cells"
                             % (feature_id, len(values) if isinstance(values, list)
                                else "non-list", count))
-        vector = np.asarray([float(value) for value in values], dtype="float64")
+        vector, missing = _to_vector(values, feature_id)
         if not bool(np.all(np.isfinite(vector))):
             if non_finite_policy == "error":
+                other = [int(index) for index in np.flatnonzero(~np.isfinite(vector))
+                         if index not in set(missing)]
+                positions = sorted(missing + other)
+                shown = ", ".join(str(index) for index in positions[:8])
+                if len(positions) > 8:
+                    shown += ", ... (%d more)" % (len(positions) - 8)
                 raise CoreError(EXIT_COMPUTE,
-                                "feature %r contains non-finite values "
-                                "(non_finite_policy='error')" % feature_id)
-            records.append({"feature_id": feature_id, "b": None, "delta": None,
-                            "direction": None, "analysed": False,
-                            "reason": "non_finite"})
+                                "feature %r has %d missing (null) and %d non-finite "
+                                "(NaN/Inf) values out of %d cells, at positions [%s]; "
+                                "non_finite_policy='error' refuses the run "
+                                "(non_finite_policy='drop' publishes the feature as "
+                                "unanalysed)" % (feature_id, len(missing), len(other),
+                                                 count, shown))
+            records.append(_record(feature_id, reason="non_finite",
+                                   missing_values=len(missing)))
             continue
         smoothed = rolling_mean(vector, smooth_window)
         if not all(value == value for value in smoothed):
@@ -235,9 +274,7 @@ def phase_features(request):
                                 "feature %r produced no interior breakpoint "
                                 "(degenerate_bkp_policy='error'); predict returned %r"
                                 % (feature_id, bkps))
-            records.append({"feature_id": feature_id, "b": None, "delta": None,
-                            "direction": None, "analysed": False,
-                            "reason": "degenerate"})
+            records.append(_record(feature_id, reason="degenerate"))
             continue
         array = np.asarray(smoothed, dtype="float64")
         after = array[boundary:boundary + direction_window]
@@ -247,19 +284,12 @@ def phase_features(request):
                 raise CoreError(EXIT_COMPUTE,
                                 "feature %r has an empty direction window at boundary %d"
                                 % (feature_id, boundary))
-            records.append({"feature_id": feature_id, "b": None, "delta": None,
-                            "direction": None, "analysed": False,
-                            "reason": "degenerate"})
+            records.append(_record(feature_id, reason="degenerate"))
             continue
         delta = float(after.mean() - before.mean())
-        records.append({
-            "feature_id": feature_id,
-            "b": int(boundary),
-            "delta": delta,
-            "direction": "up" if delta > 0 else "down",
-            "analysed": True,
-            "reason": None,
-        })
+        records.append(_record(feature_id, b=int(boundary), delta=delta,
+                               direction="up" if delta > 0 else "down",
+                               analysed=True))
     return {"records": records}
 
 
@@ -317,7 +347,14 @@ def phase_global(request):
                             "aligned density for %r has %d entries, expected %d"
                             % (key, len(shifted), n))
         aligned[key] = shifted
-    significant = [index for index in range(n) if aligned["all"][index] >= threshold]
+    # A boundary rank is significant for a direction when that direction's own
+    # density reaches the threshold there. The combined ("all") density mixes the
+    # two directions, so a strong up population would otherwise make a lone down
+    # breakpoint look significant; it stays published as a diagnostic only.
+    significant = {}
+    for key in ("all", "up", "down"):
+        significant[key] = [index for index in range(n)
+                            if aligned[key][index] >= threshold]
 
     def peak(values):
         best = 0
@@ -330,7 +367,17 @@ def phase_global(request):
         "density_all": aligned["all"],
         "density_up": aligned["up"],
         "density_down": aligned["down"],
-        "significant_ranks": significant,
+        "significant_ranks": significant["all"],
+        "significant_ranks_up": significant["up"],
+        "significant_ranks_down": significant["down"],
+        "significance": {
+            "region_selection": "direction_matched_density_v1",
+            "rule": "rank r is significant for direction d when the aligned "
+                    "density of d at r is >= change_threshold",
+            "combined_density_role": "diagnostic_only",
+            "threshold_units": "absolute units of a density_scale-scaled "
+                               "breakpoint count; not scale free",
+        },
         "alignment": {
             "published": "aligned_boundary_at_cell_rank",
             "notebook_raw": "slot_j_carries_boundary_j_plus_1",

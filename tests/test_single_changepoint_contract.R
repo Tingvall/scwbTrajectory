@@ -1,10 +1,13 @@
 # Contract tests for scwbtrajectory::trajectory_single_changepoint_regions.
 #
 # The numeric core runs in private Python compute, so these tests assert the
-# published contract only: rank translation, direction gating, the aligned
-# density convention, the authenticated density-family shape, chunk-size
-# invariance and the documented rejection paths. Fixture values are planted
-# steps on a pseudotime axis, so every expected rank is exact.
+# published contract only: rank translation, direction gating (a region is gated by
+# the density of its own direction), the aligned density convention, the
+# authenticated density-family shape, missing-value handling under both
+# non_finite_policy values, the boundary-pseudotime summary statistics, the JSON
+# encoding of region member ids, chunk-size invariance and the documented rejection
+# paths. Fixture values are planted steps on a pseudotime axis, so every expected
+# rank is exact.
 #
 # Reproduce locally inside the qualified image:
 #   TMPDIR=/tmp Rscript tests/run_contract_tests.R
@@ -73,6 +76,36 @@ cp_window <- function(id, direction, start, end)
 # Published density values for one family key, in cell-axis order.
 cp_key <- function(density, key) density$value[density$key == key]
 
+# Fixture with caller-chosen planted vectors on the same evenly spaced axis, for a
+# test that must state its own expected density, ranks and members instead of
+# inheriting the shared fixture's feature set.
+cp_matrix_fixture <- function(planted, n = cp_test$n) {
+  trajectory_activate_pack()
+  root <- tempfile("scwbTrajectory-cp-matrix-")
+  bundle <- wb_init_bundle(root, overwrite = TRUE)
+  cells <- sprintf("c%02d", seq_len(n))
+  time <- (seq_len(n) - 1L) / (n - 1L)
+  values <- do.call(rbind, planted)
+  dimnames(values) <- list(names(planted), cells)
+  wb_define_cells(bundle, cells)
+  wb_attach_matrix(bundle, "RNA", Matrix::Matrix(values, sparse = TRUE),
+    feature_type = "gene")
+  list(root = root, bundle = bundle, cells = cells, features = names(planted),
+    pseudotime = wb_prim_cell_vector(setNames(time, cells), "continuous"))
+}
+
+# Published density value for one family key at one 0-based cell rank.
+cp_at <- function(density, key, rank) cp_key(density, key)[rank + 1L]
+
+# Region member ids, parsed back out of the JSON column. An empty array parses to
+# an empty list, so the result is normalized to character(0).
+cp_members <- function(regions, direction) {
+  parsed <- jsonlite::fromJSON(regions$feature_ids_json[regions$direction ==
+    direction])
+  if (!length(parsed)) return(character(0))
+  as.character(unlist(parsed, use.names = FALSE))
+}
+
 # A published double travels through the payload's canonical decimal form, so it
 # equals the input value to about 15 significant digits, not bit for bit. Ranks,
 # counts and identifiers are asserted with identical() everywhere else.
@@ -94,7 +127,11 @@ test_trajectory_single_changepoint_default_regions_contract <- function() {
     identical(out$trend_regions$rank_end, c(30L, 30L)),
     identical(out$trend_regions$first_included_cell_id, c("c01", "c01")),
     identical(out$trend_regions$last_included_cell_id, c("c30", "c30")),
-    identical(out$trend_regions$feature_count, c(2L, 1L)),
+    # Direction-matched gating: at rank 15 the up density is 2 (up1, up2) and the
+    # down density 1 (dn1), so with change_threshold 2 the up region holds both up
+    # features and the down region is empty - although the combined density there
+    # is 3, which is what used to gate both.
+    identical(out$trend_regions$feature_count, c(2L, 0L)),
     identical(out$run_summary$region_window_count, 2L),
     # Planted boundaries: rank 15 for the three steps before c16, rank 25 for
     # the step before c26, none for flat (dropped under the drop policy).
@@ -514,5 +551,225 @@ test_trajectory_single_changepoint_degenerate_policy_contract <- function() {
     length(features$trend_density$value) == 3L * n,
     identical(regions$feature_ids_json, rep("[]", 2L)),
     identical(regions$feature_count, c(0L, 0L)))
+  TRUE
+}
+
+# ---------------------------------------------------------------------------
+# Correction 1: a region is gated by the density of its own direction.
+#
+# The fixture plants three UP steps before c16, one DOWN step before c16 and two
+# DOWN steps before c26. On the 30-cell axis their boundaries are rank 15 and rank
+# 25, and with density_smooth_window 1 and density_scale 1 the published density is
+# exactly the breakpoint count of that direction at that rank, so every number
+# below is arithmetic on the planted steps rather than a value read from a run:
+#
+#   rank 15: up 3, down 1, combined 4      rank 25: up 0, down 2, combined 2
+#
+# Asking each direction about its own density therefore gives, at change_threshold
+# 3, the three up features and no down feature; and at change_threshold 2, dn2 and
+# dn3 (their own density reaches 2 at rank 25) but still not dn1, whose own density
+# is 1 even though rank 15 carries the highest combined density in the run. Both
+# regions here are whole-axis, so no rank window can be blamed for an exclusion. A
+# rule gated on the combined density admits dn1 at both thresholds.
+# ---------------------------------------------------------------------------
+test_trajectory_single_changepoint_direction_specific_threshold_contract <- function() {
+  n <- cp_test$n
+  x <- cp_matrix_fixture(list(up1 = cp_step(n, 16L, 0, 9),
+    up2 = cp_step(n, 16L, 1, 7), up3 = cp_step(n, 16L, 2, 8),
+    dn1 = cp_step(n, 16L, 9, 0), dn2 = cp_step(n, 26L, 9, 1),
+    dn3 = cp_step(n, 26L, 8, 0)))
+  on.exit(trajectory_close(x), add = TRUE)
+  strict <- cp_run(x, list(change_threshold = 3))
+  features <- strict$feature_single_changepoints
+  regions <- strict$trend_regions
+  stopifnot(
+    identical(features$feature_id, x$features),
+    identical(features$boundary_rank, c(15L, 15L, 15L, 15L, 25L, 25L)),
+    identical(features$direction, c("up", "up", "up", "down", "down", "down")),
+    # The density arithmetic itself.
+    identical(cp_at(strict$trend_density, "up", 15L), 3),
+    identical(cp_at(strict$trend_density, "down", 15L), 1),
+    identical(cp_at(strict$trend_density, "all", 15L), 4),
+    identical(cp_at(strict$trend_density, "up", 25L), 0),
+    identical(cp_at(strict$trend_density, "down", 25L), 2),
+    identical(cp_at(strict$trend_density, "all", 25L), 2),
+    # up reaches 3 at rank 15, no direction ever reaches 3 at rank 25.
+    identical(strict$run_summary$significant_rank_count_up, 1L),
+    identical(strict$run_summary$significant_rank_count_down, 0L),
+    identical(strict$run_summary$significant_rank_count, 1L),
+    identical(cp_members(regions, "up"), c("up1", "up2", "up3")),
+    identical(cp_members(regions, "down"), character(0)),
+    identical(regions$significance_basis, c("up_density", "down_density")),
+    identical(strict$run_summary$region_significance_basis,
+      "direction_matched_density_v1"),
+    identical(strict$run_summary$combined_density_role, "diagnostic_only"),
+    # Per feature, both readings side by side: dn1 is significant on the combined
+    # density and not on its own, and that is the difference between sitting in a
+    # region and not sitting in one.
+    identical(features$density_significant,
+      c(TRUE, TRUE, TRUE, TRUE, FALSE, FALSE)),
+    identical(features$direction_density_significant,
+      c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE)))
+  loose <- cp_run(x, list(change_threshold = 2))
+  loose_features <- loose$feature_single_changepoints
+  stopifnot(
+    identical(cp_members(loose$trend_regions, "up"), c("up1", "up2", "up3")),
+    identical(cp_members(loose$trend_regions, "down"), c("dn2", "dn3")),
+    identical(loose$run_summary$significant_rank_count_up, 1L),
+    identical(loose$run_summary$significant_rank_count_down, 1L),
+    identical(loose$run_summary$significant_rank_count, 2L),
+    identical(loose_features$density_significant, rep(TRUE, 6L)),
+    identical(loose_features$direction_density_significant,
+      c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE)))
+  TRUE
+}
+
+# ---------------------------------------------------------------------------
+# Correction 2: missing matrix values follow non_finite_policy.
+#
+# patchy carries NA in exactly three cells (c03, c09, c21) and a step before c21;
+# clean steps before c16 with no gap; flat is flat. The expectations are the
+# planted facts: a missing-value feature is published unanalysed with its own
+# count of three and nothing invented for it, the feature beside it is still found
+# at exactly the rank its step was planted at, and under "error" the run is refused
+# with a message that names the feature and counts its missing values instead of
+# quoting a Python conversion failure.
+# ---------------------------------------------------------------------------
+test_trajectory_single_changepoint_missing_value_policy_contract <- function() {
+  n <- cp_test$n
+  patchy <- cp_step(n, 21L, 0, 9)
+  patchy[c(3L, 9L, 21L)] <- NA_real_
+  x <- cp_matrix_fixture(list(clean = cp_step(n, 16L, 0, 9), patchy = patchy,
+    flat = rep(4, n)))
+  on.exit(trajectory_close(x), add = TRUE)
+  before <- wb_art_list(x$bundle)
+  refused <- try(cp_run(x, list(non_finite_policy = "error",
+    features = c("clean", "patchy"))), silent = TRUE)
+  stopifnot(inherits(refused, "try-error"))
+  message <- conditionMessage(attr(refused, "condition"))
+  stopifnot(grepl("patchy", message, fixed = TRUE),
+    grepl("3 missing (null)", message, fixed = TRUE),
+    grepl("out of 30 cells", message, fixed = TRUE),
+    grepl("non_finite_policy='error'", message, fixed = TRUE),
+    !grepl("NoneType", message, fixed = TRUE),
+    # A refused promotion wrote nothing into the bundle.
+    identical(before, wb_art_list(x$bundle)))
+  out <- cp_run(x, list(non_finite_policy = "drop", change_threshold = 1))
+  features <- out$feature_single_changepoints
+  regions <- out$trend_regions
+  row <- function(id) features[features$feature_id == id, , drop = FALSE][1L, ]
+  stopifnot(
+    identical(features$feature_id, c("clean", "patchy", "flat")),
+    identical(features$missing_value_count, c(0L, 3L, 0L)),
+    identical(row("patchy")$analysed, FALSE),
+    identical(row("patchy")$reason, "non_finite"),
+    is.na(row("patchy")$boundary_rank),
+    is.na(row("patchy")$delta),
+    is.na(row("patchy")$direction),
+    is.na(row("patchy")$density_significant),
+    is.na(row("patchy")$direction_density_significant),
+    # The missing values cost only their own feature.
+    identical(row("clean")$boundary_rank, 15L),
+    identical(row("clean")$missing_value_count, 0L),
+    identical(row("clean")$direction, "up"),
+    identical(row("flat")$reason, "degenerate"),
+    identical(row("flat")$missing_value_count, 0L),
+    identical(out$run_summary$n_features_selected, 3L),
+    identical(out$run_summary$n_features_analysed, 1L),
+    identical(out$run_summary$n_features_dropped, 2L),
+    identical(out$run_summary$n_features_with_missing_values, 1L),
+    # Only clean contributes a breakpoint, so the up density is 1 at rank 15 and
+    # nowhere else; that one rank reaches the threshold of 1 and its sole member is
+    # the analysed feature.
+    identical(which(cp_key(out$trend_density, "up") >= 1), 16L),
+    identical(out$run_summary$significant_rank_count_up, 1L),
+    identical(cp_members(regions, "up"), "clean"),
+    identical(cp_members(regions, "down"), character(0)),
+    identical(regions$feature_count, c(1L, 0L)))
+  TRUE
+}
+
+# ---------------------------------------------------------------------------
+# Correction 3: the boundary-pseudotime summary is about the boundaries.
+#
+# Steps planted before c16, c21 and c26 on an axis whose cell i has pseudotime
+# (i - 1) / 29 put their boundaries at 15/29, 20/29 and 25/29: min 15/29, median
+# 20/29 (the middle of three distinct values), max 25/29. flat finds nothing and
+# contributes nothing. The cell axis runs the whole way from 0 to 1, so statistics
+# taken from the axis cannot land on those three values at once - which is what
+# makes this assertion a check rather than a restatement.
+# ---------------------------------------------------------------------------
+test_trajectory_single_changepoint_boundary_pseudotime_summary_contract <- function() {
+  n <- cp_test$n
+  x <- cp_matrix_fixture(list(e15 = cp_step(n, 16L, 0, 9),
+    e20 = cp_step(n, 21L, 0, 9), e25 = cp_step(n, 26L, 0, 9),
+    flat = rep(4, n)))
+  on.exit(trajectory_close(x), add = TRUE)
+  out <- cp_run(x)
+  features <- out$feature_single_changepoints
+  summary <- out$run_summary
+  published <- stats::na.exclude(features$change_point_pseudotime)
+  stopifnot(identical(features$boundary_rank, c(15L, 20L, 25L, NA_integer_)),
+    identical(summary$n_features_analysed, 3L),
+    cp_near(summary$change_point_pseudotime_min, 15 / 29),
+    cp_near(summary$change_point_pseudotime_median, 20 / 29),
+    cp_near(summary$change_point_pseudotime_max, 25 / 29),
+    # Same quantity as the per-feature column a caller can read; the tolerance is
+    # the published double's decimal round trip, not slack in the statistic.
+    cp_near(summary$change_point_pseudotime_min, min(published)),
+    cp_near(summary$change_point_pseudotime_median, stats::median(published)),
+    cp_near(summary$change_point_pseudotime_max, max(published)),
+    # Not the cell axis, which is where these columns used to come from.
+    !cp_near(summary$change_point_pseudotime_min, 0),
+    !cp_near(summary$change_point_pseudotime_max, 1),
+    !cp_near(summary$change_point_pseudotime_median,
+      stats::median((seq_len(n) - 1L) / (n - 1L))))
+  # With no detected boundary at all the three statistics are NA: an unanalysed
+  # axis must not borrow the cell axis's own spread.
+  none <- cp_run(x, list(features = "flat"))$run_summary
+  stopifnot(identical(none$n_features_analysed, 0L),
+    is.na(none$change_point_pseudotime_min),
+    is.na(none$change_point_pseudotime_median),
+    is.na(none$change_point_pseudotime_max))
+  TRUE
+}
+
+# ---------------------------------------------------------------------------
+# Correction 4: region member ids are encoded by a JSON writer.
+#
+# feature_ids_json is one JSON array inside a character column, so an id holding a
+# double quote, a backslash, a newline or a tab has to be escaped or the array
+# stops being parseable. Both the encoder and the published column are checked: the
+# encoder on hand-built ids, then the real operation on a matrix whose features
+# carry those ids, because the ids a caller can plant are the ones that matter.
+# ---------------------------------------------------------------------------
+test_trajectory_single_changepoint_region_ids_json_contract <- function() {
+  nasty <- c('quote"id', "back\\slash", "new\nline", "tab\there")
+  encode <- scwbTrajectory:::.trajectory_cp_ids_json
+  text <- encode(nasty)
+  parsed <- jsonlite::fromJSON(text)
+  stopifnot(identical(length(parsed), 4L), all(parsed == nasty),
+    # One line: a raw newline inside a JSON string is not valid JSON.
+    identical(nchar(text), nchar(gsub("\n", "", text, fixed = TRUE))),
+    # Still an array for one member, and [] for none - auto_unbox off.
+    identical(encode("solo"), "[\"solo\"]"),
+    identical(encode(character(0)), "[]"))
+  x <- cp_matrix_fixture(setNames(lapply(seq_along(nasty), function(i)
+    cp_step(cp_test$n, 16L, i, i + 9)), nasty))
+  on.exit(trajectory_close(x), add = TRUE)
+  out <- cp_run(x, list(change_threshold = 1))
+  features <- out$feature_single_changepoints
+  regions <- out$trend_regions
+  published <- jsonlite::fromJSON(regions$feature_ids_json[1L])
+  stopifnot(identical(features$feature_id, nasty),
+    identical(regions$direction, c("up", "down")),
+    identical(length(published), 4L), all(published == nasty),
+    identical(regions$feature_count[1L], length(published)),
+    identical(regions$feature_count, c(4L, 0L)),
+    identical(length(cp_members(regions, "up")), 4L),
+    all(cp_members(regions, "up") == nasty),
+    # The published column itself is a single line of JSON for four awkward ids.
+    identical(nchar(regions$feature_ids_json[1L]),
+      nchar(gsub("\n", "", regions$feature_ids_json[1L], fixed = TRUE))))
   TRUE
 }

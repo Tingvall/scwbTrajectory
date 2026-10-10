@@ -6349,7 +6349,7 @@
       "name": "trajectory_single_changepoint_regions",
       "qualified_name": "scwbtrajectory::trajectory_single_changepoint_regions",
       "title": "Single change-point regions along pseudotime",
-      "description": "Detect one interior L1 change point per matrix feature along an authenticated pseudotime axis in private Python compute, classify its direction from the mean signed difference across the boundary, aggregate breakpoint counts into an aligned density, and publish the features that exceed the density threshold inside each caller-declared directional rank window. Rank semantics are half-open and explicit; the notebook raw density convention is recorded in run_summary.",
+      "description": "Detect one interior L1 change point per matrix feature along an authenticated pseudotime axis in private Python compute, classify its direction from the mean signed difference across the boundary, aggregate breakpoint counts into an aligned density per direction, and publish the features whose own-direction density reaches the threshold inside each caller-declared directional rank window; the combined density is published as a diagnostic and gates nothing. A feature with missing values follows non_finite_policy: drop publishes it unanalysed with its missing-value count, error rejects the run. Rank semantics are half-open and explicit; the notebook raw density convention is recorded in run_summary.",
       "runner": ".run_trajectory_single_changepoint_regions",
       "inputs": [
         {
@@ -6846,12 +6846,12 @@
           {
             "name": "change_threshold",
             "type": "dbl",
-            "help": "Density value at which a rank is significant."
+            "help": "Density at which a rank is significant for its own direction: up regions are gated by the up density, down regions by the down density."
           },
           {
             "name": "non_finite_policy",
             "type": "choice",
-            "help": "Error or drop on non-finite input."
+            "help": "Error or drop on missing (null) or non-finite input values."
           },
           {
             "name": "degenerate_bkp_policy",

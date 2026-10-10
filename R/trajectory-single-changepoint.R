@@ -212,6 +212,15 @@
   value[1L]
 }
 
+# A region's member ids travel as one JSON array inside a character column, so
+# the encoding belongs to a JSON writer: hand-joined quoting escaped the double
+# quote only, leaving a backslash, a newline or a tab in a feature id able to
+# publish an array no parser accepts. auto_unbox stays off so a single member is
+# still an array.
+.trajectory_cp_ids_json <- function(ids) {
+  as.character(jsonlite::toJSON(as.character(unname(ids)), auto_unbox = FALSE))
+}
+
 # One wide row, not a long key/value table: retained_parameters addresses
 # run_summary by column name, so every recorded fact must be a field.
 .trajectory_cp_row <- function(pairs) {
@@ -320,8 +329,8 @@
       cells = I(as.list(cells)), features = I(payload), params = method),
       python, script)
     part <- .trajectory_cp_rows(response$records,
-      c("feature_id", "b", "delta", "direction", "analysed", "reason"),
-      "feature records")
+      c("feature_id", "b", "delta", "direction", "analysed", "reason",
+        "missing_values"), "feature records")
     .trajectory_cp_assert(identical(vapply(part,
       function(row) as.character(row$feature_id), character(1)), names),
       "the private numeric core did not return one record per submitted feature.")
@@ -361,13 +370,37 @@
       "all-direction density"),
     up = .trajectory_cp_numeric(globals$density_up, n, "up density"),
     down = .trajectory_cp_numeric(globals$density_down, n, "down density"))
-  significant <- unique(sort(as.integer(unlist(globals$significant_ranks,
-    use.names = FALSE))))
-  .trajectory_cp_assert(!anyNA(significant) &&
-      all(significant >= 0L & significant < n),
-    "the private numeric core returned a significant rank outside the axis.")
-  significant_set <- rep(FALSE, n)
-  if (length(significant)) significant_set[significant + 1L] <- TRUE
+  # Region significance is direction-matched: an up region is gated by the
+  # up-direction density and a down region by the down-direction density, as in
+  # the notebook. The combined density mixes the two directions, so a strong up
+  # population would otherwise carry a lone down breakpoint over the threshold;
+  # it stays published, but as a diagnostic.
+  .trajectory_cp_assert(identical(.trajectory_cp_scalar(
+    globals$significance$region_selection, "the region significance basis"),
+    "direction_matched_density_v1"),
+    paste0("the private numeric core selected regions on '",
+      .trajectory_cp_scalar(globals$significance$region_selection,
+        "the region significance basis"),
+      "', not on the direction-matched density."))
+  significant_ranks <- list()
+  significant_set <- list()
+  for (key in c("all", "up", "down")) {
+    field <- if (identical(key, "all")) "significant_ranks" else
+      paste0("significant_ranks_", key)
+    ranks <- unique(sort(as.integer(unlist(globals[[field]],
+      use.names = FALSE))))
+    .trajectory_cp_assert(!anyNA(ranks) && all(ranks >= 0L & ranks < n),
+      paste0("the private numeric core returned a ", key,
+        "-direction significant rank outside the axis."))
+    set <- rep(FALSE, n)
+    if (length(ranks)) set[ranks + 1L] <- TRUE
+    significant_ranks[[key]] <- ranks
+    significant_set[[key]] <- set
+  }
+  # Diagnostic aliases: the combined density's significance for a feature, and
+  # the combined rank set recorded in run_summary.
+  significant <- significant_ranks$all
+  combined_set <- significant_set$all
 
   feature_ids <- vapply(records, function(row) as.character(row$feature_id),
     character(1))
@@ -377,6 +410,21 @@
     .trajectory_cp_text(row$direction), character(1))
   reasons <- vapply(records, function(row)
     .trajectory_cp_text(row$reason), character(1))
+  missing_counts <- vapply(records, function(row)
+    suppressWarnings(as.integer(unlist(row$missing_values,
+      use.names = FALSE)[1L])), integer(1))
+  .trajectory_cp_assert(!anyNA(missing_counts) && all(missing_counts >= 0L) &&
+      all(missing_counts <= n),
+    paste0("the private numeric core returned a missing-value count outside [0, ",
+      n, "]."))
+  # Significance of a feature on its own terms: the density of the direction the
+  # breakpoint actually moved in, at that feature's own boundary rank. This is the
+  # gate the regions apply, published per feature so a caller can see why a
+  # feature is absent from its region row.
+  own_significant <- vapply(seq_along(records), function(i) {
+    if (!analysed[[i]]) return(NA)
+    significant_set[[directions[[i]]]][[boundary[[i]] + 1L]]
+  }, logical(1))
   included <- which(analysed)
   window_first <- ifelse(analysed, pmax(0L, boundary - direction_window),
     NA_integer_)
@@ -388,6 +436,7 @@
     feature_id = feature_ids,
     analysed = analysed,
     reason = reasons,
+    missing_value_count = missing_counts,
     boundary_rank = ifelse(analysed, boundary, NA_integer_),
     boundary_before_cell_id = ifelse(analysed, at(boundary), NA_character_),
     boundary_after_cell_id = ifelse(analysed, at(boundary + 1L), NA_character_),
@@ -396,7 +445,8 @@
     delta = delta,
     direction = directions,
     density_significant = ifelse(analysed,
-      significant_set[pmin(boundary + 1L, n)], NA),
+      combined_set[pmin(boundary + 1L, n)], NA),
+    direction_density_significant = own_significant,
     delta_window_first_rank = window_first,
     delta_window_last_rank = window_last,
     delta_window_first_cell_id = ifelse(analysed, at(window_first + 1L),
@@ -416,7 +466,8 @@
     if (any(mask)) {
       rank <- boundary[mask]
       member_index <- which(mask)[rank >= window$rank_start &
-        rank < window$rank_end & significant_set[rank + 1L]]
+        rank < window$rank_end &
+        significant_set[[window$direction]][rank + 1L]]
       members <- feature_ids[member_index]
     }
     empty <- window$rank_end <= window$rank_start
@@ -434,9 +485,8 @@
       last_included_pseudotime = if (empty) NA_real_ else
         axis$pseudotime[window$rank_end],
       feature_count = length(members),
-      feature_ids_json = if (length(members)) paste0("[", paste0('"',
-        gsub('"', '\\\\"', members, fixed = TRUE), '"', collapse = ","), "]")
-      else "[]",
+      feature_ids_json = .trajectory_cp_ids_json(members),
+      significance_basis = paste0(window$direction, "_density"),
       region_source = window$region_source, stringsAsFactors = FALSE)
   }), list()))
 
@@ -456,7 +506,15 @@
       rank_axis = "analysed pseudotime order over effective_cells_v1"))
 
   alignment <- globals$alignment %||% list()
-  pseudotime_at_boundary <- axis$pseudotime[analysed]
+  # The boundary-pseudotime statistics describe the detected change points, so
+  # they are the min/median/max of the per-feature boundary pseudotimes - the same
+  # values the feature table publishes. The cell axis is not a boundary list:
+  # indexing it with the feature mask recycles that mask over the axis and reports
+  # axis statistics, which is a different quantity wearing the same column name.
+  pseudotime_at_boundary <- feature_table$change_point_pseudotime[which(analysed)]
+  .trajectory_cp_assert(length(pseudotime_at_boundary) == sum(analysed) &&
+      !anyNA(pseudotime_at_boundary),
+      "an analysed feature has no boundary pseudotime to summarise.")
   summary <- .trajectory_cp_row(list(
     list("operation_contract", .trajectory_cp_schema),
     list("matrix_id", matrix_id),
@@ -467,6 +525,8 @@
     list("n_features_selected", as.integer(length(features))),
     list("n_features_analysed", as.integer(sum(analysed))),
     list("n_features_dropped", as.integer(sum(!analysed))),
+    list("n_features_with_missing_values", as.integer(sum(missing_counts >
+      0L))),
     list("pseudotime_direction", direction),
     list("membership_compartment", if (bound_membership) compartment
       else "all_effective_cells"),
@@ -499,11 +559,25 @@
       alignment$raw_peak_rank_all, "the raw density peak rank"))),
     list("aligned_peak_rank_all", as.integer(.trajectory_cp_scalar(
       alignment$aligned_peak_rank_all, "the aligned density peak rank"))),
+    # significant_rank_count/first/last are the combined density's, which is a
+    # diagnostic; the two directional counts are the gate the region rows applied.
     list("significant_rank_count", as.integer(length(significant))),
+    list("significant_rank_role", "combined_density_diagnostic_only"),
+    list("significant_rank_count_up",
+      as.integer(length(significant_ranks$up))),
+    list("significant_rank_count_down",
+      as.integer(length(significant_ranks$down))),
     list("significant_rank_first", if (length(significant))
       as.integer(significant[[1L]]) else NA_integer_),
     list("significant_rank_last", if (length(significant))
       as.integer(significant[[length(significant)]]) else NA_integer_),
+    list("region_significance_basis", .trajectory_cp_scalar(
+      globals$significance$region_selection, "the region significance basis")),
+    list("region_significance_rule", .trajectory_cp_scalar(
+      globals$significance$rule, "the region significance rule")),
+    list("combined_density_role", .trajectory_cp_scalar(
+      globals$significance$combined_density_role,
+      "the role of the combined density")),
     list("python_interpreter_option", python),
     list("python_executable", .trajectory_cp_scalar(probe$executable,
       "the interpreter realpath")),
@@ -534,11 +608,11 @@
       probe$probe$recovered_boundary, "the recovered step"))),
     list("probe_terminal_sample_count", as.integer(.trajectory_cp_scalar(
       probe$probe$terminal_sample_count, "the probe terminal sample count"))),
-    list("change_point_pseudotime_min", if (any(analysed))
+    list("change_point_pseudotime_min", if (length(pseudotime_at_boundary))
       min(pseudotime_at_boundary) else NA_real_),
-    list("change_point_pseudotime_median", if (any(analysed))
+    list("change_point_pseudotime_median", if (length(pseudotime_at_boundary))
       stats::median(pseudotime_at_boundary) else NA_real_),
-    list("change_point_pseudotime_max", if (any(analysed))
+    list("change_point_pseudotime_max", if (length(pseudotime_at_boundary))
       max(pseudotime_at_boundary) else NA_real_)))
 
   writers$write_terminal_primitive("feature_single_changepoints",

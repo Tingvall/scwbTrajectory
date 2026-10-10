@@ -16,7 +16,13 @@ an ordered pseudotime axis. Its numeric core runs in a private Python process us
 interpreter path and the library versions it actually used in `run_summary`.
 Published ranks and pseudotime boundaries are half-open: boundary rank `b` sits
 before the cell at 0-based rank `b`, and `trend_density` publishes the count of
-boundary `b` at cell rank `b`.
+boundary `b` at cell rank `b`. A region is gated by the density of its own
+direction: an up region by the up density, a down region by the down density. The
+combined density is published as a diagnostic and gates nothing, because mixing the
+directions lets a strong up population carry a lone down breakpoint over
+`change_threshold`. A feature with missing matrix values follows `non_finite_policy`:
+`drop` publishes it unanalysed with its `missing_value_count`, `error` rejects the
+run and names the feature and its count of missing values.
 
 The accepted pack that the standard profile qualified has 25 operations at version
 0.1.1. This branch carries 26 operations at 0.1.2 and is experimental; it is not
