@@ -39,6 +39,8 @@ register_operation_pack <- function() {
         .run_trajectory_geneset_dynamics_explicit,
       `scwbtrajectory::trajectory_signal_dynamics_explicit` =
         .run_trajectory_signal_dynamics_explicit,
+      `scwbtrajectory::trajectory_signal_regions` =
+        .run_trajectory_signal_regions,
       `scwbtrajectory::slingshot` = .run_slingshot,
       `scwbtrajectory::slingshot_fit` = .run_slingshot_fit,
       `scwbtrajectory::slingshot_lineage_weights` =

@@ -17,7 +17,7 @@ test_trajectory_palantir_registered_manifest_contract <- function() {
     simplifyVector = FALSE)
   names <- vapply(manifest$operations, `[[`, character(1),
     "qualified_name")
-  stopifnot(length(names) == 27L,
+  stopifnot(length(names) == 28L,
     identical(sum(names == proto$fit), 1L),
     identical(sum(names == proto$project), 1L),
     !any(c("palantir_fit", "palantir_project") %in%
@@ -27,8 +27,9 @@ test_trajectory_palantir_registered_manifest_contract <- function() {
   project <- manifest$operations[[match(proto$project, names)]]
   inherited <- manifest
   inherited$operations <- Filter(function(operation)
-    !identical(as.character(operation$name),
-      "trajectory_pseudotime_from_cell_vector"), manifest$operations)
+    !as.character(operation$name) %in% c(
+      "trajectory_pseudotime_from_cell_vector",
+      "trajectory_signal_regions"), manifest$operations)
   inherited$operations <- inherited$operations[seq_len(23L)]
   inherited_fit <- match("slingshot_fit", vapply(inherited$operations,
     `[[`, character(1), "name"))
@@ -37,7 +38,7 @@ test_trajectory_palantir_registered_manifest_contract <- function() {
     NULL
   # The frozen digest belongs to the envelope this prefix was accepted under, and
   # the package version is part of what hashes; the pack has since gained an
-  # operation and moved to 0.1.3, so the reconstruction restores 0.1.1 rather than
+  # operations and moved to 0.1.4, so the reconstruction restores 0.1.1 rather than
   # re-issuing the constant. The operation bodies themselves hash unchanged.
   inherited$package$version <- "0.1.1"
   inherited_identity <- getFromNamespace(".wb_operation_pack_v3_id",

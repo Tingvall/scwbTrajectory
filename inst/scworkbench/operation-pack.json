@@ -5,7 +5,7 @@
   "namespace": "scwbtrajectory",
   "package": {
     "name": "scwbTrajectory",
-    "version": "0.1.3"
+    "version": "0.1.4"
   },
   "backend": "R",
   "compatibility": {
@@ -5763,6 +5763,569 @@
           {
             "name": "adaptation_summary",
             "description": "Declared adaptation_summary terminal."
+          }
+        ]
+      }
+    },
+    {
+      "name": "trajectory_signal_regions",
+      "qualified_name": "scwbtrajectory::trajectory_signal_regions",
+      "title": "Trajectory Signal Regions",
+      "description": "Detect permutation-supported elevated and reduced intervals for authenticated per-cell signals over explicit fitted pseudotime.",
+      "runner": ".run_trajectory_signal_regions",
+      "inputs": [
+        {
+          "name": "signal",
+          "kind": "cell_vector_family",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "pseudotime",
+          "kind": "cell_vector_family",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "covariates",
+          "kind": "cell_vector_family",
+          "required": false,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "sample_id",
+          "kind": "cell_vector",
+          "required": false,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "membership",
+          "kind": "cell_vector",
+          "required": false,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "pseudotime_key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "signal_keys": {
+            "type": ["array", "null"],
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "covariate_keys": {
+            "type": ["array", "null"],
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "pseudotime_direction": {
+            "type": "string",
+            "default": "as_is",
+            "enum": [
+              "as_is",
+              "invert"
+            ]
+          },
+          "window_width_fraction": {
+            "type": "number",
+            "default": 0.05,
+            "minimum": 1e-06,
+            "maximum": 1
+          },
+          "window_step_fraction": {
+            "type": "number",
+            "default": 0.01,
+            "minimum": 1e-06,
+            "maximum": 1
+          },
+          "min_cells_per_window": {
+            "type": "integer",
+            "default": 20,
+            "minimum": 2,
+            "maximum": 10000000
+          },
+          "min_samples_per_window": {
+            "type": "integer",
+            "default": 1,
+            "minimum": 1,
+            "maximum": 1000000
+          },
+          "summary_fun": {
+            "type": "string",
+            "default": "median",
+            "enum": [
+              "mean",
+              "median"
+            ]
+          },
+          "n_permutations": {
+            "type": "integer",
+            "default": 1000,
+            "minimum": 1,
+            "maximum": 1000000
+          },
+          "seed": {
+            "type": "integer",
+            "default": 1,
+            "minimum": 1,
+            "maximum": 2147483646
+          },
+          "covariate_adjustment": {
+            "type": "string",
+            "default": "none",
+            "enum": [
+              "none",
+              "linear",
+              "natural_spline"
+            ]
+          },
+          "covariate_spline_df": {
+            "type": "integer",
+            "default": 4,
+            "minimum": 2,
+            "maximum": 20
+          },
+          "permutation_mode": {
+            "type": "string",
+            "default": "auto",
+            "enum": [
+              "auto",
+              "blocked",
+              "unblocked"
+            ]
+          },
+          "include_endpoint_extrema": {
+            "type": "boolean",
+            "default": true
+          },
+          "dynamic_q_cutoff": {
+            "type": "number",
+            "default": 0.05,
+            "minimum": 1e-12,
+            "maximum": 1
+          },
+          "region_q_cutoff": {
+            "type": "number",
+            "default": 0.05,
+            "minimum": 1e-12,
+            "maximum": 1
+          },
+          "merge_gap_fraction": {
+            "type": ["number", "null"],
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "required": [
+          "pseudotime_key"
+        ],
+        "additionalProperties": false
+      },
+      "provenance_reads": [
+        {
+          "name": "signal_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "signal",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        },
+        {
+          "name": "pseudotime_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "pseudotime",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        },
+        {
+          "name": "covariates_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "covariates",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        },
+        {
+          "name": "sample_id_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "sample_id",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        },
+        {
+          "name": "membership_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "membership",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        }
+      ],
+      "dimension_policies": [
+        {
+          "output": "signal_table",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "dynamic_tests",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "candidate_regions",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "regions",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "adjustment_summary",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "fit_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "signal_table",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "signal_table_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_regions",
+          "table_type": "trajectory_signal_dynamics_curve"
+        },
+        {
+          "name": "dynamic_tests",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "dynamic_tests_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_regions",
+          "table_type": "trajectory_signal_regions_dynamic"
+        },
+        {
+          "name": "candidate_regions",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "candidate_regions_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_regions",
+          "table_type": "trajectory_signal_regions_candidate"
+        },
+        {
+          "name": "regions",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "regions_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_regions",
+          "table_type": "trajectory_signal_regions"
+        },
+        {
+          "name": "adjustment_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "adjustment_summary_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_regions",
+          "table_type": "trajectory_signal_regions_adjustment"
+        },
+        {
+          "name": "fit_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "fit_summary_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_regions",
+          "table_type": "trajectory_signal_regions_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_obs_table"
+        }
+      ],
+      "promotion_closure": {
+        "signal_table": [
+          "adjustment_summary",
+          "candidate_regions",
+          "dynamic_tests",
+          "fit_summary",
+          "regions",
+          "signal_table"
+        ],
+        "dynamic_tests": [
+          "adjustment_summary",
+          "candidate_regions",
+          "dynamic_tests",
+          "fit_summary",
+          "regions",
+          "signal_table"
+        ],
+        "candidate_regions": [
+          "adjustment_summary",
+          "candidate_regions",
+          "dynamic_tests",
+          "fit_summary",
+          "regions",
+          "signal_table"
+        ],
+        "regions": [
+          "adjustment_summary",
+          "candidate_regions",
+          "dynamic_tests",
+          "fit_summary",
+          "regions",
+          "signal_table"
+        ],
+        "adjustment_summary": [
+          "adjustment_summary",
+          "candidate_regions",
+          "dynamic_tests",
+          "fit_summary",
+          "regions",
+          "signal_table"
+        ],
+        "fit_summary": [
+          "adjustment_summary",
+          "candidate_regions",
+          "dynamic_tests",
+          "fit_summary",
+          "regions",
+          "signal_table"
+        ]
+      },
+      "replay_equivalence": {
+        "signal_table": "exact_canonical_value",
+        "dynamic_tests": "exact_canonical_value",
+        "candidate_regions": "exact_canonical_value",
+        "regions": "exact_canonical_value",
+        "adjustment_summary": "exact_canonical_value",
+        "fit_summary": "exact_canonical_value"
+      },
+      "retained_parameters": [
+        {
+          "name": "pseudotime_key",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "pseudotime_key"
+        },
+        {
+          "name": "n_permutations",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "n_permutations"
+        },
+        {
+          "name": "seed",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "seed"
+        },
+        {
+          "name": "n_pseudotime_finite",
+          "source": "output_first_row",
+          "output": "fit_summary",
+          "field": "n_pseudotime_finite"
+        },
+        {
+          "name": "n_signal_keys_analyzed",
+          "source": "output_first_row",
+          "output": "fit_summary",
+          "field": "n_signal_keys_analyzed"
+        },
+        {
+          "name": "n_supported_regions",
+          "source": "output_first_row",
+          "output": "fit_summary",
+          "field": "n_supported_regions"
+        }
+      ],
+      "public_interface": {
+        "intent": [
+          "trajectory",
+          "signal",
+          "regions",
+          "permutation"
+        ],
+        "inputs": [
+          {
+            "name": "signal",
+            "label": "signal",
+            "help": "Typed signal input."
+          },
+          {
+            "name": "pseudotime",
+            "label": "pseudotime",
+            "help": "Typed pseudotime input."
+          },
+          {
+            "name": "covariates",
+            "label": "covariates",
+            "help": "Typed covariates input."
+          },
+          {
+            "name": "sample_id",
+            "label": "sample_id",
+            "help": "Typed sample_id input."
+          },
+          {
+            "name": "membership",
+            "label": "membership",
+            "help": "Typed membership input."
+          }
+        ],
+        "parameters": [
+          {
+            "name": "pseudotime_key",
+            "type": "string",
+            "help": "Required explicit lineage key."
+          },
+          {
+            "name": "signal_keys",
+            "type": "string_vec",
+            "help": "Optional signal keys."
+          },
+          {
+            "name": "covariate_keys",
+            "type": "string_vec",
+            "help": "Optional covariate keys."
+          },
+          {
+            "name": "pseudotime_direction",
+            "type": "choice",
+            "help": "As-is or inverted orientation."
+          },
+          {
+            "name": "window_width_fraction",
+            "type": "dbl",
+            "help": "Window width as pseudotime range fraction."
+          },
+          {
+            "name": "window_step_fraction",
+            "type": "dbl",
+            "help": "Window step as pseudotime range fraction."
+          },
+          {
+            "name": "min_cells_per_window",
+            "type": "int",
+            "help": "Minimum cell support per window."
+          },
+          {
+            "name": "min_samples_per_window",
+            "type": "int",
+            "help": "Minimum sample support per window."
+          },
+          {
+            "name": "summary_fun",
+            "type": "choice",
+            "help": "Window mean or median."
+          },
+          {
+            "name": "n_permutations",
+            "type": "int",
+            "help": "Permutation count."
+          },
+          {
+            "name": "seed",
+            "type": "int",
+            "help": "Deterministic base seed."
+          },
+          {
+            "name": "covariate_adjustment",
+            "type": "choice",
+            "help": "None, linear, or natural spline."
+          },
+          {
+            "name": "covariate_spline_df",
+            "type": "int",
+            "help": "Natural-spline degrees of freedom."
+          },
+          {
+            "name": "permutation_mode",
+            "type": "choice",
+            "help": "Automatic, blocked, or unblocked."
+          },
+          {
+            "name": "include_endpoint_extrema",
+            "type": "bool",
+            "help": "Allow endpoint extrema."
+          },
+          {
+            "name": "dynamic_q_cutoff",
+            "type": "dbl",
+            "help": "Whole-trajectory BH cutoff."
+          },
+          {
+            "name": "region_q_cutoff",
+            "type": "dbl",
+            "help": "Local-region BH cutoff."
+          },
+          {
+            "name": "merge_gap_fraction",
+            "type": "dbl",
+            "help": "Maximum merge gap fraction."
+          }
+        ],
+        "outputs": [
+          {
+            "name": "signal_table",
+            "description": "Declared signal_table terminal."
+          },
+          {
+            "name": "dynamic_tests",
+            "description": "Declared dynamic_tests terminal."
+          },
+          {
+            "name": "candidate_regions",
+            "description": "Declared candidate_regions terminal."
+          },
+          {
+            "name": "regions",
+            "description": "Declared regions terminal."
+          },
+          {
+            "name": "adjustment_summary",
+            "description": "Declared adjustment_summary terminal."
+          },
+          {
+            "name": "fit_summary",
+            "description": "Declared fit_summary terminal."
           }
         ]
       }

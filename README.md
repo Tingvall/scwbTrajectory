@@ -24,6 +24,20 @@ fallback when fitted lineage output is unavailable or scalar pseudotime is
 specifically requested; downstream consumers must still select its lineage key
 explicitly.
 
+`trajectory_signal_regions` complements whole-trajectory signal dynamics with
+permutation-qualified local intervals. It consumes a continuous signal family
+and an explicit fitted pseudotime family, requires a lineage key, summarizes
+overlapping windows, tests peak-to-trough dynamics, and reports local elevated
+and reduced regions against direction-specific permutation maximum-deviation
+nulls. Optional continuous technical covariates are fitted without including
+pseudotime. When sample identities are supplied, `permutation_mode = "auto"`
+shuffles within samples; without them it records an unblocked analysis. The
+curve terminal retains the `trajectory_signal_dynamics_curve` table contract so
+the standard pseudotime signal-line plot remains available. Region tables add
+interval boundaries, extrema, effects, empirical p-values, BH q-values, support,
+and complete permutation metadata. Inputs must be generic primitives; no Bdev
+lineage, signature collection, or study-specific threshold is embedded.
+
 `trajectory_single_changepoint_regions` detects one change point per feature along
 an ordered pseudotime axis. Its numeric core runs in a private Python process using
 `ruptures`; the interpreter comes from `scwbTrajectory.changepoint_python`, else
@@ -40,7 +54,7 @@ directions lets a strong up population carry a lone down breakpoint over
 run and names the feature and its count of missing values.
 
 The accepted pack that the standard profile qualified has 25 operations at version
-0.1.1. This branch carries 27 operations at 0.1.3 and is experimental; it is not
+0.1.1. This branch carries 28 operations at 0.1.4 and is experimental; it is not
 what that profile qualifies. Model-backed
 `trajectory_geneset_dynamics` and `trajectory_signal_dynamics` require `model`.
 Their separate `_explicit` operations require typed pseudotime and
