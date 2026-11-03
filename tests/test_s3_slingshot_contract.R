@@ -50,6 +50,14 @@ trajectory_s3_state <- function(bundle) {
       "scworkbench")(bundle)$scientific_state_fingerprint)
 }
 
+trajectory_s3_contained_model <- function(result) {
+  reference <- result$run$outputs$model
+  path <- file.path(result$session$staging_bundle$dir,
+    reference$model_tree_root, reference$model_primary_path)
+  stopifnot(file.exists(path))
+  readRDS(path)
+}
+
 test_trajectory_s3_registered_fit_contract <- function() {
   trajectory_activate_pack()
   manifest <- scworkbench::wb_operation_pack_inspect(
@@ -151,7 +159,7 @@ test_trajectory_s3_exact_name_ownership_contract <- function() {
     "fit_interface <- wb_op_interface('scwbtrajectory::slingshot_fit')",
     "stopifnot(all(c('start.clus', 'end.clus', 'exclude_cells',",
     "  'include_clusters', 'exclude_clusters', 'stretch', 'reweight',",
-    "  'shrink', 'maxit') %in% vapply(fit_interface$params,",
+    "  'shrink', 'maxit', 'omega', 'omega_scale') %in% vapply(fit_interface$params,",
     "  `[[`, character(1), 'name')))",
     "stopifnot(all(!names %in% after),",
     "  all(vapply(paste0('scwbtrajectory::', names), function(x)",
@@ -166,6 +174,104 @@ test_trajectory_s3_exact_name_ownership_contract <- function() {
       call. = FALSE)
   stopifnot(any(readLines(log, warn = FALSE) ==
     "RESULT S3 four pack names once; core adoption once"))
+  TRUE
+}
+
+test_trajectory_s3_omega_interface_and_default_contract <- function() {
+  x <- trajectory_s3_fixture(); on.exit(trajectory_s3_close(x), add = TRUE)
+  interface <- scworkbench::wb_op_interface(
+    "scwbtrajectory::slingshot_fit")
+  parameters <- stats::setNames(interface$params,
+    vapply(interface$params, `[[`, character(1), "name"))
+  stopifnot(identical(parameters$omega$type, "bool_or_dbl"),
+    identical(parameters$omega$min, 0),
+    identical(parameters$omega_scale$type, "dbl"),
+    identical(parameters$omega_scale$min, 0))
+
+  omitted <- trajectory_s3_fit(x)
+  explicit <- trajectory_s3_fit(x, list(omega = FALSE,
+    omega_scale = 1.5))
+  omitted_model <- trajectory_s3_contained_model(omitted)
+  explicit_model <- trajectory_s3_contained_model(explicit)
+  same_family <- function(left, right) identical(left$key, right$key) &&
+    identical(left$cell_id, right$cell_id) &&
+    identical(left$value, right$value) &&
+    identical(left$value_type, right$value_type)
+  stopifnot(
+    same_family(omitted$run$outputs$pseudotime,
+      explicit$run$outputs$pseudotime),
+    same_family(omitted$run$outputs$lineage_weights,
+      explicit$run$outputs$lineage_weights),
+    identical(slingshot::slingLineages(omitted_model),
+      slingshot::slingLineages(explicit_model)),
+    identical(slingshot::slingParams(omitted_model)$omega, FALSE),
+    identical(slingshot::slingParams(omitted_model)$omega_scale, 1.5),
+    identical(slingshot::slingParams(explicit_model)$omega, FALSE),
+    identical(slingshot::slingParams(explicit_model)$omega_scale, 1.5))
+
+  requested <- trajectory_s3_fit(x, list(omega = 0.8,
+    omega_scale = 3.2))
+  requested_params <- slingshot::slingParams(
+    trajectory_s3_contained_model(requested))
+  stopifnot(identical(requested_params$omega, 0.8),
+    identical(requested_params$omega_scale, 3.2))
+
+  before <- trajectory_s3_state(x$bundle)
+  for (extra in list(list(omega = -0.1), list(omega_scale = -1),
+      list(omega = "TRUE"), list(omega = NA))) {
+    rejected <- try(trajectory_s3_fit(x, extra), silent = TRUE)
+    stopifnot(inherits(rejected, "try-error"),
+      identical(before, trajectory_s3_state(x$bundle)))
+  }
+  invisible(scworkbench::wb_session_discard(omitted$session))
+  invisible(scworkbench::wb_session_discard(explicit$session))
+  invisible(scworkbench::wb_session_discard(requested$session))
+  TRUE
+}
+
+test_trajectory_s3_omega_outgroup_fixture_contract <- function() {
+  trajectory_activate_pack()
+  root <- tempfile("trajectory-s3-outgroup-")
+  bundle <- scworkbench::wb_init_bundle(root)
+  on.exit({
+    try(scworkbench::wb_close_bundle(bundle), silent = TRUE)
+    unlink(root, recursive = TRUE, force = TRUE)
+  }, add = TRUE)
+  centers <- rbind(root = c(0, 0), mid = c(1, 0), end = c(2, 0),
+    outgroup = c(30, 30))
+  angles <- seq(0, 2 * pi, length.out = 13L)[-13L]
+  coordinates <- do.call(rbind, lapply(seq_len(nrow(centers)), function(i)
+    cbind(D1 = centers[i, 1L] + 0.03 * cos(angles),
+      D2 = centers[i, 2L] + 0.02 * sin(angles))))
+  cells <- paste0("cell_", seq_len(nrow(coordinates)))
+  groups <- rep(rownames(centers), each = length(angles))
+  rownames(coordinates) <- cells
+  scworkbench::wb_define_cells(bundle, cells)
+  scworkbench::wb_add_space(bundle, "fit", coordinates)
+  clusters <- scworkbench::wb_prim_cell_vector(
+    stats::setNames(groups, cells), value_type = "categorical")
+  run <- function(omega, omega_scale = NULL) {
+    inputs <- list(fit_space = "fit", clusters = clusters,
+      start.clus = "root", omega = omega, min_cells = 1L)
+    if (!is.null(omega_scale)) inputs$omega_scale <- omega_scale
+    scworkbench::wb_session_run_op(scworkbench::wb_session_new(), bundle,
+      "scwbtrajectory::slingshot_fit", inputs = inputs)
+  }
+  connected <- run(FALSE)
+  separated <- run(TRUE, 1.5)
+  connected_model <- trajectory_s3_contained_model(connected)
+  separated_model <- trajectory_s3_contained_model(separated)
+  stopifnot(
+    identical(unname(slingshot::slingLineages(connected_model)[[1L]]),
+      c("root", "mid", "end", "outgroup")),
+    identical(unname(slingshot::slingLineages(separated_model)[[1L]]),
+      c("root", "mid", "end")),
+    identical(unname(slingshot::slingLineages(separated_model)[[2L]]),
+      "outgroup"),
+    identical(slingshot::slingParams(separated_model)$omega, TRUE),
+    identical(slingshot::slingParams(separated_model)$omega_scale, 1.5))
+  invisible(scworkbench::wb_session_discard(connected$session))
+  invisible(scworkbench::wb_session_discard(separated$session))
   TRUE
 }
 

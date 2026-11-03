@@ -285,9 +285,9 @@ stopifnot(identical(vapply(monocle3_operations, `[[`, character(1),
         "c6fd76e839d7d473b933d9edc7ada746998c73b5ad9750d1d82ce34916d8576e")))
 manifest$operations <- c(manifest$operations, s3_operations,
   monocle3_operations, palantir_operations, changepoint_operations)
-# The pack gained an operation, so the R package version and the manifest
-# version move together; DESCRIPTION carries the same string.
-manifest$package$version <- "0.1.2"
+# The pack gained a scalar-pseudotime adapter, so the R package version and the
+# manifest version move together; DESCRIPTION carries the same string.
+manifest$package$version <- "0.1.3"
 
 path <- file.path(root, "inst", "scworkbench", "operation-pack.json")
 dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)

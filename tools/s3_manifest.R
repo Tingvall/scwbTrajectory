@@ -70,7 +70,9 @@ s3_params <- function(include_fit = FALSE) {
     reweight = boolean(TRUE))
   if (include_fit) properties <- c(properties, list(
     include_clusters = strings(), exclude_cells = strings(),
-    shrink = number(1, 0, 1), maxit = integer(10L, 1L, 200L, FALSE)))
+    shrink = number(1, 0, 1), maxit = integer(10L, 1L, 200L, FALSE),
+    omega = list(type = c("boolean", "number"), minimum = 0),
+    omega_scale = list(type = "number", minimum = 0)))
   list(type = "object", properties = properties,
     additionalProperties = FALSE)
 }
@@ -137,4 +139,78 @@ s3_project <- s3_operation("slingshot_project",
   list(output("curves", "path_2d_family", "projection")),
   "projection", list(family_policy("curves")), model_read = TRUE)
 
-s3_operations <- list(s3_legacy, s3_fit, s3_weights, s3_project)
+s3_adapter_axis <- function() {
+  declaration <- list(
+    schema = "scworkbench.operation_pack.derived_cell_output_axis.v1",
+    name = "finite_pseudotime_cells",
+    derivation_mode = "ordered_unique_subset_v1",
+    source = list(mode = "static_input_axis", input = "pseudotime",
+      projection = "cell_vector_axis_v1", family_key_selector = NULL),
+    linked_outputs = list(list(name = "pseudotime",
+      shape = "cell_key_cartesian",
+      row_order = "key_major_then_sealed_cell_v1",
+      missing_values = "forbidden",
+      key_axis = list(source = "resolved_effective_parameter_key_v1",
+        parameter_candidates = list("lineage_key"),
+        null_policy = "first_non_null_v1",
+        invalid_value_policy = "error"))),
+    limits = list(minimum_cells = 1L, maximum_cells = 10000000L,
+      maximum_source_axes = 1L, maximum_source_memberships = 10000000L,
+      maximum_linked_outputs = 1L),
+    call_discipline = "declare_once_seal_before_linked_output_v1",
+    closure_policy = "all_linked_outputs_and_axis_observation_required_v1")
+  s3_identity(declaration, declaration$schema,
+    "derived cell output axis declaration excluding declaration_identity",
+    "declaration_identity")
+}
+
+s3_adapter_outputs <- c("pseudotime", "adaptation_summary")
+s3_adapter <- list(
+  name = "trajectory_pseudotime_from_cell_vector",
+  qualified_name =
+    "scwbtrajectory::trajectory_pseudotime_from_cell_vector",
+  title = "Adapt scalar trajectory pseudotime",
+  description = paste(
+    "Wrap one authenticated continuous scalar pseudotime artifact as a",
+    "one-key lineage family without transforming finite values."),
+  runner = ".run_trajectory_pseudotime_from_cell_vector",
+  inputs = list(input("pseudotime", "cell_vector")),
+  params_schema = list(type = "object", properties = list(
+    lineage_key = list(type = "string", minLength = 1L,
+      maxLength = 1024L)),
+    required = list("lineage_key"), additionalProperties = FALSE),
+  provenance_reads = list(list(name = "source_ancestry",
+    category = "authenticated_core_provenance_snapshot",
+    kind = "artifact_ancestry", reader = "read_artifact_ancestry",
+    input = "pseudotime", activation = "when_resolved_from_artifact",
+    lifecycle_policy = "require_current")),
+  dimension_policies = list(table_policy("adaptation_summary")),
+  outputs = list(s3_family_output("pseudotime", "adaptation"),
+    output("adaptation_summary", "obs_table", "adaptation",
+      "trajectory_pseudotime_cell_vector_adaptation_summary")),
+  dependencies = list(dependency("scworkbench",
+    "wb_derived_cell_output_axis_declaration")),
+  promotion_closure = stats::setNames(rep(list(as.list(sort(
+    s3_adapter_outputs, method = "radix"))), length(s3_adapter_outputs)),
+    s3_adapter_outputs),
+  replay_equivalence = stats::setNames(as.list(rep(
+    "exact_canonical_value", length(s3_adapter_outputs))),
+    s3_adapter_outputs),
+  derived_cell_output_axes = list(s3_adapter_axis()),
+  retained_parameters = list(retained_parameter("lineage_key",
+      "effective_parameter_value", required = TRUE),
+    retained_row("source_artifact_id", "adaptation_summary",
+      "source_artifact_id"),
+    retained_row("input_cell_count", "adaptation_summary",
+      "input_cell_count"),
+    retained_row("finite_cell_count", "adaptation_summary",
+      "finite_cell_count"),
+    retained_row("missing_cell_count", "adaptation_summary",
+      "missing_cell_count")),
+  public_interface = interface(c("trajectory", "pseudotime", "adaptation"),
+    "pseudotime", list(c("lineage_key", "string",
+      "Required explicit lineage key for the adapted family.")),
+    s3_adapter_outputs))
+
+s3_operations <- list(s3_legacy, s3_fit, s3_weights, s3_project,
+  s3_adapter)

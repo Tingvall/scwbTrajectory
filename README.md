@@ -5,9 +5,24 @@ Trajectory operation pack. Its integrated ABI-v3 manifest retains the accepted
 S1/S2/S4 and accepted Monocle3 operations and adds the Phase 5 S5 Palantir
 fit/project methods alongside the S3 non-adoption Slingshot methods:
 `slingshot`, `slingshot_fit`, `slingshot_lineage_weights`, and
-`slingshot_project`. Call all methods under the `scwbtrajectory::` namespace after
+`slingshot_project`. `slingshot_fit` additionally exposes Slingshot's optional
+`omega` and `omega_scale` controls; leaving them absent preserves Slingshot's
+existing defaults. Call all methods under the `scwbtrajectory::` namespace after
 explicit activation. `slingshot_adopt` remains a core operation; this pack
 does not claim external-state adoption.
+
+`trajectory_pseudotime_from_cell_vector` adapts one authenticated, promoted,
+continuous scalar `cell_vector` into a one-key `cell_vector_family`. It copies
+only the finite trajectory-cell rows without orienting, negating, normalizing,
+rescaling, shifting, or imputing values, publishes exact input/finite/missing
+counts, and retains the source artifact's authenticated ancestry. Cells outside
+the trajectory are omitted from the scalar artifact and therefore remain absent
+from the adapted family; plots may left-join the selected lineage to the full
+cell universe to render those cells separately. Fitted lineage-family
+pseudotime is the default trajectory source. This adapter is an explicit
+fallback when fitted lineage output is unavailable or scalar pseudotime is
+specifically requested; downstream consumers must still select its lineage key
+explicitly.
 
 `trajectory_single_changepoint_regions` detects one change point per feature along
 an ordered pseudotime axis. Its numeric core runs in a private Python process using
@@ -25,7 +40,7 @@ directions lets a strong up population carry a lone down breakpoint over
 run and names the feature and its count of missing values.
 
 The accepted pack that the standard profile qualified has 25 operations at version
-0.1.1. This branch carries 26 operations at 0.1.2 and is experimental; it is not
+0.1.1. This branch carries 27 operations at 0.1.3 and is experimental; it is not
 what that profile qualifies. Model-backed
 `trajectory_geneset_dynamics` and `trajectory_signal_dynamics` require `model`.
 Their separate `_explicit` operations require typed pseudotime and

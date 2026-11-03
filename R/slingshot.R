@@ -47,13 +47,16 @@
   colnames(sce) <- prepared$cells
   SingleCellExperiment::reducedDims(sce) <- S4Vectors::SimpleList(
     space = prepared$values)
-  slingshot::slingshot(sce, clusterLabels = prepared$clusters,
+  arguments <- list(sce, clusterLabels = prepared$clusters,
     reducedDim = "space", start.clus = params[["start.clus"]] %||% NULL,
     end.clus = params[["end.clus"]] %||% NULL,
     stretch = as.numeric(params$stretch %||% 2),
     reweight = isTRUE(params$reweight %||% TRUE),
     shrink = as.numeric(params$shrink %||% 1),
     maxit = as.integer(params$maxit %||% 10))
+  for (name in c("omega", "omega_scale"))
+    if (!is.null(params[[name]])) arguments[[name]] <- params[[name]]
+  do.call(slingshot::slingshot, arguments)
 }
 
 .trajectory_slingshot_family <- function(model, accessor, fit_id,

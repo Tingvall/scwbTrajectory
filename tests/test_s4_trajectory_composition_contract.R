@@ -206,7 +206,7 @@ test_trajectory_s4_metadata_identity_change_ledger_contract <- function() {
   # still reproduce its frozen manifest identity exactly.
   # The experimental single-change-point slice appends one further operation after the
   # four registered-model ones, so those four are 22nd to 25th rather than the last.
-  stopifnot(length(manifest$operations) == 26L,
+  stopifnot(length(manifest$operations) == 27L,
     identical(vapply(tail(manifest$operations, 5L)[seq_len(4L)], `[[`,
       character(1), "name"), c("monocle3_fit", "monocle3_project",
         "palantir_fit", "palantir_project")))
@@ -214,16 +214,16 @@ test_trajectory_s4_metadata_identity_change_ledger_contract <- function() {
   accepted_prefix$operations <- manifest$operations[seq_len(17L)]
   # The accepted prefix is reconstructed as it was accepted, which includes the
   # envelope: the package version hashes too, and the pack has since moved to
-  # 0.1.2. Restoring 0.1.1 here keeps the frozen digest meaningful instead of
+  # 0.1.3. Restoring 0.1.1 here keeps the frozen digest meaningful instead of
   # re-issuing it; the 17 operation bodies hash unchanged either way.
   accepted_prefix$package$version <- "0.1.1"
   manifest_identity <- identity(
     "scworkbench.operation_pack.manifest.v3", accepted_prefix)$sha256
-  stopifnot(identical(manifest$package$version, "0.1.2"),
+  stopifnot(identical(manifest$package$version, "0.1.3"),
     identical(manifest_identity,
       "010cd012ac83ee2513c07c037e199c2d9f38295c10392d2a947f18b6f882d68c"),
     identical(as.character(utils::packageVersion("scwbTrajectory")),
-      "0.1.2"))
+      "0.1.3"))
   expected <- c(
     trajectory_segment_from_artifacts =
       "5b255d889af5efabe7178faefbb22e854b91f54f1b0146e8d91f226471bc5052",

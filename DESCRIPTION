@@ -1,12 +1,13 @@
 Package: scwbTrajectory
 Type: Package
 Title: Provisional Trajectory Operations for scworkbench
-Version: 0.1.2
+Version: 0.1.3
 Authors@R: person("Hendrik A.", "de Weerd", role = c("aut", "cre"), email = "dirkdeweerd.work@gmail.com")
 Description: Explicitly activated provisional ABI v3 operation pack containing
     branch comparison, route smoothing, analytical path construction and
     scoring, trajectory-segment composition, and grouped S2 trajectory
-    operations, Slingshot fitting/projection, Monocle3 fitting/projection,
+    operations, Slingshot fitting/projection, scalar pseudotime adaptation,
+    Monocle3 fitting/projection,
     Palantir fitting/projection, and single change-point detection along
     pseudotime for scworkbench.
     It is not a standard-profile dependency.
