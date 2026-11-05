@@ -70,3 +70,10 @@ and preserves caller RNG state. It consumes only the authenticated matrix-bound
 feature-set registry snapshot and performs no runtime collection downloads.
 Original ranking values are never jittered. Ties use authenticated matrix
 feature order, and leading-edge boundaries crossing a tied group are flagged.
+
+Ranking qualification uses one deterministic permutation-index plan per
+declared seed. Global monotonic statistics reuse centered gene ranks, while
+endpoint and local-window effects use contrast-weight matrices. Null moments
+are accumulated online from batched matrix products, and registered execution
+streams every authenticated matrix feature in bounded chunks without reducing
+the feature universe.

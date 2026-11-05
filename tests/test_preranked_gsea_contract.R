@@ -55,6 +55,132 @@
   do.call(method, args)
 }
 
+test_trajectory_preranked_gsea_optimized_kernel_parity_contract <- function() {
+  monotonic <- getFromNamespace(".trajectory_gsea_monotonic",
+    "scwbTrajectory")
+  plan_fun <- getFromNamespace(".trajectory_gsea_permutation_plan",
+    "scwbTrajectory")
+  monotonic_batched <- getFromNamespace(
+    ".trajectory_gsea_monotonic_batched", "scwbTrajectory")
+  windows_fun <- getFromNamespace(".trajectory_gsea_windows",
+    "scwbTrajectory")
+  local_effects <- getFromNamespace(".trajectory_gsea_local_effects",
+    "scwbTrajectory")
+  contrast <- getFromNamespace(".trajectory_gsea_contrast",
+    "scwbTrajectory")
+  contrast_weights <- getFromNamespace(".trajectory_gsea_contrast_weights",
+    "scwbTrajectory")
+  window_weights <- getFromNamespace(".trajectory_gsea_window_weights",
+    "scwbTrajectory")
+  contrasts_batched <- getFromNamespace(
+    ".trajectory_gsea_contrasts_batched", "scwbTrajectory")
+  permute <- getFromNamespace(".trajectory_regions_permute",
+    "scwbTrajectory")
+  with_seed <- getFromNamespace(".trajectory_regions_with_seed",
+    "scwbTrajectory")
+
+  set.seed(4101L)
+  expression <- matrix(stats::rnorm(37L * 80L), 37L, 80L)
+  expression[1L, ] <- seq_len(80L)
+  expression[2L, ] <- expression[1L, ]
+  expression[3L, ] <- 1
+  pseudotime <- sort(stats::runif(80L))
+  blocks <- rep(sprintf("sample_%02d", 1:8), each = 10L)
+  permutations <- 23L
+  seed <- 991L
+  for (one_blocks in list(NULL, blocks)) {
+    one_plan <- plan_fun(length(pseudotime), one_blocks, permutations, seed)
+    one_legacy <- with_seed(seed, lapply(seq_len(permutations),
+      function(ii) permute(pseudotime, one_blocks)))
+    stopifnot(all(vapply(seq_len(permutations), function(ii)
+      identical(pseudotime[one_plan[, ii]], one_legacy[[ii]]), logical(1))))
+  }
+  plan <- plan_fun(length(pseudotime), blocks, permutations, seed)
+  legacy_pseudotime <- with_seed(seed, lapply(seq_len(permutations),
+    function(ii) permute(pseudotime, blocks)))
+
+  legacy_sum <- legacy_sumsq <- numeric(nrow(expression))
+  for (permuted in legacy_pseudotime) {
+    value <- monotonic(expression, permuted)
+    value[!is.finite(value)] <- 0
+    legacy_sum <- legacy_sum + value
+    legacy_sumsq <- legacy_sumsq + value^2
+  }
+  reference <- monotonic(expression, pseudotime)
+  for (batch_size in c(1L, 4L, 32L)) for (chunk_size in c(1L, 7L, 128L)) {
+    optimized <- monotonic_batched(expression, pseudotime, plan,
+      batch_size, chunk_size)
+    stopifnot(isTRUE(all.equal(optimized$observed, reference,
+        tolerance = 1e-14)),
+      isTRUE(all.equal(optimized$sum, legacy_sum, tolerance = 1e-12)),
+      isTRUE(all.equal(optimized$sumsq, legacy_sumsq, tolerance = 1e-12)))
+  }
+
+  endpoint_weights <- contrast_weights(pseudotime, 0.2, 0.2)$weights
+  endpoint_observed <- contrast(expression, pseudotime, 0.2, 0.2)$value
+  endpoint_sum <- endpoint_sumsq <- numeric(nrow(expression))
+  for (permuted in legacy_pseudotime) {
+    value <- contrast(expression, permuted, 0.2, 0.2)$value
+    value[!is.finite(value)] <- 0
+    endpoint_sum <- endpoint_sum + value
+    endpoint_sumsq <- endpoint_sumsq + value^2
+  }
+  endpoint <- contrasts_batched(expression, endpoint_weights, plan, 5L, 9L)
+  stopifnot(isTRUE(all.equal(as.numeric(endpoint$observed),
+      endpoint_observed, tolerance = 1e-12)),
+    isTRUE(all.equal(as.numeric(endpoint$sum), endpoint_sum,
+      tolerance = 1e-11)),
+    isTRUE(all.equal(as.numeric(endpoint$sumsq), endpoint_sumsq,
+      tolerance = 1e-11)))
+
+  windows <- windows_fun(pseudotime, blocks, 0.2, 0.1, 5L, 1L)
+  windows <- windows[vapply(windows, `[[`, logical(1), "supported")]
+  weights <- window_weights(windows, length(pseudotime))
+  legacy_observed <- local_effects(expression, windows)
+  legacy_sum <- legacy_sumsq <- matrix(0, nrow(expression), length(windows))
+  for (permuted in legacy_pseudotime) {
+    permuted_windows <- windows_fun(permuted, blocks, 0.2, 0.1, 5L, 1L)
+    ids <- vapply(windows, `[[`, character(1), "ranking_id")
+    available <- vapply(permuted_windows, `[[`, character(1), "ranking_id")
+    value <- local_effects(expression, permuted_windows[match(ids, available)])
+    value[!is.finite(value)] <- 0
+    legacy_sum <- legacy_sum + value
+    legacy_sumsq <- legacy_sumsq + value^2
+  }
+  for (batch_size in c(1L, 3L, 8L)) for (chunk_size in c(1L, 9L, 128L)) {
+    optimized <- contrasts_batched(expression, weights, plan,
+      batch_size, chunk_size)
+    stopifnot(isTRUE(all.equal(optimized$observed, legacy_observed,
+        tolerance = 1e-12)),
+      isTRUE(all.equal(optimized$sum, legacy_sum, tolerance = 1e-11)),
+      isTRUE(all.equal(optimized$sumsq, legacy_sumsq, tolerance = 1e-11)))
+  }
+  TRUE
+}
+
+test_trajectory_preranked_gsea_streamed_chunk_replay_contract <- function() {
+  x <- .trajectory_gsea_fixture()
+  reference <- .trajectory_gsea_call(x, analysis_scope = "both",
+    n_permutations = 11L, feature_chunk_size = 128L)
+  for (chunk_size in c(1L, 7L, 19L)) {
+    observed <- new.env(parent = emptyenv())
+    observed$chunks <- list()
+    reader <- function(features, cells) {
+      observed$chunks[[length(observed$chunks) + 1L]] <- features
+      list(values = x$values[features, cells, drop = FALSE])
+    }
+    streamed <- .trajectory_gsea_call(x, matrix = NULL,
+      matrix_source = list(reader = reader, features = x$features,
+        cells = x$cells), feature_chunk_size = chunk_size,
+      analysis_scope = "both", n_permutations = 11L)
+    stopifnot(identical(serialize(streamed$outputs, NULL, version = 3L),
+        serialize(reference$outputs, NULL, version = 3L)),
+      identical(unlist(observed$chunks, use.names = FALSE), x$features),
+      all(lengths(observed$chunks) <= chunk_size))
+  }
+  TRUE
+}
+
 test_trajectory_preranked_gsea_manifest_contract <- function() {
   trajectory_activate_pack()
   manifest <- scworkbench::wb_operation_pack_inspect(

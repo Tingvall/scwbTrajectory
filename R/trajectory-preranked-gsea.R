@@ -183,6 +183,68 @@
   value
 }
 
+# Materialize integer permutations once so every feature chunk uses the same
+# declared null. Sampling indices preserves the ordering of blocked RNG calls.
+.trajectory_gsea_permutation_plan <- function(n_cells, blocks, permutations,
+                                              seed) {
+  .trajectory_regions_with_seed(seed, {
+    plan <- matrix(0L, nrow = n_cells, ncol = permutations)
+    index <- seq_len(n_cells)
+    for (ii in seq_len(permutations))
+      plan[, ii] <- .trajectory_regions_permute(index, blocks)
+    plan
+  })
+}
+
+.trajectory_gsea_rank_rows <- function(matrix) {
+  ranks <- vapply(seq_len(nrow(matrix)), function(ii)
+    rank(matrix[ii, ], ties.method = "average"), numeric(ncol(matrix)))
+  if (nrow(matrix) == 1L) ranks <- matrix(ranks, ncol = 1L)
+  ranks <- t(ranks)
+  ranks - rowMeans(ranks)
+}
+
+.trajectory_gsea_batches <- function(n, batch_size) {
+  split(seq_len(n), ceiling(seq_len(n) / as.integer(batch_size)))
+}
+
+.trajectory_gsea_monotonic_batched <- function(matrix, pseudotime,
+                                                permutation_plan,
+                                                batch_size = 32L,
+                                                feature_chunk_size = 2048L) {
+  y <- rank(pseudotime, ties.method = "average")
+  y <- y - mean(y)
+  y_norm <- sqrt(sum(y^2))
+  observed <- null_sum <- null_sumsq <- numeric(nrow(matrix))
+  feature_batches <- .trajectory_gsea_batches(nrow(matrix),
+    feature_chunk_size)
+  permutation_batches <- .trajectory_gsea_batches(
+    ncol(permutation_plan), batch_size)
+  for (features in feature_batches) {
+    ranks <- .trajectory_gsea_rank_rows(matrix[features, , drop = FALSE])
+    denominator <- sqrt(rowSums(ranks^2)) * y_norm
+    one_observed <- as.numeric(ranks %*% y) / denominator
+    one_observed[!is.finite(one_observed)] <- NA_real_
+    one_sum <- one_sumsq <- numeric(length(features))
+    for (batch in permutation_batches) {
+      permuted_y <- matrix(y[permutation_plan[, batch, drop = FALSE]],
+        nrow = length(y), ncol = length(batch))
+      values <- sweep(ranks %*% permuted_y, 1L, denominator, "/")
+      values[!is.finite(values)] <- 0
+      # Preserve permutation order in the online accumulation.
+      for (jj in seq_along(batch)) {
+        value <- values[, jj]
+        one_sum <- one_sum + value
+        one_sumsq <- one_sumsq + value^2
+      }
+    }
+    observed[features] <- one_observed
+    null_sum[features] <- one_sum
+    null_sumsq[features] <- one_sumsq
+  }
+  list(observed = observed, sum = null_sum, sumsq = null_sumsq)
+}
+
 .trajectory_gsea_contrast <- function(matrix, pseudotime,
                                       early_fraction, late_fraction) {
   early <- pseudotime <= early_fraction
@@ -224,6 +286,60 @@
     rowMeans(matrix[, window$inside, drop = FALSE]) -
       rowMeans(matrix[, window$outside, drop = FALSE]),
     numeric(nrow(matrix)))
+}
+
+.trajectory_gsea_window_weights <- function(windows, n_cells) {
+  weights <- matrix(0, nrow = n_cells, ncol = length(windows))
+  for (ii in seq_along(windows)) {
+    inside <- windows[[ii]]$inside
+    outside <- windows[[ii]]$outside
+    weights[inside, ii] <- 1 / sum(inside)
+    weights[outside, ii] <- -1 / sum(outside)
+  }
+  weights
+}
+
+.trajectory_gsea_contrast_weights <- function(pseudotime, early_fraction,
+                                               late_fraction) {
+  early <- pseudotime <= early_fraction
+  late <- pseudotime >= 1 - late_fraction
+  weights <- numeric(length(pseudotime))
+  weights[early] <- -1 / sum(early)
+  weights[late] <- 1 / sum(late)
+  list(weights = matrix(weights, ncol = 1L), early = early, late = late)
+}
+
+.trajectory_gsea_contrasts_batched <- function(matrix, weights,
+                                               permutation_plan,
+                                               batch_size = 8L,
+                                               feature_chunk_size = 2048L) {
+  observed <- matrix(NA_real_, nrow(matrix), ncol(weights))
+  null_sum <- null_sumsq <- matrix(0, nrow(matrix), ncol(weights))
+  feature_batches <- .trajectory_gsea_batches(nrow(matrix),
+    feature_chunk_size)
+  permutation_batches <- .trajectory_gsea_batches(
+    ncol(permutation_plan), batch_size)
+  for (features in feature_batches) {
+    one_matrix <- matrix[features, , drop = FALSE]
+    observed[features, ] <- one_matrix %*% weights
+    one_sum <- one_sumsq <- matrix(0, length(features), ncol(weights))
+    for (batch in permutation_batches) {
+      permuted_weights <- do.call(cbind, lapply(batch, function(jj)
+        weights[permutation_plan[, jj], , drop = FALSE]))
+      values <- one_matrix %*% permuted_weights
+      values[!is.finite(values)] <- 0
+      n_rankings <- ncol(weights)
+      for (jj in seq_along(batch)) {
+        columns <- (jj - 1L) * n_rankings + seq_len(n_rankings)
+        value <- values[, columns, drop = FALSE]
+        one_sum <- one_sum + value
+        one_sumsq <- one_sumsq + value^2
+      }
+    }
+    null_sum[features, ] <- one_sum
+    null_sumsq[features, ] <- one_sumsq
+  }
+  list(observed = observed, sum = null_sum, sumsq = null_sumsq)
 }
 
 .trajectory_gsea_base_exclusions <- function(raw, adjusted) {
@@ -479,7 +595,8 @@
   list(intervals = intervals, leading = leading)
 }
 
-.trajectory_preranked_gsea <- function(matrix, registry, effective_cells,
+.trajectory_preranked_gsea <- function(matrix = NULL, registry,
+                                       effective_cells,
                                        pseudotime, namespace,
                                        pseudotime_key, membership = NULL,
                                        sample_id = NULL, covariates = NULL,
@@ -511,7 +628,9 @@
                                        pseudotime_artifact_id = "",
                                        membership_artifact_id = "",
                                        sample_id_artifact_id = "",
-                                       covariates_artifact_id = "") {
+                                       covariates_artifact_id = "",
+                                       matrix_source = NULL,
+                                       feature_chunk_size = 2048L) {
   analysis_scope <- as.character(analysis_scope)[1L]
   pseudotime_direction <- as.character(pseudotime_direction)[1L]
   global_rank_method <- as.character(global_rank_method)[1L]
@@ -563,10 +682,35 @@
       identical(as.character(utils::packageVersion("fgsea")), "1.34.2"),
     "trajectory_preranked_gsea: fgsea 1.34.2 is required.")
 
-  matrix <- as.matrix(matrix)
-  storage.mode(matrix) <- "double"
-  feature_ids <- rownames(matrix)
-  matrix_cells <- colnames(matrix)
+  feature_chunk_size <- as.integer(feature_chunk_size)[1L]
+  .trajectory_assert(is.finite(feature_chunk_size) &&
+      feature_chunk_size >= 1L,
+    "trajectory_preranked_gsea: feature_chunk_size must be positive.")
+  if (is.null(matrix_source)) {
+    matrix <- as.matrix(matrix)
+    storage.mode(matrix) <- "double"
+    feature_ids <- rownames(matrix)
+    matrix_cells <- colnames(matrix)
+    read_matrix <- function(features, cells) matrix[
+      match(features, rownames(matrix)), match(cells, colnames(matrix)),
+      drop = FALSE]
+  } else {
+    .trajectory_assert(is.list(matrix_source) &&
+        is.function(matrix_source$reader),
+      "trajectory_preranked_gsea: matrix_source is malformed.")
+    feature_ids <- as.character(matrix_source$features)
+    matrix_cells <- as.character(matrix_source$cells)
+    read_matrix <- function(features, cells) {
+      block <- matrix_source$reader(features = features, cells = cells)$values
+      block <- as.matrix(block)
+      storage.mode(block) <- "double"
+      .trajectory_assert(identical(as.character(rownames(block)), features) &&
+          identical(as.character(colnames(block)), cells),
+        paste0("trajectory_preranked_gsea: authenticated matrix chunk has ",
+          "an unexpected axis."))
+      block
+    }
+  }
   .trajectory_assert(length(feature_ids) > 1L && !anyNA(feature_ids) &&
       all(nzchar(feature_ids)) && !anyDuplicated(feature_ids),
     "trajectory_preranked_gsea: matrix feature IDs must be unique.")
@@ -635,12 +779,11 @@
       all(is.finite(value)))
     cells <- cells[complete]
     pt <- pt[complete]; pt_normalized <- pt_normalized[complete]
-    matrix <- matrix[, match(cells, matrix_cells), drop = FALSE]
     covariate_matrix <- covariate_matrix[complete, , drop = FALSE]
     if (!is.null(sample_values)) sample_values <- sample_values[complete]
     blocks <- if (identical(actual_permutation_mode, "blocked"))
       sample_values else NULL
-  } else matrix <- matrix[, match(cells, matrix_cells), drop = FALSE]
+  }
   .trajectory_assert((identical(covariate_adjustment, "none") &&
       is.null(covariate_matrix)) || (!identical(covariate_adjustment,
       "none") && !is.null(covariate_matrix)),
@@ -655,64 +798,54 @@
   pt_normalized <- (pt - pt_min) / pt_range
   if (!is.null(blocks)) .trajectory_assert(any(table(blocks) >= 2L),
     "trajectory_preranked_gsea: no complete sample block can be permuted.")
-  adjusted <- .trajectory_gsea_adjust(matrix, covariate_matrix,
-    covariate_adjustment, spline_df)
-  base_reason <- .trajectory_gsea_base_exclusions(matrix, adjusted$values)
   sets <- .trajectory_gsea_registry(registry, namespace, feature_ids)
 
   want_global <- analysis_scope %in% c("global", "both")
   want_local <- analysis_scope %in% c("local", "both")
   rankings <- list()
+  ranking_accumulators <- list()
   ranking_windows <- list()
   endpoint_support <- list()
   ranking_seeds <- integer()
   fgsea_seeds <- integer()
+  global_plan <- local_plan <- NULL
+  global_weights <- local_weights <- NULL
+  global_ranking_id <- NULL
 
   if (want_global) {
     ranking_id <- paste0("global_", global_rank_method)
+    global_ranking_id <- ranking_id
     if (identical(global_rank_method, "early_late_contrast")) {
-      observed <- .trajectory_gsea_contrast(adjusted$values,
-        pt_normalized, early_fraction, late_fraction)
-      .trajectory_assert(sum(observed$early) >= min_cells &&
-          sum(observed$late) >= min_cells,
+      contrast <- .trajectory_gsea_contrast_weights(pt_normalized,
+        early_fraction, late_fraction)
+      .trajectory_assert(sum(contrast$early) >= min_cells &&
+          sum(contrast$late) >= min_cells,
         "trajectory_preranked_gsea: early/late contrast lacks cell support.")
       if (!is.null(sample_values)) .trajectory_assert(
-        length(unique(sample_values[observed$early])) >= min_samples &&
-          length(unique(sample_values[observed$late])) >= min_samples,
+        length(unique(sample_values[contrast$early])) >= min_samples &&
+          length(unique(sample_values[contrast$late])) >= min_samples,
         "trajectory_preranked_gsea: early/late contrast lacks sample support.")
-      raw_statistic <- observed$value
       endpoint_support[[ranking_id]] <- list(
         early_fraction = early_fraction, late_fraction = late_fraction,
-        early_n_cells = sum(observed$early), late_n_cells = sum(observed$late),
+        early_n_cells = sum(contrast$early),
+        late_n_cells = sum(contrast$late),
         early_n_samples = if (is.null(sample_values)) NA_integer_ else
-          length(unique(sample_values[observed$early])),
+          length(unique(sample_values[contrast$early])),
         late_n_samples = if (is.null(sample_values)) NA_integer_ else
-          length(unique(sample_values[observed$late])))
-    } else raw_statistic <- .trajectory_gsea_monotonic(adjusted$values,
-      pt_normalized)
+          length(unique(sample_values[contrast$late])))
+      global_weights <- contrast$weights
+    }
     if (is.null(endpoint_support[[ranking_id]])) endpoint_support[[ranking_id]] <-
       list(early_fraction = NA_real_, late_fraction = NA_real_,
         early_n_cells = NA_integer_, late_n_cells = NA_integer_,
         early_n_samples = NA_integer_, late_n_samples = NA_integer_)
-    null_sum <- null_sumsq <- numeric(nrow(matrix))
     ranking_seed <- .trajectory_gsea_seed(seed, ranking_id, "ranking")
-    null <- .trajectory_regions_with_seed(ranking_seed, {
-      for (permutation in seq_len(permutations)) {
-        permuted <- .trajectory_regions_permute(pt_normalized, blocks)
-        value <- if (identical(global_rank_method,
-          "early_late_contrast")) .trajectory_gsea_contrast(
-            adjusted$values, permuted, early_fraction,
-            late_fraction)$value else .trajectory_gsea_monotonic(
-              adjusted$values, permuted)
-        value[!is.finite(value)] <- 0
-        null_sum <- null_sum + value
-        null_sumsq <- null_sumsq + value^2
-      }
-      list(sum = null_sum, sumsq = null_sumsq)
-    })
-    rankings[[ranking_id]] <- .trajectory_gsea_finalize_ranking(
-      raw_statistic, null$sum, null$sumsq, permutations, base_reason,
-      feature_ids, "global", namespace, pseudotime_key, ranking_id)
+    global_plan <- .trajectory_gsea_permutation_plan(length(cells),
+      blocks, permutations, ranking_seed)
+    ranking_accumulators[[ranking_id]] <- list(scope = "global",
+      observed = numeric(length(feature_ids)),
+      sum = numeric(length(feature_ids)),
+      sumsq = numeric(length(feature_ids)))
     ranking_windows[[ranking_id]] <- list(window_index = NA_integer_,
       start_fraction = NA_real_, end_fraction = NA_real_,
       start = NA_real_, end = NA_real_, n_cells = length(cells),
@@ -730,35 +863,18 @@
   if (want_local) {
     .trajectory_assert(length(supported_windows) > 0L,
       "trajectory_preranked_gsea: no local window passes support thresholds.")
-    observed_local <- .trajectory_gsea_local_effects(adjusted$values,
-      supported_windows)
-    null_sum <- null_sumsq <- matrix(0, nrow(matrix),
-      length(supported_windows))
     local_seed <- .trajectory_gsea_seed(seed, "local_grid", "ranking")
-    null <- .trajectory_regions_with_seed(local_seed, {
-      for (permutation in seq_len(permutations)) {
-        permuted <- .trajectory_regions_permute(pt_normalized, blocks)
-        perm_windows <- .trajectory_gsea_windows(permuted, sample_values,
-          width, step, min_cells, min_samples)
-        wanted <- vapply(supported_windows, `[[`, character(1),
-          "ranking_id")
-        available <- vapply(perm_windows, `[[`, character(1), "ranking_id")
-        perm_windows <- perm_windows[match(wanted, available)]
-        value <- .trajectory_gsea_local_effects(adjusted$values,
-          perm_windows)
-        value[!is.finite(value)] <- 0
-        null_sum <- null_sum + value
-        null_sumsq <- null_sumsq + value^2
-      }
-      list(sum = null_sum, sumsq = null_sumsq)
-    })
+    local_plan <- .trajectory_gsea_permutation_plan(length(cells),
+      blocks, permutations, local_seed)
+    local_weights <- .trajectory_gsea_window_weights(supported_windows,
+      length(cells))
     for (ii in seq_along(supported_windows)) {
       window <- supported_windows[[ii]]
       ranking_id <- window$ranking_id
-      rankings[[ranking_id]] <- .trajectory_gsea_finalize_ranking(
-        observed_local[, ii], null$sum[, ii], null$sumsq[, ii],
-        permutations, base_reason, feature_ids, "local", namespace,
-        pseudotime_key, ranking_id)
+      ranking_accumulators[[ranking_id]] <- list(scope = "local",
+        observed = numeric(length(feature_ids)),
+        sum = numeric(length(feature_ids)),
+        sumsq = numeric(length(feature_ids)), local_column = ii)
       window$start <- pt_min + window$start_fraction * pt_range
       window$end <- pt_min + window$end_fraction * pt_range
       ranking_windows[[ranking_id]] <- window
@@ -770,6 +886,60 @@
       fgsea_seeds[ranking_id] <- .trajectory_gsea_seed(seed, ranking_id,
         "fgsea")
     }
+  }
+
+  base_reason <- character(length(feature_ids))
+  # Numerical blocks are fixed independently of reader chunking so changing
+  # the ABI read size cannot change BLAS reduction paths, ties, or fgsea input.
+  feature_batches <- .trajectory_gsea_batches(length(feature_ids), 512L)
+  for (feature_index in feature_batches) {
+    feature_chunk <- feature_ids[feature_index]
+    read_batches <- .trajectory_gsea_batches(length(feature_chunk),
+      feature_chunk_size)
+    raw_parts <- lapply(read_batches, function(index)
+      read_matrix(feature_chunk[index], cells))
+    raw_chunk <- do.call(rbind, raw_parts)
+    .trajectory_assert(identical(dim(raw_chunk),
+        c(length(feature_index), length(cells))),
+      "trajectory_preranked_gsea: authenticated matrix chunk has an unexpected shape.")
+    adjusted_chunk <- .trajectory_gsea_adjust(raw_chunk, covariate_matrix,
+      covariate_adjustment, spline_df)$values
+    base_reason[feature_index] <- .trajectory_gsea_base_exclusions(
+      raw_chunk, adjusted_chunk)
+
+    if (want_global) {
+      value <- if (identical(global_rank_method, "early_late_contrast"))
+        .trajectory_gsea_contrasts_batched(adjusted_chunk,
+          global_weights, global_plan, feature_chunk_size =
+            length(feature_index)) else
+        .trajectory_gsea_monotonic_batched(adjusted_chunk, pt_normalized,
+          global_plan, feature_chunk_size = length(feature_index))
+      accumulator <- ranking_accumulators[[global_ranking_id]]
+      accumulator$observed[feature_index] <- as.numeric(value$observed)
+      accumulator$sum[feature_index] <- as.numeric(value$sum)
+      accumulator$sumsq[feature_index] <- as.numeric(value$sumsq)
+      ranking_accumulators[[global_ranking_id]] <- accumulator
+    }
+    if (want_local) {
+      value <- .trajectory_gsea_contrasts_batched(adjusted_chunk,
+        local_weights, local_plan, feature_chunk_size = length(feature_index))
+      local_ids <- vapply(supported_windows, `[[`, character(1),
+        "ranking_id")
+      for (ii in seq_along(local_ids)) {
+        accumulator <- ranking_accumulators[[local_ids[[ii]]]]
+        accumulator$observed[feature_index] <- value$observed[, ii]
+        accumulator$sum[feature_index] <- value$sum[, ii]
+        accumulator$sumsq[feature_index] <- value$sumsq[, ii]
+        ranking_accumulators[[local_ids[[ii]]]] <- accumulator
+      }
+    }
+  }
+  for (ranking_id in names(ranking_accumulators)) {
+    accumulator <- ranking_accumulators[[ranking_id]]
+    rankings[[ranking_id]] <- .trajectory_gsea_finalize_ranking(
+      accumulator$observed, accumulator$sum, accumulator$sumsq,
+      permutations, base_reason, feature_ids, accumulator$scope,
+      namespace, pseudotime_key, ranking_id)
   }
 
   enrichment_results <- leading_results <- list()
@@ -928,12 +1098,14 @@
       !anyDuplicated(all_features),
     "trajectory_preranked_gsea: authenticated matrix feature axis is invalid.")
   cells <- as.character(context$effective_cells)
-  matrix <- as.matrix(.trajectory_chunked_matrix(readers$matrix_chunks,
-    all_features, all_features, cells, cells, params$chunk_size %||% 128L))
+  chunk_size <- as.integer(params$chunk_size %||% 128L)[1L]
   call_params <- params
   call_params$chunk_size <- NULL
   result <- .trajectory_s2_call(.trajectory_preranked_gsea,
-    list(matrix = matrix, registry = registry, effective_cells = cells,
+    list(matrix = NULL, matrix_source = list(reader = readers$matrix_chunks,
+        features = all_features, cells = cells),
+      feature_chunk_size = chunk_size,
+      registry = registry, effective_cells = cells,
       pseudotime = readers$pseudotime(),
       membership = .trajectory_regions_optional_reader(readers,
         "membership"),
