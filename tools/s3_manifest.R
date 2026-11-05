@@ -248,8 +248,9 @@ s3_regions <- list(
   qualified_name = "scwbtrajectory::trajectory_signal_regions",
   title = "Trajectory Signal Regions",
   description = paste(
-    "Detect permutation-supported elevated and reduced intervals for",
-    "authenticated per-cell signals over explicit fitted pseudotime."),
+    "Deprecated 0.1.4 compatibility alias for trajectory_signal_intervals;",
+    "it retains the historical terminal names for accepted and promoted",
+    "artifacts and is not a separate scientific method."),
   runner = ".run_trajectory_signal_regions",
   inputs = list(input("signal", "cell_vector_family"),
     input("pseudotime", "cell_vector_family"),

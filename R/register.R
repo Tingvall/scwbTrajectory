@@ -41,6 +41,10 @@ register_operation_pack <- function() {
         .run_trajectory_signal_dynamics_explicit,
       `scwbtrajectory::trajectory_signal_regions` =
         .run_trajectory_signal_regions,
+      `scwbtrajectory::trajectory_signal_intervals` =
+        .run_trajectory_signal_intervals,
+      `scwbtrajectory::trajectory_preranked_gsea` =
+        .run_trajectory_preranked_gsea,
       `scwbtrajectory::slingshot` = .run_slingshot,
       `scwbtrajectory::slingshot_fit` = .run_slingshot_fit,
       `scwbtrajectory::slingshot_lineage_weights` =

@@ -24,19 +24,35 @@ fallback when fitted lineage output is unavailable or scalar pseudotime is
 specifically requested; downstream consumers must still select its lineage key
 explicitly.
 
-`trajectory_signal_regions` complements whole-trajectory signal dynamics with
-permutation-qualified local intervals. It consumes a continuous signal family
-and an explicit fitted pseudotime family, requires a lineage key, summarizes
-overlapping windows, tests peak-to-trough dynamics, and reports local elevated
-and reduced regions against direction-specific permutation maximum-deviation
-nulls. Optional continuous technical covariates are fitted without including
-pseudotime. When sample identities are supplied, `permutation_mode = "auto"`
-shuffles within samples; without them it records an unblocked analysis. The
-curve terminal retains the `trajectory_signal_dynamics_curve` table contract so
-the standard pseudotime signal-line plot remains available. Region tables add
-interval boundaries, extrema, effects, empirical p-values, BH q-values, support,
-and complete permutation metadata. Inputs must be generic primitives; no Bdev
-lineage, signature collection, or study-specific threshold is embedded.
+The signal operations answer distinct questions. `trajectory_signal_dynamics`
+describes whole-trajectory curves for precomputed cell-level signals.
+`trajectory_signal_intervals` tests whether a signal has globally qualified
+trajectory dynamics, performs local elevated and reduced tests, and merges
+supported adjacent local tests into signal intervals. Its terminals are
+`signal_curve`, `global_test`, `local_tests`, `signal_intervals`,
+`adjustment_summary`, and `fit_summary`. Optional continuous technical
+covariates are fitted without pseudotime. With sample identities,
+`permutation_mode = "auto"` shuffles within samples; otherwise it records an
+unblocked analysis. `trajectory_signal_regions` is the deprecated 0.1.4
+compatibility identity and retains its historical terminal contract; it is not
+a separate scientific method.
+
+`trajectory_preranked_gsea` performs gene-set enrichment from an authenticated
+expression matrix and the matrix-bound, checksummed feature-set registry
+snapshot. `analysis_scope = "global"` builds one full-trajectory ranking;
+`"local"` builds rankings over a fixed grid of overlapping pseudotime windows;
+and `"both"` runs both under the same lineage, orientation, cell selection,
+covariate, sample-block, support, and feature-universe policies. It publishes
+`global_enrichment`, `window_enrichment`, `enrichment_intervals`,
+`leading_edge`, `ranked_features`, and `fit_summary`. Adjacent supported window
+results merge only within the same feature set and enrichment direction. The
+leading-edge terminal uses fgsea's actual leading-edge membership and reports
+peak-window and interval-consensus membership. Ranking ties are never jittered;
+the authenticated feature order resolves them deterministically. The operation
+does not download feature-set collections at runtime.
+
+All three methods accept generic primitives. No Bdev lineage, signature
+collection, or study-specific threshold is embedded.
 
 `trajectory_single_changepoint_regions` detects one change point per feature along
 an ordered pseudotime axis. Its numeric core runs in a private Python process using
@@ -54,7 +70,7 @@ directions lets a strong up population carry a lone down breakpoint over
 run and names the feature and its count of missing values.
 
 The accepted pack that the standard profile qualified has 25 operations at version
-0.1.1. This branch carries 28 operations at 0.1.4 and is experimental; it is not
+0.1.1. This branch carries 30 operations at 0.1.5 and is experimental; it is not
 what that profile qualifies. Model-backed
 `trajectory_geneset_dynamics` and `trajectory_signal_dynamics` require `model`.
 Their separate `_explicit` operations require typed pseudotime and

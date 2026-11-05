@@ -1,13 +1,14 @@
 Package: scwbTrajectory
 Type: Package
 Title: Provisional Trajectory Operations for scworkbench
-Version: 0.1.4
+Version: 0.1.5
 Authors@R: person("Hendrik A.", "de Weerd", role = c("aut", "cre"), email = "dirkdeweerd.work@gmail.com")
 Description: Explicitly activated provisional ABI v3 operation pack containing
     branch comparison, route smoothing, analytical path construction and
     scoring, trajectory-segment composition, and grouped S2 trajectory
     operations, Slingshot fitting/projection, scalar pseudotime adaptation,
-    permutation-qualified trajectory signal-region detection,
+    permutation-qualified trajectory signal-interval detection and global or
+    window-resolved preranked gene-set enrichment,
     Monocle3 fitting/projection,
     Palantir fitting/projection, and single change-point detection along
     pseudotime for scworkbench.
@@ -15,6 +16,6 @@ Description: Explicitly activated provisional ABI v3 operation pack containing
 License: MIT + file LICENSE
 Encoding: UTF-8
 Depends: R (>= 4.1.0)
-Imports: digest, jsonlite, methods, scworkbench, RANN, splines, stats, utils
+Imports: BiocParallel (>= 1.42.0), digest, fgsea (== 1.34.2), jsonlite, methods, scworkbench, RANN, splines, stats, utils
 Suggests: DBI, fs, igraph, Matrix, monocle3, rhdf5, S4Vectors, SingleCellExperiment, slingshot
 RoxygenNote: 7.3.3

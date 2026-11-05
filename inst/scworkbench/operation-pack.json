@@ -5,7 +5,7 @@
   "namespace": "scwbtrajectory",
   "package": {
     "name": "scwbTrajectory",
-    "version": "0.1.4"
+    "version": "0.1.5"
   },
   "backend": "R",
   "compatibility": {
@@ -5771,7 +5771,7 @@
       "name": "trajectory_signal_regions",
       "qualified_name": "scwbtrajectory::trajectory_signal_regions",
       "title": "Trajectory Signal Regions",
-      "description": "Detect permutation-supported elevated and reduced intervals for authenticated per-cell signals over explicit fitted pseudotime.",
+      "description": "Deprecated 0.1.4 compatibility alias for trajectory_signal_intervals; it retains the historical terminal names for accepted and promoted artifacts and is not a separate scientific method.",
       "runner": ".run_trajectory_signal_regions",
       "inputs": [
         {
@@ -7657,6 +7657,1555 @@
           {
             "name": "run_summary",
             "description": "Declared run_summary terminal."
+          }
+        ]
+      }
+    },
+    {
+      "name": "trajectory_signal_intervals",
+      "qualified_name": "scwbtrajectory::trajectory_signal_intervals",
+      "title": "Trajectory Signal Intervals",
+      "description": "Test whole-trajectory dynamics of authenticated cell-level signals and report permutation-supported elevated or reduced pseudotime intervals.",
+      "runner": ".run_trajectory_signal_intervals",
+      "inputs": [
+        {
+          "name": "signal",
+          "kind": "cell_vector_family",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "pseudotime",
+          "kind": "cell_vector_family",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "covariates",
+          "kind": "cell_vector_family",
+          "required": false,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "sample_id",
+          "kind": "cell_vector",
+          "required": false,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "membership",
+          "kind": "cell_vector",
+          "required": false,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "pseudotime_key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "signal_keys": {
+            "type": ["array", "null"],
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "covariate_keys": {
+            "type": ["array", "null"],
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "pseudotime_direction": {
+            "type": "string",
+            "default": "as_is",
+            "enum": [
+              "as_is",
+              "invert"
+            ]
+          },
+          "window_width_fraction": {
+            "type": "number",
+            "default": 0.05,
+            "minimum": 1e-06,
+            "maximum": 1
+          },
+          "window_step_fraction": {
+            "type": "number",
+            "default": 0.01,
+            "minimum": 1e-06,
+            "maximum": 1
+          },
+          "min_cells_per_window": {
+            "type": "integer",
+            "default": 20,
+            "minimum": 2,
+            "maximum": 10000000
+          },
+          "min_samples_per_window": {
+            "type": "integer",
+            "default": 1,
+            "minimum": 1,
+            "maximum": 1000000
+          },
+          "summary_fun": {
+            "type": "string",
+            "default": "median",
+            "enum": [
+              "mean",
+              "median"
+            ]
+          },
+          "n_permutations": {
+            "type": "integer",
+            "default": 1000,
+            "minimum": 1,
+            "maximum": 1000000
+          },
+          "seed": {
+            "type": "integer",
+            "default": 1,
+            "minimum": 1,
+            "maximum": 2147483646
+          },
+          "covariate_adjustment": {
+            "type": "string",
+            "default": "none",
+            "enum": [
+              "none",
+              "linear",
+              "natural_spline"
+            ]
+          },
+          "covariate_spline_df": {
+            "type": "integer",
+            "default": 4,
+            "minimum": 2,
+            "maximum": 20
+          },
+          "permutation_mode": {
+            "type": "string",
+            "default": "auto",
+            "enum": [
+              "auto",
+              "blocked",
+              "unblocked"
+            ]
+          },
+          "include_endpoint_extrema": {
+            "type": "boolean",
+            "default": true
+          },
+          "merge_gap_fraction": {
+            "type": ["number", "null"],
+            "minimum": 0,
+            "maximum": 1
+          },
+          "global_q_cutoff": {
+            "type": "number",
+            "default": 0.05,
+            "minimum": 1e-12,
+            "maximum": 1
+          },
+          "local_q_cutoff": {
+            "type": "number",
+            "default": 0.05,
+            "minimum": 1e-12,
+            "maximum": 1
+          }
+        },
+        "required": [
+          "pseudotime_key"
+        ],
+        "additionalProperties": false
+      },
+      "provenance_reads": [
+        {
+          "name": "signal_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "signal",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        },
+        {
+          "name": "pseudotime_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "pseudotime",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        },
+        {
+          "name": "covariates_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "covariates",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        },
+        {
+          "name": "sample_id_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "sample_id",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        },
+        {
+          "name": "membership_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "membership",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        }
+      ],
+      "dimension_policies": [
+        {
+          "output": "signal_curve",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "global_test",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "local_tests",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "signal_intervals",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "adjustment_summary",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "fit_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "signal_curve",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "signal_curve_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_intervals",
+          "table_type": "trajectory_signal_intervals_curve"
+        },
+        {
+          "name": "global_test",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "global_test_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_intervals",
+          "table_type": "trajectory_signal_intervals_global_test"
+        },
+        {
+          "name": "local_tests",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "local_tests_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_intervals",
+          "table_type": "trajectory_signal_intervals_local_tests"
+        },
+        {
+          "name": "signal_intervals",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "signal_intervals_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_intervals",
+          "table_type": "trajectory_signal_intervals"
+        },
+        {
+          "name": "adjustment_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "adjustment_summary_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_intervals",
+          "table_type": "trajectory_signal_intervals_adjustment"
+        },
+        {
+          "name": "fit_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "fit_summary_id",
+          "required": true,
+          "promotion_group": "trajectory_signal_intervals",
+          "table_type": "trajectory_signal_intervals_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_obs_table"
+        }
+      ],
+      "promotion_closure": {
+        "signal_curve": [
+          "adjustment_summary",
+          "fit_summary",
+          "global_test",
+          "local_tests",
+          "signal_curve",
+          "signal_intervals"
+        ],
+        "global_test": [
+          "adjustment_summary",
+          "fit_summary",
+          "global_test",
+          "local_tests",
+          "signal_curve",
+          "signal_intervals"
+        ],
+        "local_tests": [
+          "adjustment_summary",
+          "fit_summary",
+          "global_test",
+          "local_tests",
+          "signal_curve",
+          "signal_intervals"
+        ],
+        "signal_intervals": [
+          "adjustment_summary",
+          "fit_summary",
+          "global_test",
+          "local_tests",
+          "signal_curve",
+          "signal_intervals"
+        ],
+        "adjustment_summary": [
+          "adjustment_summary",
+          "fit_summary",
+          "global_test",
+          "local_tests",
+          "signal_curve",
+          "signal_intervals"
+        ],
+        "fit_summary": [
+          "adjustment_summary",
+          "fit_summary",
+          "global_test",
+          "local_tests",
+          "signal_curve",
+          "signal_intervals"
+        ]
+      },
+      "replay_equivalence": {
+        "signal_curve": "exact_canonical_value",
+        "global_test": "exact_canonical_value",
+        "local_tests": "exact_canonical_value",
+        "signal_intervals": "exact_canonical_value",
+        "adjustment_summary": "exact_canonical_value",
+        "fit_summary": "exact_canonical_value"
+      },
+      "retained_parameters": [
+        {
+          "name": "pseudotime_key",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "pseudotime_key"
+        },
+        {
+          "name": "signal_keys",
+          "source": "effective_parameter_value",
+          "required": false,
+          "parameter": "signal_keys"
+        },
+        {
+          "name": "covariate_keys",
+          "source": "effective_parameter_value",
+          "required": false,
+          "parameter": "covariate_keys"
+        },
+        {
+          "name": "pseudotime_direction",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "pseudotime_direction"
+        },
+        {
+          "name": "window_width_fraction",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "window_width_fraction"
+        },
+        {
+          "name": "window_step_fraction",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "window_step_fraction"
+        },
+        {
+          "name": "min_cells_per_window",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "min_cells_per_window"
+        },
+        {
+          "name": "min_samples_per_window",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "min_samples_per_window"
+        },
+        {
+          "name": "summary_fun",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "summary_fun"
+        },
+        {
+          "name": "n_permutations",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "n_permutations"
+        },
+        {
+          "name": "seed",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "seed"
+        },
+        {
+          "name": "covariate_adjustment",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "covariate_adjustment"
+        },
+        {
+          "name": "covariate_spline_df",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "covariate_spline_df"
+        },
+        {
+          "name": "permutation_mode",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "permutation_mode"
+        },
+        {
+          "name": "include_endpoint_extrema",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "include_endpoint_extrema"
+        },
+        {
+          "name": "merge_gap_fraction",
+          "source": "effective_parameter_value",
+          "required": false,
+          "parameter": "merge_gap_fraction"
+        },
+        {
+          "name": "global_q_cutoff",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "global_q_cutoff"
+        },
+        {
+          "name": "local_q_cutoff",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "local_q_cutoff"
+        },
+        {
+          "name": "n_pseudotime_finite",
+          "source": "output_first_row",
+          "output": "fit_summary",
+          "field": "n_pseudotime_finite"
+        },
+        {
+          "name": "n_signal_keys_analyzed",
+          "source": "output_first_row",
+          "output": "fit_summary",
+          "field": "n_signal_keys_analyzed"
+        },
+        {
+          "name": "n_signal_intervals",
+          "source": "output_first_row",
+          "output": "fit_summary",
+          "field": "n_signal_intervals"
+        }
+      ],
+      "public_interface": {
+        "intent": [
+          "trajectory",
+          "signal",
+          "intervals",
+          "permutation"
+        ],
+        "inputs": [
+          {
+            "name": "signal",
+            "label": "signal",
+            "help": "Typed signal input."
+          },
+          {
+            "name": "pseudotime",
+            "label": "pseudotime",
+            "help": "Typed pseudotime input."
+          },
+          {
+            "name": "covariates",
+            "label": "covariates",
+            "help": "Typed covariates input."
+          },
+          {
+            "name": "sample_id",
+            "label": "sample_id",
+            "help": "Typed sample_id input."
+          },
+          {
+            "name": "membership",
+            "label": "membership",
+            "help": "Typed membership input."
+          }
+        ],
+        "parameters": [
+          {
+            "name": "pseudotime_key",
+            "type": "string",
+            "help": "Required explicit lineage key."
+          },
+          {
+            "name": "signal_keys",
+            "type": "string_vec",
+            "help": "Optional signal keys."
+          },
+          {
+            "name": "covariate_keys",
+            "type": "string_vec",
+            "help": "Optional covariate keys."
+          },
+          {
+            "name": "pseudotime_direction",
+            "type": "choice",
+            "help": "As-is or inverted orientation."
+          },
+          {
+            "name": "window_width_fraction",
+            "type": "dbl",
+            "help": "Signal window width fraction."
+          },
+          {
+            "name": "window_step_fraction",
+            "type": "dbl",
+            "help": "Signal window step fraction."
+          },
+          {
+            "name": "min_cells_per_window",
+            "type": "int",
+            "help": "Minimum cells per window."
+          },
+          {
+            "name": "min_samples_per_window",
+            "type": "int",
+            "help": "Minimum samples per window."
+          },
+          {
+            "name": "summary_fun",
+            "type": "choice",
+            "help": "Window mean or median."
+          },
+          {
+            "name": "n_permutations",
+            "type": "int",
+            "help": "Permutation count."
+          },
+          {
+            "name": "seed",
+            "type": "int",
+            "help": "Deterministic base seed."
+          },
+          {
+            "name": "covariate_adjustment",
+            "type": "choice",
+            "help": "None, linear, or spline."
+          },
+          {
+            "name": "covariate_spline_df",
+            "type": "int",
+            "help": "Spline degrees of freedom."
+          },
+          {
+            "name": "permutation_mode",
+            "type": "choice",
+            "help": "Automatic, blocked, or unblocked."
+          },
+          {
+            "name": "include_endpoint_extrema",
+            "type": "bool",
+            "help": "Allow endpoint extrema."
+          },
+          {
+            "name": "global_q_cutoff",
+            "type": "dbl",
+            "help": "Global signal-test q cutoff."
+          },
+          {
+            "name": "local_q_cutoff",
+            "type": "dbl",
+            "help": "Local signal-test q cutoff."
+          },
+          {
+            "name": "merge_gap_fraction",
+            "type": "dbl",
+            "help": "Maximum interval merge gap."
+          }
+        ],
+        "outputs": [
+          {
+            "name": "signal_curve",
+            "description": "Declared signal_curve terminal."
+          },
+          {
+            "name": "global_test",
+            "description": "Declared global_test terminal."
+          },
+          {
+            "name": "local_tests",
+            "description": "Declared local_tests terminal."
+          },
+          {
+            "name": "signal_intervals",
+            "description": "Declared signal_intervals terminal."
+          },
+          {
+            "name": "adjustment_summary",
+            "description": "Declared adjustment_summary terminal."
+          },
+          {
+            "name": "fit_summary",
+            "description": "Declared fit_summary terminal."
+          }
+        ]
+      }
+    },
+    {
+      "name": "trajectory_preranked_gsea",
+      "qualified_name": "scwbtrajectory::trajectory_preranked_gsea",
+      "title": "Trajectory Preranked GSEA",
+      "description": "Run full-trajectory and fixed-window preranked GSEA using an authenticated matrix feature universe and feature-set registry snapshot.",
+      "runner": ".run_trajectory_preranked_gsea",
+      "inputs": [
+        {
+          "name": "matrix",
+          "kind": "matrix",
+          "required": true,
+          "alignment": "cell_and_feature_ordered"
+        },
+        {
+          "name": "pseudotime",
+          "kind": "cell_vector_family",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "membership",
+          "kind": "cell_vector",
+          "required": false,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "sample_id",
+          "kind": "cell_vector",
+          "required": false,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "covariates",
+          "kind": "cell_vector_family",
+          "required": false,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "namespace": {
+            "type": ["string", "null"]
+          },
+          "pseudotime_key": {
+            "type": ["string", "null"]
+          },
+          "analysis_scope": {
+            "type": "string",
+            "default": "both",
+            "enum": [
+              "global",
+              "local",
+              "both"
+            ]
+          },
+          "pseudotime_direction": {
+            "type": "string",
+            "default": "as_is",
+            "enum": [
+              "as_is",
+              "invert"
+            ]
+          },
+          "global_rank_method": {
+            "type": "string",
+            "default": "monotonic_association",
+            "enum": [
+              "monotonic_association",
+              "early_late_contrast"
+            ]
+          },
+          "early_fraction": {
+            "type": "number",
+            "default": 0.2,
+            "minimum": 1e-06,
+            "maximum": 0.499999
+          },
+          "late_fraction": {
+            "type": "number",
+            "default": 0.2,
+            "minimum": 1e-06,
+            "maximum": 0.499999
+          },
+          "window_width_fraction": {
+            "type": "number",
+            "default": 0.15,
+            "minimum": 1e-06,
+            "maximum": 0.999999
+          },
+          "window_step_fraction": {
+            "type": "number",
+            "default": 0.05,
+            "minimum": 1e-06,
+            "maximum": 1
+          },
+          "min_cells_per_window": {
+            "type": "integer",
+            "default": 20,
+            "minimum": 2,
+            "maximum": 10000000
+          },
+          "min_samples_per_window": {
+            "type": "integer",
+            "default": 1,
+            "minimum": 1,
+            "maximum": 1000000
+          },
+          "permutation_mode": {
+            "type": "string",
+            "default": "auto",
+            "enum": [
+              "auto",
+              "blocked",
+              "unblocked"
+            ]
+          },
+          "n_permutations": {
+            "type": "integer",
+            "default": 1000,
+            "minimum": 2,
+            "maximum": 1000000
+          },
+          "seed": {
+            "type": "integer",
+            "default": 1,
+            "minimum": 1,
+            "maximum": 2147483646
+          },
+          "covariate_adjustment": {
+            "type": "string",
+            "default": "none",
+            "enum": [
+              "none",
+              "linear",
+              "natural_spline"
+            ]
+          },
+          "covariate_spline_df": {
+            "type": "integer",
+            "default": 4,
+            "minimum": 2,
+            "maximum": 20
+          },
+          "min_set_size": {
+            "type": "integer",
+            "default": 5,
+            "minimum": 1,
+            "maximum": 10000000
+          },
+          "max_set_size": {
+            "type": "integer",
+            "default": 5000,
+            "minimum": 1,
+            "maximum": 10000000
+          },
+          "score_type": {
+            "type": "string",
+            "default": "std",
+            "enum": [
+              "std",
+              "pos",
+              "neg"
+            ]
+          },
+          "gsea_param": {
+            "type": "number",
+            "default": 1,
+            "minimum": 1e-12
+          },
+          "sample_size": {
+            "type": "integer",
+            "default": 101,
+            "minimum": 3,
+            "maximum": 1000000
+          },
+          "n_perm_simple": {
+            "type": "integer",
+            "default": 1000,
+            "minimum": 1,
+            "maximum": 10000000
+          },
+          "eps": {
+            "type": "number",
+            "default": 1e-10,
+            "minimum": 0,
+            "maximum": 1
+          },
+          "p_adjust_method": {
+            "type": "string",
+            "default": "BH",
+            "enum": [
+              "holm",
+              "hochberg",
+              "hommel",
+              "bonferroni",
+              "BH",
+              "BY",
+              "fdr",
+              "none"
+            ]
+          },
+          "global_q_cutoff": {
+            "type": "number",
+            "default": 0.05,
+            "minimum": 1e-12,
+            "maximum": 1
+          },
+          "local_q_cutoff": {
+            "type": "number",
+            "default": 0.05,
+            "minimum": 1e-12,
+            "maximum": 1
+          },
+          "merge_gap_fraction": {
+            "type": "number",
+            "default": 0.05,
+            "minimum": 0,
+            "maximum": 1
+          },
+          "consensus_leading_edge_fraction": {
+            "type": "number",
+            "default": 0.5,
+            "minimum": 1e-12,
+            "maximum": 1
+          },
+          "chunk_size": {
+            "type": "integer",
+            "default": 128,
+            "minimum": 1,
+            "maximum": 1000000
+          }
+        },
+        "required": [
+          "namespace",
+          "pseudotime_key"
+        ],
+        "additionalProperties": false
+      },
+      "registry_reads": [
+        {
+          "name": "feature_sets",
+          "category": "authenticated_core_registry_snapshot",
+          "kind": "feature_set_registry",
+          "reader": "read_feature_set_registry",
+          "matrix_input": "matrix",
+          "no_selector_policy": "all_namespaces",
+          "empty_match_policy": "allow"
+        }
+      ],
+      "provenance_reads": [
+        {
+          "name": "pseudotime_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "pseudotime",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        },
+        {
+          "name": "membership_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "membership",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        },
+        {
+          "name": "sample_id_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "sample_id",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        },
+        {
+          "name": "covariates_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "covariates",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        }
+      ],
+      "typed_slice_reads": [
+        {
+          "name": "matrix_chunks",
+          "input": "matrix",
+          "reader": "read_typed_slices",
+          "kind": "matrix",
+          "supported_axes": [
+            "features"
+          ],
+          "chunk_axis": "features",
+          "chunk_size_parameter": "chunk_size",
+          "call_discipline": "ordered_partition_exactly_once",
+          "empty_selection_policy": "reject",
+          "duplicate_policy": "reject",
+          "selection": {
+            "cells": {
+              "policy": "effective_input_axis_v1"
+            },
+            "features": {
+              "policy": "effective_input_axis_v1"
+            }
+          }
+        }
+      ],
+      "dimension_policies": [
+        {
+          "output": "global_enrichment",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "window_enrichment",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "enrichment_intervals",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "leading_edge",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "ranked_features",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "fit_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "global_enrichment",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "global_enrichment_id",
+          "required": true,
+          "promotion_group": "trajectory_preranked_gsea",
+          "table_type": "trajectory_preranked_gsea_global_enrichment"
+        },
+        {
+          "name": "window_enrichment",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "window_enrichment_id",
+          "required": true,
+          "promotion_group": "trajectory_preranked_gsea",
+          "table_type": "trajectory_preranked_gsea_window_enrichment"
+        },
+        {
+          "name": "enrichment_intervals",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "enrichment_intervals_id",
+          "required": true,
+          "promotion_group": "trajectory_preranked_gsea",
+          "table_type": "trajectory_preranked_gsea_enrichment_intervals"
+        },
+        {
+          "name": "leading_edge",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "leading_edge_id",
+          "required": true,
+          "promotion_group": "trajectory_preranked_gsea",
+          "table_type": "trajectory_preranked_gsea_leading_edge"
+        },
+        {
+          "name": "ranked_features",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "ranked_features_id",
+          "required": true,
+          "promotion_group": "trajectory_preranked_gsea",
+          "table_type": "trajectory_preranked_gsea_ranked_features"
+        },
+        {
+          "name": "fit_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "fit_summary_id",
+          "required": true,
+          "promotion_group": "trajectory_preranked_gsea",
+          "table_type": "trajectory_preranked_gsea_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_obs_table"
+        },
+        {
+          "requirement_id": "fgsea_runtime",
+          "kind": "r_package",
+          "name": "fgsea",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": "==1.34.2"
+          },
+          "disposition": "required",
+          "import_probe": "fgseaMultilevel"
+        },
+        {
+          "requirement_id": "biocparallel_runtime",
+          "kind": "r_package",
+          "name": "BiocParallel",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=1.42.0"
+          },
+          "disposition": "required",
+          "import_probe": "SerialParam"
+        }
+      ],
+      "promotion_closure": {
+        "global_enrichment": [
+          "enrichment_intervals",
+          "fit_summary",
+          "global_enrichment",
+          "leading_edge",
+          "ranked_features",
+          "window_enrichment"
+        ],
+        "window_enrichment": [
+          "enrichment_intervals",
+          "fit_summary",
+          "global_enrichment",
+          "leading_edge",
+          "ranked_features",
+          "window_enrichment"
+        ],
+        "enrichment_intervals": [
+          "enrichment_intervals",
+          "fit_summary",
+          "global_enrichment",
+          "leading_edge",
+          "ranked_features",
+          "window_enrichment"
+        ],
+        "leading_edge": [
+          "enrichment_intervals",
+          "fit_summary",
+          "global_enrichment",
+          "leading_edge",
+          "ranked_features",
+          "window_enrichment"
+        ],
+        "ranked_features": [
+          "enrichment_intervals",
+          "fit_summary",
+          "global_enrichment",
+          "leading_edge",
+          "ranked_features",
+          "window_enrichment"
+        ],
+        "fit_summary": [
+          "enrichment_intervals",
+          "fit_summary",
+          "global_enrichment",
+          "leading_edge",
+          "ranked_features",
+          "window_enrichment"
+        ]
+      },
+      "replay_equivalence": {
+        "global_enrichment": "exact_canonical_value",
+        "window_enrichment": "exact_canonical_value",
+        "enrichment_intervals": "exact_canonical_value",
+        "leading_edge": "exact_canonical_value",
+        "ranked_features": "exact_canonical_value",
+        "fit_summary": "exact_canonical_value"
+      },
+      "retained_parameters": [
+        {
+          "name": "namespace",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "namespace"
+        },
+        {
+          "name": "pseudotime_key",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "pseudotime_key"
+        },
+        {
+          "name": "analysis_scope",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "analysis_scope"
+        },
+        {
+          "name": "pseudotime_direction",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "pseudotime_direction"
+        },
+        {
+          "name": "global_rank_method",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "global_rank_method"
+        },
+        {
+          "name": "early_fraction",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "early_fraction"
+        },
+        {
+          "name": "late_fraction",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "late_fraction"
+        },
+        {
+          "name": "window_width_fraction",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "window_width_fraction"
+        },
+        {
+          "name": "window_step_fraction",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "window_step_fraction"
+        },
+        {
+          "name": "min_cells_per_window",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "min_cells_per_window"
+        },
+        {
+          "name": "min_samples_per_window",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "min_samples_per_window"
+        },
+        {
+          "name": "permutation_mode",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "permutation_mode"
+        },
+        {
+          "name": "n_permutations",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "n_permutations"
+        },
+        {
+          "name": "seed",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "seed"
+        },
+        {
+          "name": "covariate_adjustment",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "covariate_adjustment"
+        },
+        {
+          "name": "covariate_spline_df",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "covariate_spline_df"
+        },
+        {
+          "name": "min_set_size",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "min_set_size"
+        },
+        {
+          "name": "max_set_size",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "max_set_size"
+        },
+        {
+          "name": "score_type",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "score_type"
+        },
+        {
+          "name": "gsea_param",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "gsea_param"
+        },
+        {
+          "name": "sample_size",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "sample_size"
+        },
+        {
+          "name": "n_perm_simple",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "n_perm_simple"
+        },
+        {
+          "name": "eps",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "eps"
+        },
+        {
+          "name": "p_adjust_method",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "p_adjust_method"
+        },
+        {
+          "name": "global_q_cutoff",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "global_q_cutoff"
+        },
+        {
+          "name": "local_q_cutoff",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "local_q_cutoff"
+        },
+        {
+          "name": "merge_gap_fraction",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "merge_gap_fraction"
+        },
+        {
+          "name": "consensus_leading_edge_fraction",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "consensus_leading_edge_fraction"
+        },
+        {
+          "name": "chunk_size",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "chunk_size"
+        },
+        {
+          "name": "matrix_id",
+          "source": "output_first_row",
+          "output": "fit_summary",
+          "field": "matrix_id"
+        },
+        {
+          "name": "fgsea_version",
+          "source": "output_first_row",
+          "output": "fit_summary",
+          "field": "fgsea_version"
+        },
+        {
+          "name": "feature_universe_size",
+          "source": "output_first_row",
+          "output": "fit_summary",
+          "field": "feature_universe_size"
+        }
+      ],
+      "public_interface": {
+        "intent": [
+          "trajectory",
+          "enrichment",
+          "gsea",
+          "permutation"
+        ],
+        "inputs": [
+          {
+            "name": "matrix",
+            "label": "matrix",
+            "help": "Typed matrix input."
+          },
+          {
+            "name": "pseudotime",
+            "label": "pseudotime",
+            "help": "Typed pseudotime input."
+          },
+          {
+            "name": "membership",
+            "label": "membership",
+            "help": "Typed membership input."
+          },
+          {
+            "name": "sample_id",
+            "label": "sample_id",
+            "help": "Typed sample_id input."
+          },
+          {
+            "name": "covariates",
+            "label": "covariates",
+            "help": "Typed covariates input."
+          }
+        ],
+        "parameters": [
+          {
+            "name": "namespace",
+            "type": "string",
+            "help": "Trajectory GSEA parameter namespace"
+          },
+          {
+            "name": "pseudotime_key",
+            "type": "string",
+            "help": "Trajectory GSEA parameter pseudotime_key"
+          },
+          {
+            "name": "analysis_scope",
+            "type": "choice",
+            "help": "Trajectory GSEA parameter analysis_scope"
+          },
+          {
+            "name": "pseudotime_direction",
+            "type": "choice",
+            "help": "Trajectory GSEA parameter pseudotime_direction"
+          },
+          {
+            "name": "global_rank_method",
+            "type": "choice",
+            "help": "Trajectory GSEA parameter global_rank_method"
+          },
+          {
+            "name": "early_fraction",
+            "type": "dbl",
+            "help": "Trajectory GSEA parameter early_fraction"
+          },
+          {
+            "name": "late_fraction",
+            "type": "dbl",
+            "help": "Trajectory GSEA parameter late_fraction"
+          },
+          {
+            "name": "window_width_fraction",
+            "type": "dbl",
+            "help": "Trajectory GSEA parameter window_width_fraction"
+          },
+          {
+            "name": "window_step_fraction",
+            "type": "dbl",
+            "help": "Trajectory GSEA parameter window_step_fraction"
+          },
+          {
+            "name": "min_cells_per_window",
+            "type": "int",
+            "help": "Trajectory GSEA parameter min_cells_per_window"
+          },
+          {
+            "name": "min_samples_per_window",
+            "type": "int",
+            "help": "Trajectory GSEA parameter min_samples_per_window"
+          },
+          {
+            "name": "permutation_mode",
+            "type": "choice",
+            "help": "Trajectory GSEA parameter permutation_mode"
+          },
+          {
+            "name": "n_permutations",
+            "type": "int",
+            "help": "Trajectory GSEA parameter n_permutations"
+          },
+          {
+            "name": "seed",
+            "type": "int",
+            "help": "Trajectory GSEA parameter seed"
+          },
+          {
+            "name": "covariate_adjustment",
+            "type": "choice",
+            "help": "Trajectory GSEA parameter covariate_adjustment"
+          },
+          {
+            "name": "covariate_spline_df",
+            "type": "int",
+            "help": "Trajectory GSEA parameter covariate_spline_df"
+          },
+          {
+            "name": "min_set_size",
+            "type": "int",
+            "help": "Trajectory GSEA parameter min_set_size"
+          },
+          {
+            "name": "max_set_size",
+            "type": "int",
+            "help": "Trajectory GSEA parameter max_set_size"
+          },
+          {
+            "name": "score_type",
+            "type": "choice",
+            "help": "Trajectory GSEA parameter score_type"
+          },
+          {
+            "name": "gsea_param",
+            "type": "dbl",
+            "help": "Trajectory GSEA parameter gsea_param"
+          },
+          {
+            "name": "sample_size",
+            "type": "int",
+            "help": "Trajectory GSEA parameter sample_size"
+          },
+          {
+            "name": "n_perm_simple",
+            "type": "int",
+            "help": "Trajectory GSEA parameter n_perm_simple"
+          },
+          {
+            "name": "eps",
+            "type": "dbl",
+            "help": "Trajectory GSEA parameter eps"
+          },
+          {
+            "name": "p_adjust_method",
+            "type": "choice",
+            "help": "Trajectory GSEA parameter p_adjust_method"
+          },
+          {
+            "name": "global_q_cutoff",
+            "type": "dbl",
+            "help": "Trajectory GSEA parameter global_q_cutoff"
+          },
+          {
+            "name": "local_q_cutoff",
+            "type": "dbl",
+            "help": "Trajectory GSEA parameter local_q_cutoff"
+          },
+          {
+            "name": "merge_gap_fraction",
+            "type": "dbl",
+            "help": "Trajectory GSEA parameter merge_gap_fraction"
+          },
+          {
+            "name": "consensus_leading_edge_fraction",
+            "type": "dbl",
+            "help": "Trajectory GSEA parameter consensus_leading_edge_fraction"
+          },
+          {
+            "name": "chunk_size",
+            "type": "int",
+            "help": "Trajectory GSEA parameter chunk_size"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "global_enrichment",
+            "description": "Declared global_enrichment terminal."
+          },
+          {
+            "name": "window_enrichment",
+            "description": "Declared window_enrichment terminal."
+          },
+          {
+            "name": "enrichment_intervals",
+            "description": "Declared enrichment_intervals terminal."
+          },
+          {
+            "name": "leading_edge",
+            "description": "Declared leading_edge terminal."
+          },
+          {
+            "name": "ranked_features",
+            "description": "Declared ranked_features terminal."
+          },
+          {
+            "name": "fit_summary",
+            "description": "Declared fit_summary terminal."
           }
         ]
       }
