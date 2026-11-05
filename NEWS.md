@@ -1,3 +1,14 @@
+# scwbTrajectory 0.1.7
+
+- Adds `trajectory_geneset_scores` as the canonical reusable gene-set scoring
+  operation. It performs the same per-gene partial depth adjustment and
+  standardization as gene-set dynamics without running a dynamics analysis.
+- The resulting `adjusted_scores` can be consumed directly by generic signal
+  dynamics or signal intervals. Adjustment identities remain attached so
+  intervals do not remove depth twice.
+- Refactors both established gene-set dynamics operations to use the same
+  internal scoring kernel while retaining their public contracts.
+
 # scwbTrajectory 0.1.6
 
 - Adds partial depth adjustment to both gene-set dynamics interfaces, enabled

@@ -35,6 +35,8 @@ register_operation_pack <- function() {
         .run_trajectory_vector_smooth_model,
       `scwbtrajectory::trajectory_signal_dynamics` =
         .run_trajectory_signal_dynamics_model,
+      `scwbtrajectory::trajectory_geneset_scores` =
+        .run_trajectory_geneset_scores,
       `scwbtrajectory::trajectory_geneset_dynamics_explicit` =
         .run_trajectory_geneset_dynamics_explicit,
       `scwbtrajectory::trajectory_signal_dynamics_explicit` =

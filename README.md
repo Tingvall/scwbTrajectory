@@ -26,13 +26,16 @@ explicitly.
 
 The signal operations answer distinct questions. `trajectory_signal_dynamics`
 describes whole-trajectory curves for precomputed cell-level signals.
-`trajectory_geneset_dynamics` and its explicit-pseudotime counterpart adjust
-each gene for `nCount_RNA` by default using an authenticated `depth` cell
-vector. They jointly fit a natural pseudotime spline and centered
-`log1p(depth)`, subtract only the fitted depth component, standardize each
+`trajectory_geneset_scores` is the canonical reusable score-construction
+operation. It adjusts each gene for `nCount_RNA` by default using an
+authenticated `depth` cell vector, jointly fitting a natural pseudotime spline
+and centered `log1p(depth)`, subtracting only the fitted depth component, standardizing each
 adjusted gene, and average genes within each set. Cell-level scores and
 gene-level diagnostics are retained as `adjusted_scores` and
-`adjustment_diagnostics`.
+`adjustment_diagnostics`. Those scores can be sent independently to
+`trajectory_signal_dynamics_explicit`, `trajectory_signal_intervals`, or both.
+The established `trajectory_geneset_dynamics` operations retain their combined
+scoring-and-dynamics contracts and use the same scoring kernel.
 `trajectory_signal_intervals` tests whether a signal has globally qualified
 trajectory dynamics, performs local elevated and reduced tests, and merges
 supported adjacent local tests into signal intervals. Its terminals are
@@ -84,7 +87,7 @@ directions lets a strong up population carry a lone down breakpoint over
 run and names the feature and its count of missing values.
 
 The accepted pack that the standard profile qualified has 25 operations at version
-0.1.1. This branch carries 30 operations at 0.1.6 and is experimental; it is not
+0.1.1. This branch carries 31 operations at 0.1.7 and is experimental; it is not
 what that profile qualifies. Model-backed
 `trajectory_geneset_dynamics` and `trajectory_signal_dynamics` require `model`.
 Their separate `_explicit` operations require typed pseudotime and

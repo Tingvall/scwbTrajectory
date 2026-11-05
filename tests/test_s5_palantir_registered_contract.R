@@ -17,7 +17,7 @@ test_trajectory_palantir_registered_manifest_contract <- function() {
     simplifyVector = FALSE)
   names <- vapply(manifest$operations, `[[`, character(1),
     "qualified_name")
-  stopifnot(length(names) == 30L,
+  stopifnot(length(names) == 31L,
     identical(sum(names == proto$fit), 1L),
     identical(sum(names == proto$project), 1L),
     !any(c("palantir_fit", "palantir_project") %in%
@@ -47,7 +47,7 @@ test_trajectory_palantir_registered_manifest_contract <- function() {
   closure <- sort(c("pseudotime", "branch_membership",
     "branch_summary", "entropy", "model"))
   stopifnot(identical(inherited_identity,
-      "26eb1b7e19051d308c1bd972f250d3c76294a46985c5cb995934c7155d540ece"),
+      "5e4efa2fe46adca564a1a6aa95767e3cee42c38cb4735b6421efef5da28e2b46"),
     identical(definition_identity(
       "scworkbench.operation_pack.definition.v3", fit)$sha256,
       "d2da4a19f9ff497c8894231bb0eae7d4b9dfc6e4266590eb0a6e7af3a92d81d5"),

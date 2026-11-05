@@ -201,50 +201,24 @@
     n_bins_used <- bb$n_bins
     n_sets_with_rows <- 0L
     n_curve_rows <- 0L
-    adjusted_matrix <- NULL
-    if (adjust_depth) {
-      adjusted <- .trajectory_depth_adjust_matrix(
-        matrix[, cells_lin, drop = FALSE], pseudotime = pt,
-        depth = depth[cells_lin], spline_df = 4L, standardize = TRUE,
-        label = paste0("trajectory_geneset_dynamics lineage '", lin, "'"))
-      adjusted_matrix <- adjusted$values
-      diagnostics <- adjusted$diagnostics
-      diagnostics$lineage_id <- as.character(lin)
-      diagnostics$depth_field <- depth_field
-      diagnostics$adjustment_method <-
-        "expression~ns(pseudotime,df=4)+centered_log1p(depth);remove_depth_component;zscore"
-      diagnostics <- diagnostics[, c("lineage_id", "feature_id",
-        "depth_field", "status", "adjustment_method", "depth_coefficient",
-        "depth_partial_r_squared", "raw_mean", "raw_sd", "adjusted_mean",
-        "adjusted_sd", "standardized", "n_cells", "design_rank",
-        "design_columns", "spline_df"), drop = FALSE]
+    scored <- .trajectory_geneset_score_lineage(matrix, set_members,
+      cells_lin, pt, depth, adjust_depth, depth_field, score_method,
+      lin, label = "trajectory_geneset_dynamics")
+    adjusted_matrix <- scored$matrix
+    sci <- sci + 1L
+    score_rows[[sci]] <- scored$score_table
+    if (nrow(scored$diagnostics)) {
       ai <- ai + 1L
-      adjustment_rows[[ai]] <- diagnostics
-    }
-    rank_bg <- NULL
-    if (identical(score_method, "rank_mean")) {
-      bg_feats <- unique(unlist(set_members, use.names = FALSE))
-      bg_feats <- bg_feats[nzchar(bg_feats)]
-      rank_bg <- matrix[bg_feats, cells_lin, drop = FALSE]
+      adjustment_rows[[ai]] <- scored$diagnostics
     }
 
     for (sn in names(set_members)) {
       feats <- set_members[[sn]]
       raw_m <- as.matrix(matrix[feats, cells_lin, drop = FALSE])
-      m <- if (adjust_depth) adjusted_matrix[feats, , drop = FALSE] else raw_m
-      n_features_detected <- as.integer(sum(rowSums(raw_m > 0,
-        na.rm = TRUE) > 0))
-      detected_fraction <- if (nrow(m) > 0L) n_features_detected / nrow(m) else 0
-      sig <- if (adjust_depth) colMeans(m) else
-        .trajectory_s2_score_values(m, score_method = score_method,
-          rank_bg = rank_bg)
-      sci <- sci + 1L
-      score_rows[[sci]] <- data.frame(
-        key = rep(paste(lin, sn, sep = "::"), length(cells_lin)),
-        cell_id = cells_lin, value = as.numeric(sig),
-        lineage_id = rep(as.character(lin), length(cells_lin)),
-        feature_set = rep(as.character(sn), length(cells_lin)),
-        stringsAsFactors = FALSE)
+      m <- adjusted_matrix[feats, , drop = FALSE]
+      n_features_detected <- scored$n_features_detected[[sn]]
+      detected_fraction <- scored$detected_fraction[[sn]]
+      sig <- scored$scores[[sn]]
 
       agg <- .trajectory_s2_curve(
         entity_id = sn,
@@ -552,15 +526,9 @@
   rownames(fit_summary) <- NULL
   score_table <- do.call(rbind, score_rows[seq_len(sci)])
   rownames(score_table) <- NULL
-  adjustment_table <- if (ai == 0L) data.frame(
-    lineage_id = character(), feature_id = character(),
-    depth_field = character(), status = character(),
-    adjustment_method = character(), depth_coefficient = numeric(),
-    depth_partial_r_squared = numeric(), raw_mean = numeric(),
-    raw_sd = numeric(), adjusted_mean = numeric(), adjusted_sd = numeric(),
-    standardized = logical(), n_cells = integer(), design_rank = integer(),
-    design_columns = integer(), spline_df = integer(),
-    stringsAsFactors = FALSE) else do.call(rbind, adjustment_rows[seq_len(ai)])
+  adjustment_table <- if (ai == 0L)
+    .trajectory_geneset_empty_adjustment_table() else
+      do.call(rbind, adjustment_rows[seq_len(ai)])
   rownames(adjustment_table) <- NULL
 
   list(

@@ -32,6 +32,58 @@
   id
 }
 
+.run_trajectory_geneset_scores <- function(readers, writers, params,
+                                            context) {
+  pseudotime <- readers$pseudotime()
+  membership <- .trajectory_regions_optional_reader(readers, "membership")
+  registry <- readers$feature_sets()
+  all_features <- as.character(
+    context$typed_slice_reads$matrix_chunks$features)
+  .trajectory_assert(length(all_features) > 0L,
+    "trajectory_geneset_scores: authenticated matrix feature axis is empty.")
+  .trajectory_assert(identical(as.character(unlist(
+      registry$feature_universe, use.names = FALSE)), all_features),
+    "trajectory_geneset_scores: registry and matrix feature axes differ.")
+  namespace <- as.character(params$namespace %||% "")[1L]
+  .trajectory_assert(nzchar(namespace),
+    "trajectory_geneset_scores: namespace is required.")
+  min_set_size <- as.integer(params$min_set_size %||% 5L)
+  max_set_size <- as.integer(params$max_set_size %||% 5000L)
+  .trajectory_assert(length(min_set_size) == 1L &&
+      is.finite(min_set_size) && min_set_size >= 1L &&
+      length(max_set_size) == 1L && is.finite(max_set_size) &&
+      max_set_size >= min_set_size,
+    "trajectory_geneset_scores: invalid feature-set size bounds.")
+  selected <- .trajectory_s2_registry_sets(registry, namespace,
+    params$feature_sets %||% NULL, all_features, min_set_size,
+    max_set_size)
+  features <- unique(unlist(selected$members, use.names = FALSE))
+  cells <- as.character(context$effective_cells)
+  depth_input <- .trajectory_regions_optional_reader(readers, "depth")
+  depth <- if (isTRUE(params$adjust_depth %||% TRUE)) {
+    .trajectory_assert(!is.null(depth_input), paste0(
+      "trajectory_geneset_scores: adjust_depth=TRUE requires an ",
+      "authenticated depth input."))
+    .trajectory_depth_vector(depth_input, cells,
+      label = "trajectory_geneset_scores")
+  } else NULL
+  matrix <- as.matrix(.trajectory_chunked_matrix(readers$matrix_chunks,
+    all_features, features, cells, cells,
+    params$chunk_size %||% 128L))
+  result <- .trajectory_s2_call(.trajectory_s2_geneset_scores,
+    list(matrix = matrix, registry = registry, effective_cells = cells,
+      matrix_id = as.character(registry$matrix_id)[1L], depth = depth,
+      pseudotime = pseudotime, membership = membership,
+      depth_artifact_id = .trajectory_s2_source_artifact_id(readers,
+        "depth_ancestry"),
+      pseudotime_artifact_id = .trajectory_s2_source_artifact_id(readers,
+        "pseudotime_ancestry"),
+      membership_artifact_id = .trajectory_s2_source_artifact_id(readers,
+        "membership_ancestry")), params, extra_allowed = "chunk_size")
+  .trajectory_s2_publish(result, writers, c("adjusted_scores",
+    "adjustment_diagnostics", "fit_summary"))
+}
+
 .run_trajectory_geneset_dynamics_explicit <- function(readers, writers,
                                                       params, context) {
   pseudotime <- readers$pseudotime()

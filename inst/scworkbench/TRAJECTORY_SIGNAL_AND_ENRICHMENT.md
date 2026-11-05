@@ -18,6 +18,17 @@ to `nCount_RNA`. The operation fits `signal ~ ns(pseudotime, df=4) +
 centered_log1p(depth)` and removes only the depth term. Signals already marked
 as depth-adjusted with the same field are not adjusted again.
 
+## Reusable gene-set scores
+
+`scwbtrajectory::trajectory_geneset_scores` performs gene-level partial depth
+adjustment and score construction without requiring a whole-trajectory
+dynamics analysis. It publishes `adjusted_scores`, `adjustment_diagnostics`,
+and `fit_summary`. The score family retains its matrix, pseudotime, membership,
+and depth identities and can be supplied independently to
+`trajectory_signal_dynamics_explicit`, `trajectory_signal_intervals`, or both.
+Intervals recognize the adjustment metadata and do not adjust these scores a
+second time.
+
 `scwbtrajectory::trajectory_preranked_gsea` ranks genes from the authenticated
 matrix feature universe. Its global scope produces one full-trajectory ranking.
 Its local scope produces one complete ranking for each supported window on a

@@ -5,7 +5,7 @@
   "namespace": "scwbtrajectory",
   "package": {
     "name": "scwbTrajectory",
-    "version": "0.1.6"
+    "version": "0.1.7"
   },
   "backend": "R",
   "compatibility": {
@@ -7861,6 +7861,436 @@
           {
             "name": "run_summary",
             "description": "Declared run_summary terminal."
+          }
+        ]
+      }
+    },
+    {
+      "name": "trajectory_geneset_scores",
+      "qualified_name": "scwbtrajectory::trajectory_geneset_scores",
+      "title": "Trajectory Gene-set Scores",
+      "description": "Construct reusable cell-level gene-set scores after optional per-gene partial depth adjustment that preserves fitted pseudotime structure.",
+      "runner": ".run_trajectory_geneset_scores",
+      "inputs": [
+        {
+          "name": "matrix",
+          "kind": "matrix",
+          "required": true,
+          "alignment": "cell_and_feature_ordered"
+        },
+        {
+          "name": "pseudotime",
+          "kind": "cell_vector_family",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "membership",
+          "kind": "cell_vector",
+          "required": false,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "depth",
+          "kind": "cell_vector",
+          "required": false,
+          "alignment": "cell_ordered"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "namespace": {
+            "type": "string",
+            "minLength": 1
+          },
+          "pseudotime_key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "feature_sets": {
+            "type": ["array", "null"],
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "score_method": {
+            "type": "string",
+            "default": "mean",
+            "enum": [
+              "mean",
+              "sum",
+              "rank_mean"
+            ]
+          },
+          "adjust_depth": {
+            "type": "boolean",
+            "default": true
+          },
+          "depth_field": {
+            "type": "string",
+            "default": "nCount_RNA"
+          },
+          "min_set_size": {
+            "type": "integer",
+            "default": 5,
+            "minimum": 1,
+            "maximum": 10000000
+          },
+          "max_set_size": {
+            "type": "integer",
+            "default": 5000,
+            "minimum": 1,
+            "maximum": 10000000
+          },
+          "pseudotime_direction": {
+            "type": "string",
+            "default": "as_is",
+            "enum": [
+              "as_is",
+              "invert"
+            ]
+          },
+          "chunk_size": {
+            "type": "integer",
+            "default": 128,
+            "minimum": 1,
+            "maximum": 100000
+          }
+        },
+        "required": [
+          "namespace",
+          "pseudotime_key"
+        ],
+        "additionalProperties": false
+      },
+      "registry_reads": [
+        {
+          "name": "feature_sets",
+          "category": "authenticated_core_registry_snapshot",
+          "kind": "feature_set_registry",
+          "reader": "read_feature_set_registry",
+          "matrix_input": "matrix",
+          "no_selector_policy": "all_namespaces",
+          "empty_match_policy": "allow"
+        }
+      ],
+      "provenance_reads": [
+        {
+          "name": "pseudotime_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "pseudotime",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        },
+        {
+          "name": "membership_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "membership",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        },
+        {
+          "name": "depth_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "depth",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        }
+      ],
+      "typed_slice_reads": [
+        {
+          "name": "matrix_chunks",
+          "input": "matrix",
+          "reader": "read_typed_slices",
+          "kind": "matrix",
+          "supported_axes": [
+            "features"
+          ],
+          "chunk_axis": "features",
+          "chunk_size_parameter": "chunk_size",
+          "call_discipline": "ordered_partition_exactly_once",
+          "empty_selection_policy": "reject",
+          "duplicate_policy": "reject",
+          "selection": {
+            "cells": {
+              "policy": "effective_input_axis_v1"
+            },
+            "features": {
+              "policy": "effective_input_axis_v1"
+            }
+          }
+        }
+      ],
+      "dimension_policies": [
+        {
+          "output": "adjustment_diagnostics",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "fit_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "adjusted_scores",
+          "category": "terminal_artifact",
+          "kind": "cell_vector_family",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "adjusted_scores_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_scores",
+          "value_kind": "continuous"
+        },
+        {
+          "name": "adjustment_diagnostics",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "adjustment_diagnostics_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_scores",
+          "table_type": "trajectory_geneset_depth_adjustment"
+        },
+        {
+          "name": "fit_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "fit_summary_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_scores",
+          "table_type": "trajectory_geneset_scores_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.0,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_cell_vector_family"
+        }
+      ],
+      "promotion_closure": {
+        "adjusted_scores": [
+          "adjusted_scores",
+          "adjustment_diagnostics",
+          "fit_summary"
+        ],
+        "adjustment_diagnostics": [
+          "adjusted_scores",
+          "adjustment_diagnostics",
+          "fit_summary"
+        ],
+        "fit_summary": [
+          "adjusted_scores",
+          "adjustment_diagnostics",
+          "fit_summary"
+        ]
+      },
+      "replay_equivalence": {
+        "adjusted_scores": "exact_canonical_value",
+        "adjustment_diagnostics": "exact_canonical_value",
+        "fit_summary": "exact_canonical_value"
+      },
+      "retained_parameters": [
+        {
+          "name": "namespace",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "namespace"
+        },
+        {
+          "name": "pseudotime_key",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "pseudotime_key"
+        },
+        {
+          "name": "feature_sets",
+          "source": "effective_parameter_value",
+          "required": false,
+          "parameter": "feature_sets"
+        },
+        {
+          "name": "score_method",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "score_method"
+        },
+        {
+          "name": "adjust_depth",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "adjust_depth"
+        },
+        {
+          "name": "depth_field",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "depth_field"
+        },
+        {
+          "name": "min_set_size",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "min_set_size"
+        },
+        {
+          "name": "max_set_size",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "max_set_size"
+        },
+        {
+          "name": "pseudotime_direction",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "pseudotime_direction"
+        },
+        {
+          "name": "chunk_size",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "chunk_size"
+        },
+        {
+          "name": "matrix_id",
+          "source": "output_meta",
+          "output": "adjusted_scores",
+          "field": "matrix_id"
+        },
+        {
+          "name": "pseudotime_artifact_id",
+          "source": "output_meta",
+          "output": "adjusted_scores",
+          "field": "pseudotime_artifact_id"
+        },
+        {
+          "name": "depth_artifact_id",
+          "source": "output_meta",
+          "output": "adjusted_scores",
+          "field": "depth_artifact_id"
+        },
+        {
+          "name": "n_cells_used",
+          "source": "output_first_row",
+          "output": "fit_summary",
+          "field": "n_cells_used"
+        },
+        {
+          "name": "n_feature_sets_scored",
+          "source": "output_first_row",
+          "output": "fit_summary",
+          "field": "n_feature_sets_scored"
+        }
+      ],
+      "public_interface": {
+        "intent": [
+          "trajectory",
+          "gene_set",
+          "scoring"
+        ],
+        "inputs": [
+          {
+            "name": "matrix",
+            "label": "matrix",
+            "help": "Typed matrix input."
+          },
+          {
+            "name": "pseudotime",
+            "label": "pseudotime",
+            "help": "Typed pseudotime input."
+          },
+          {
+            "name": "membership",
+            "label": "membership",
+            "help": "Typed membership input."
+          },
+          {
+            "name": "depth",
+            "label": "depth",
+            "help": "Typed depth input."
+          }
+        ],
+        "parameters": [
+          {
+            "name": "namespace",
+            "type": "string",
+            "help": "Feature-set registry namespace."
+          },
+          {
+            "name": "pseudotime_key",
+            "type": "string",
+            "help": "Selected pseudotime lineage key."
+          },
+          {
+            "name": "feature_sets",
+            "type": "string_vec",
+            "help": "Optional feature-set names."
+          },
+          {
+            "name": "score_method",
+            "type": "choice",
+            "help": "Mean, sum, or rank-mean scoring."
+          },
+          {
+            "name": "adjust_depth",
+            "type": "bool",
+            "help": "Apply per-gene partial depth adjustment."
+          },
+          {
+            "name": "depth_field",
+            "type": "string",
+            "help": "Depth identity; defaults to nCount_RNA."
+          },
+          {
+            "name": "min_set_size",
+            "type": "int",
+            "help": "Minimum retained feature-set size."
+          },
+          {
+            "name": "max_set_size",
+            "type": "int",
+            "help": "Maximum retained feature-set size."
+          },
+          {
+            "name": "pseudotime_direction",
+            "type": "choice",
+            "help": "As-is or inverted pseudotime."
+          },
+          {
+            "name": "chunk_size",
+            "type": "int",
+            "help": "Authenticated feature chunk size."
+          }
+        ],
+        "outputs": [
+          {
+            "name": "adjusted_scores",
+            "description": "Declared adjusted_scores terminal."
+          },
+          {
+            "name": "adjustment_diagnostics",
+            "description": "Declared adjustment_diagnostics terminal."
+          },
+          {
+            "name": "fit_summary",
+            "description": "Declared fit_summary terminal."
           }
         ]
       }

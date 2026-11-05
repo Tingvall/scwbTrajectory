@@ -312,6 +312,82 @@ for (qualified in c("scwbtrajectory::trajectory_geneset_dynamics",
   manifest$operations[[index]] <- upgrade_geneset_depth(
     manifest$operations[[index]])
 }
+
+geneset_score_params <- list(
+  namespace = list(type = "string", minLength = 1L),
+  pseudotime_key = list(type = "string", minLength = 1L),
+  feature_sets = strings(),
+  score_method = string("mean", c("mean", "sum", "rank_mean"), FALSE),
+  adjust_depth = boolean(TRUE),
+  depth_field = string("nCount_RNA", nullable = FALSE),
+  min_set_size = integer(5L, 1L, 10000000L, FALSE),
+  max_set_size = integer(5000L, 1L, 10000000L, FALSE),
+  pseudotime_direction = string("as_is", c("as_is", "invert"), FALSE),
+  chunk_size = integer(128L, 1L, 100000L, FALSE))
+geneset_score_outputs <- c("adjusted_scores", "adjustment_diagnostics",
+  "fit_summary")
+geneset_score_provenance <- lapply(c("pseudotime", "membership", "depth"),
+  function(name) list(name = paste0(name, "_ancestry"),
+    category = "authenticated_core_provenance_snapshot",
+    kind = "artifact_ancestry", reader = "read_artifact_ancestry",
+    input = name, activation = "when_resolved_from_artifact",
+    lifecycle_policy = "require_current"))
+geneset_scores <- list(
+  name = "trajectory_geneset_scores",
+  qualified_name = "scwbtrajectory::trajectory_geneset_scores",
+  title = "Trajectory Gene-set Scores",
+  description = paste(
+    "Construct reusable cell-level gene-set scores after optional per-gene",
+    "partial depth adjustment that preserves fitted pseudotime structure."),
+  runner = ".run_trajectory_geneset_scores",
+  inputs = list(input("matrix", "matrix"),
+    input("pseudotime", "cell_vector_family"),
+    input("membership", "cell_vector", FALSE),
+    input("depth", "cell_vector", FALSE)),
+  params_schema = list(type = "object", properties = geneset_score_params,
+    required = list("namespace", "pseudotime_key"),
+    additionalProperties = FALSE),
+  registry_reads = list(feature_registry),
+  provenance_reads = geneset_score_provenance,
+  typed_slice_reads = list(matrix_read("chunk_size")),
+  dimension_policies = list(table_policy("adjustment_diagnostics"),
+    table_policy("fit_summary")),
+  outputs = list(
+    output("adjusted_scores", "cell_vector_family",
+      "trajectory_geneset_scores"),
+    output("adjustment_diagnostics", "obs_table",
+      "trajectory_geneset_scores", "trajectory_geneset_depth_adjustment"),
+    output("fit_summary", "obs_table", "trajectory_geneset_scores",
+      "trajectory_geneset_scores_summary")),
+  dependencies = list(dependency("scworkbench",
+    "wb_prim_cell_vector_family")),
+  promotion_closure = closure(geneset_score_outputs),
+  replay_equivalence = equivalence(geneset_score_outputs),
+  retained_parameters = c(lapply(names(geneset_score_params), function(name)
+    retained_parameter(name, "effective_parameter_value",
+      required = name %in% c("namespace", "pseudotime_key") ||
+        !is.null(geneset_score_params[[name]]$default))), list(
+    retained_meta("matrix_id", "adjusted_scores", "matrix_id"),
+    retained_meta("pseudotime_artifact_id", "adjusted_scores",
+      "pseudotime_artifact_id"),
+    retained_meta("depth_artifact_id", "adjusted_scores",
+      "depth_artifact_id"),
+    retained_row("n_cells_used", "fit_summary", "n_cells_used"),
+    retained_row("n_feature_sets_scored", "fit_summary",
+      "n_feature_sets_scored"))),
+  public_interface = interface(c("trajectory", "gene_set", "scoring"),
+    c("matrix", "pseudotime", "membership", "depth"), list(
+      c("namespace", "string", "Feature-set registry namespace."),
+      c("pseudotime_key", "string", "Selected pseudotime lineage key."),
+      c("feature_sets", "string_vec", "Optional feature-set names."),
+      c("score_method", "choice", "Mean, sum, or rank-mean scoring."),
+      c("adjust_depth", "bool", "Apply per-gene partial depth adjustment."),
+      c("depth_field", "string", "Depth identity; defaults to nCount_RNA."),
+      c("min_set_size", "int", "Minimum retained feature-set size."),
+      c("max_set_size", "int", "Maximum retained feature-set size."),
+      c("pseudotime_direction", "choice", "As-is or inverted pseudotime."),
+      c("chunk_size", "int", "Authenticated feature chunk size.")),
+    geneset_score_outputs))
 monocle3_operations <- jsonlite::read_json(file.path(root, "tools",
   "accepted_s5_monocle3_operations.json"), simplifyVector = FALSE)
 definition_identity <- getFromNamespace(".wb_operation_pack_v3_id",
@@ -326,10 +402,10 @@ stopifnot(identical(vapply(monocle3_operations, `[[`, character(1),
         "c6fd76e839d7d473b933d9edc7ada746998c73b5ad9750d1d82ce34916d8576e")))
 manifest$operations <- c(manifest$operations, s3_operations,
   monocle3_operations, palantir_operations, changepoint_operations,
-  trajectory_analysis_operations)
-# Package and manifest versions move together. Version 0.1.6 adds partial
-# depth adjustment to gene-set scoring, intervals, and optional GSEA.
-manifest$package$version <- "0.1.6"
+  list(geneset_scores), trajectory_analysis_operations)
+# Package and manifest versions move together. Version 0.1.7 separates
+# reusable gene-set score construction from optional downstream analyses.
+manifest$package$version <- "0.1.7"
 
 path <- file.path(root, "inst", "scworkbench", "operation-pack.json")
 dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
