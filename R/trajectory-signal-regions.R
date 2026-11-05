@@ -234,6 +234,7 @@
 .trajectory_signal_regions <- function(effective_cells, signal, pseudotime,
                                       pseudotime_key, covariates = NULL,
                                       sample_id = NULL, membership = NULL,
+                                      depth = NULL,
                                       signal_keys = NULL,
                                       covariate_keys = NULL,
                                       pseudotime_direction = "as_is",
@@ -246,6 +247,8 @@
                                       seed = 1L,
                                       covariate_adjustment = "none",
                                       covariate_spline_df = 4L,
+                                      adjust_depth = TRUE,
+                                      depth_field = "nCount_RNA",
                                       permutation_mode = "auto",
                                       include_endpoint_extrema = TRUE,
                                       dynamic_q_cutoff = 0.05,
@@ -254,6 +257,7 @@
                                       signal_artifact_id = "",
                                       pseudotime_artifact_id = "",
                                       covariates_artifact_id = "",
+                                      depth_artifact_id = "",
                                       sample_id_artifact_id = "",
                                       membership_artifact_id = "") {
   pseudotime_key <- as.character(pseudotime_key %||% "")[1L]
@@ -264,6 +268,8 @@
   pseudotime_direction <- as.character(pseudotime_direction)[1L]
   summary_fun <- as.character(summary_fun)[1L]
   covariate_adjustment <- as.character(covariate_adjustment)[1L]
+  adjust_depth <- isTRUE(adjust_depth)
+  depth_field <- trimws(as.character(depth_field %||% "nCount_RNA")[1L])
   permutation_mode <- as.character(permutation_mode)[1L]
   .trajectory_assert(pseudotime_direction %in% c("as_is", "invert"),
     "trajectory_signal_regions: invalid pseudotime_direction.")
@@ -272,6 +278,8 @@
   .trajectory_assert(covariate_adjustment %in%
       c("none", "linear", "natural_spline"),
     "trajectory_signal_regions: invalid covariate_adjustment.")
+  .trajectory_assert(!is.na(depth_field) && nzchar(depth_field),
+    "trajectory_signal_regions: depth_field is required.")
   .trajectory_assert(permutation_mode %in%
       c("auto", "blocked", "unblocked"),
     "trajectory_signal_regions: invalid permutation_mode.")
@@ -313,6 +321,14 @@
     "trajectory_signal_regions: invalid merge_gap_fraction.")
 
   signal_table <- .trajectory_regions_continuous(signal, "signal")
+  already_depth_adjusted <- isTRUE(signal$meta$depth_adjusted)
+  if (adjust_depth && already_depth_adjusted) {
+    prior_field <- as.character(signal$meta$depth_field %||% "")[1L]
+    .trajectory_assert(!nzchar(prior_field) || identical(prior_field,
+        depth_field),
+      paste0("trajectory_signal_regions: signal was depth-adjusted using ",
+        "a different depth field."))
+  }
   pseudotime_table <- .trajectory_regions_continuous(pseudotime,
     "pseudotime")
   available_signal_keys <- unique(signal_table$key)
@@ -334,6 +350,14 @@
     member_cells <- member_cells[!is.na(member_value) &
       nzchar(member_value)]
     cells <- cells[cells %in% member_cells]
+  }
+  depth_values <- NULL
+  if (adjust_depth && !already_depth_adjusted) {
+    .trajectory_assert(!is.null(depth), paste0(
+      "trajectory_signal_regions: adjust_depth=TRUE requires an authenticated ",
+      "depth input unless the signal is already depth-adjusted."))
+    depth_values <- .trajectory_depth_vector(depth, effective_cells,
+      "trajectory_signal_regions")
   }
 
   pt_all <- pseudotime_table[pseudotime_table$key == pseudotime_key &
@@ -399,6 +423,8 @@
     time <- as.numeric(pt[shared])
     samples <- if (is.null(sample_values)) NULL else
       as.character(sample_values[shared])
+    signal_depth <- if (is.null(depth_values)) NULL else
+      as.numeric(depth_values[shared])
     covariate_matrix <- NULL
     if (!is.null(covariate_table)) {
       covariate_matrix <- vapply(covariate_keys, function(key) {
@@ -413,12 +439,15 @@
     complete <- is.finite(raw) & is.finite(time)
     if (!is.null(covariate_matrix)) complete <- complete &
       apply(covariate_matrix, 1L, function(x) all(is.finite(x)))
+    if (!is.null(signal_depth)) complete <- complete &
+      is.finite(signal_depth) & signal_depth >= 0
     if (!is.null(samples)) complete <- complete & !is.na(samples) &
       nzchar(samples)
     shared <- shared[complete]
     raw <- raw[complete]
     time <- time[complete]
     if (!is.null(samples)) samples <- samples[complete]
+    if (!is.null(signal_depth)) signal_depth <- signal_depth[complete]
     if (!is.null(covariate_matrix)) covariate_matrix <-
       covariate_matrix[complete, , drop = FALSE]
     effective_seed <- .trajectory_regions_seed(seed, pseudotime_key,
@@ -440,11 +469,26 @@
         n_covariates = length(covariate_keys %||% character()),
         design_rank = NA_integer_, design_columns = NA_integer_,
         model_r_squared = NA_real_, raw_max_abs_spearman = NA_real_,
-        adjusted_max_abs_spearman = NA_real_, stringsAsFactors = FALSE)
+        adjusted_max_abs_spearman = NA_real_,
+        depth_adjustment_status = if (!adjust_depth) "disabled" else
+          if (already_depth_adjusted) "already_adjusted" else "not_fitted",
+        depth_field = depth_field, depth_artifact_id = depth_artifact_id,
+        depth_coefficient = NA_real_, depth_partial_r_squared = NA_real_,
+        depth_spline_df = if (adjust_depth) 4L else NA_integer_,
+        stringsAsFactors = FALSE)
       next
     }
 
-    adjusted <- .trajectory_regions_adjust(raw, covariate_matrix,
+    depth_adjustment <- NULL
+    depth_adjusted <- raw
+    if (adjust_depth && !already_depth_adjusted) {
+      depth_adjustment <- .trajectory_depth_adjust_vector(raw, time,
+        signal_depth, spline_df = 4L,
+        label = paste0("trajectory_signal_regions signal '", signal_key,
+          "'"))
+      depth_adjusted <- depth_adjustment$values
+    }
+    adjusted <- .trajectory_regions_adjust(depth_adjusted, covariate_matrix,
       covariate_adjustment, spline_df)
     values <- adjusted$values
     windows <- .trajectory_regions_windows(time, samples,
@@ -461,6 +505,14 @@
       model_r_squared = adjusted$r_squared,
       raw_max_abs_spearman = adjusted$raw_abs_spearman,
       adjusted_max_abs_spearman = adjusted$adjusted_abs_spearman,
+      depth_adjustment_status = if (!adjust_depth) "disabled" else
+        if (already_depth_adjusted) "already_adjusted" else "applied",
+      depth_field = depth_field, depth_artifact_id = depth_artifact_id,
+      depth_coefficient = if (is.null(depth_adjustment)) NA_real_ else
+        depth_adjustment$diagnostics$depth_coefficient[[1L]],
+      depth_partial_r_squared = if (is.null(depth_adjustment)) NA_real_ else
+        depth_adjustment$diagnostics$depth_partial_r_squared[[1L]],
+      depth_spline_df = if (adjust_depth) 4L else NA_integer_,
       stringsAsFactors = FALSE)
     if (length(windows$index) < 2L) {
       dynamic_n <- dynamic_n + 1L
@@ -719,6 +771,7 @@
     signal_artifact_id = as.character(signal_artifact_id),
     pseudotime_artifact_id = as.character(pseudotime_artifact_id),
     covariates_artifact_id = as.character(covariates_artifact_id),
+    depth_artifact_id = as.character(depth_artifact_id),
     sample_id_artifact_id = as.character(sample_id_artifact_id),
     membership_artifact_id = as.character(membership_artifact_id),
     n_effective_cells = length(cells),
@@ -738,6 +791,11 @@
     sample_blocks_available = !is.null(sample_values),
     covariate_adjustment = covariate_adjustment,
     covariate_spline_df = spline_df,
+    adjust_depth = adjust_depth,
+    depth_field = depth_field,
+    depth_adjustment_status = if (!adjust_depth) "disabled" else
+      if (already_depth_adjusted) "already_adjusted" else "applied",
+    depth_spline_df = if (adjust_depth) 4L else NA_integer_,
     covariate_keys = paste(covariate_keys %||% character(),
       collapse = ";"), pseudotime_direction = pseudotime_direction,
     include_endpoint_extrema = include_endpoint_extrema,
@@ -777,6 +835,7 @@
     n_permutations = permutations, seed = seed,
     permutation_mode = actual_permutation_mode,
     covariate_adjustment = covariate_adjustment,
+    adjust_depth = adjust_depth, depth_field = depth_field,
     n_supported_regions = nrow(region_table)))
 }
 
@@ -787,6 +846,7 @@
       signal = readers$signal(), pseudotime = readers$pseudotime(),
       covariates = .trajectory_regions_optional_reader(readers,
         "covariates"),
+      depth = .trajectory_regions_optional_reader(readers, "depth"),
       sample_id = .trajectory_regions_optional_reader(readers,
         "sample_id"),
       membership = .trajectory_regions_optional_reader(readers,
@@ -797,6 +857,8 @@
         "pseudotime_ancestry"),
       covariates_artifact_id = .trajectory_s2_source_artifact_id(readers,
         "covariates_ancestry"),
+      depth_artifact_id = .trajectory_s2_source_artifact_id(readers,
+        "depth_ancestry"),
       sample_id_artifact_id = .trajectory_s2_source_artifact_id(readers,
         "sample_id_ancestry"),
       membership_artifact_id = .trajectory_s2_source_artifact_id(readers,

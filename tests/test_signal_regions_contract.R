@@ -22,6 +22,7 @@
     pseudotime = x$pseudotime, pseudotime_key = "lineage_1",
     window_width_fraction = 0.12, window_step_fraction = 0.02,
     min_cells_per_window = 6L, n_permutations = 99L, seed = 17L,
+    adjust_depth = FALSE,
     dynamic_q_cutoff = 0.1, region_q_cutoff = 0.2, ...)
 }
 
@@ -53,9 +54,10 @@ test_trajectory_signal_regions_manifest_contract <- function() {
       "scwbtrajectory::trajectory_signal_regions"),
     identical(operation$params_schema$required, list("pseudotime_key")),
     identical(vapply(operation$inputs, `[[`, character(1), "name"),
-      c("signal", "pseudotime", "covariates", "sample_id", "membership")),
+      c("signal", "pseudotime", "covariates", "depth", "sample_id",
+        "membership")),
     identical(vapply(operation$inputs, `[[`, logical(1), "required"),
-      c(TRUE, TRUE, FALSE, FALSE, FALSE)),
+      c(TRUE, TRUE, FALSE, FALSE, FALSE, FALSE)),
     identical(vapply(operation$outputs, `[[`, character(1), "name"),
       c("signal_table", "dynamic_tests", "candidate_regions", "regions",
         "adjustment_summary", "fit_summary")),
@@ -67,7 +69,10 @@ test_trajectory_signal_regions_manifest_contract <- function() {
       n_permutations$default), 1000L),
     identical(operation$params_schema$properties$permutation_mode$default,
       "auto"),
-    length(operation$provenance_reads) == 5L,
+    identical(operation$params_schema$properties$adjust_depth$default, TRUE),
+    identical(operation$params_schema$properties$depth_field$default,
+      "nCount_RNA"),
+    length(operation$provenance_reads) == 6L,
     all(vapply(operation$replay_equivalence, identical, logical(1),
       "exact_canonical_value")))
   TRUE
@@ -181,6 +186,7 @@ test_trajectory_signal_regions_registered_lifecycle_contract <- function() {
       window_width_fraction = 0.30, window_step_fraction = 0.05,
       min_cells_per_window = 3L, min_samples_per_window = 2L,
       n_permutations = 39L, seed = 29L,
+      adjust_depth = FALSE,
       dynamic_q_cutoff = 0.2, region_q_cutoff = 0.2,
       min_cells = 1L))
   outputs <- result$run$outputs
@@ -229,6 +235,7 @@ test_trajectory_signal_regions_rejection_no_state_contract <- function() {
     "scwbtrajectory::trajectory_signal_regions", inputs = c(list(
       signal = signal, pseudotime = pseudotime,
       pseudotime_key = "L1", window_width_fraction = 0.3,
+      adjust_depth = FALSE,
       window_step_fraction = 0.1, min_cells_per_window = 3L,
       n_permutations = 9L, min_cells = 1L), extra))
   missing_key <- try(run(list(pseudotime_key = "missing")), silent = TRUE)

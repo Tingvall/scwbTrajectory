@@ -1,7 +1,7 @@
 Package: scwbTrajectory
 Type: Package
 Title: Provisional Trajectory Operations for scworkbench
-Version: 0.1.5
+Version: 0.1.6
 Authors@R: person("Hendrik A.", "de Weerd", role = c("aut", "cre"), email = "dirkdeweerd.work@gmail.com")
 Description: Explicitly activated provisional ABI v3 operation pack containing
     branch comparison, route smoothing, analytical path construction and

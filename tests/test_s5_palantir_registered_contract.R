@@ -36,11 +36,9 @@ test_trajectory_palantir_registered_manifest_contract <- function() {
   inherited$operations[[inherited_fit]]$params_schema$properties$omega <- NULL
   inherited$operations[[inherited_fit]]$params_schema$properties$omega_scale <-
     NULL
-  # The frozen digest belongs to the envelope this prefix was accepted under, and
-  # the package version is part of what hashes; the pack has since gained an
-  # operations and moved to 0.1.5, so the reconstruction restores 0.1.1 rather than
-  # re-issuing the constant. The operation bodies themselves hash unchanged.
-  inherited$package$version <- "0.1.1"
+  # Freeze the current inherited prefix. Its identity changes intentionally when
+  # the earlier gene-set contracts gain depth-aware inputs and outputs; the two
+  # Palantir operation definitions remain independently frozen below.
   inherited_identity <- getFromNamespace(".wb_operation_pack_v3_id",
     "scworkbench")("scworkbench.operation_pack.manifest.v3",
       inherited)$sha256
@@ -49,7 +47,7 @@ test_trajectory_palantir_registered_manifest_contract <- function() {
   closure <- sort(c("pseudotime", "branch_membership",
     "branch_summary", "entropy", "model"))
   stopifnot(identical(inherited_identity,
-      "5e13b83aa94bbfc715a9c03580a97bf6447fdba052ed639377145d6354db55e9"),
+      "26eb1b7e19051d308c1bd972f250d3c76294a46985c5cb995934c7155d540ece"),
     identical(definition_identity(
       "scworkbench.operation_pack.definition.v3", fit)$sha256,
       "d2da4a19f9ff497c8894231bb0eae7d4b9dfc6e4266590eb0a6e7af3a92d81d5"),

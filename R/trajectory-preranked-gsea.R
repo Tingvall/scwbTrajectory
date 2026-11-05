@@ -63,6 +63,9 @@
   matrix_id = character(),
   pseudotime_artifact_id = character(), membership_artifact_id = character(),
   sample_id_artifact_id = character(), covariates_artifact_id = character(),
+  depth_artifact_id = character(),
+  depth_field = character(), adjust_depth = logical(),
+  depth_spline_df = integer(),
   pseudotime_direction = character(), permutation_mode = character(),
   n_permutations = integer(), ranking_seed = integer(),
   fgsea_seed = integer(), covariate_adjustment = character(),
@@ -614,6 +617,9 @@
                                        n_permutations = 1000L, seed = 1L,
                                        covariate_adjustment = "none",
                                        covariate_spline_df = 4L,
+                                       adjust_depth = FALSE,
+                                       depth_field = "nCount_RNA",
+                                       depth = NULL,
                                        min_set_size = 5L,
                                        max_set_size = 5000L,
                                        score_type = "std", gsea_param = 1,
@@ -629,6 +635,7 @@
                                        membership_artifact_id = "",
                                        sample_id_artifact_id = "",
                                        covariates_artifact_id = "",
+                                       depth_artifact_id = "",
                                        matrix_source = NULL,
                                        feature_chunk_size = 2048L) {
   analysis_scope <- as.character(analysis_scope)[1L]
@@ -636,6 +643,8 @@
   global_rank_method <- as.character(global_rank_method)[1L]
   permutation_mode <- as.character(permutation_mode)[1L]
   covariate_adjustment <- as.character(covariate_adjustment)[1L]
+  adjust_depth <- isTRUE(adjust_depth)
+  depth_field <- trimws(as.character(depth_field %||% "nCount_RNA")[1L])
   score_type <- as.character(score_type)[1L]
   namespace <- trimws(as.character(namespace)[1L])
   pseudotime_key <- trimws(as.character(pseudotime_key)[1L])
@@ -646,7 +655,7 @@
       permutation_mode %in% c("auto", "blocked", "unblocked") &&
       covariate_adjustment %in% c("none", "linear", "natural_spline") &&
       score_type %in% c("std", "pos", "neg") && nzchar(namespace) &&
-      nzchar(pseudotime_key),
+      nzchar(pseudotime_key) && !is.na(depth_field) && nzchar(depth_field),
     "trajectory_preranked_gsea: invalid categorical parameter.")
   early_fraction <- as.numeric(early_fraction)[1L]
   late_fraction <- as.numeric(late_fraction)[1L]
@@ -719,6 +728,15 @@
   cells <- as.character(effective_cells)
   .trajectory_assert(!anyDuplicated(cells) && all(cells %in% matrix_cells),
     "trajectory_preranked_gsea: effective cell axis is invalid.")
+  if (adjust_depth) {
+    .trajectory_assert(!is.null(depth),
+      "trajectory_preranked_gsea: adjust_depth=TRUE requires depth metadata.")
+    depth <- as.numeric(depth[match(cells, names(depth))])
+    names(depth) <- cells
+    .trajectory_assert(length(depth) == length(cells) &&
+        all(is.finite(depth)) && all(depth >= 0),
+      "trajectory_preranked_gsea: depth must be complete, finite, non-negative, and cell-aligned.")
+  }
   if (!is.null(membership)) {
     member <- .trajectory_gsea_scalar(membership, "membership")
     member_cells <- member$cell_id[!is.na(member$value) & nzchar(member$value)]
@@ -730,6 +748,7 @@
   pt_rows <- pt_table[pt_table$key == pseudotime_key, , drop = FALSE]
   pt <- stats::setNames(pt_rows$value, pt_rows$cell_id)
   cells <- cells[cells %in% names(pt) & is.finite(pt[cells])]
+  if (adjust_depth) depth <- depth[cells]
   .trajectory_assert(length(cells) >= 3L,
     "trajectory_preranked_gsea: insufficient finite pseudotime support.")
   pt <- as.numeric(pt[cells])
@@ -779,6 +798,7 @@
       all(is.finite(value)))
     cells <- cells[complete]
     pt <- pt[complete]; pt_normalized <- pt_normalized[complete]
+    if (adjust_depth) depth <- depth[complete]
     covariate_matrix <- covariate_matrix[complete, , drop = FALSE]
     if (!is.null(sample_values)) sample_values <- sample_values[complete]
     blocks <- if (identical(actual_permutation_mode, "blocked"))
@@ -902,8 +922,13 @@
     .trajectory_assert(identical(dim(raw_chunk),
         c(length(feature_index), length(cells))),
       "trajectory_preranked_gsea: authenticated matrix chunk has an unexpected shape.")
-    adjusted_chunk <- .trajectory_gsea_adjust(raw_chunk, covariate_matrix,
-      covariate_adjustment, spline_df)$values
+    depth_chunk <- if (adjust_depth) .trajectory_depth_adjust_matrix(
+      raw_chunk, pseudotime = pt, depth = depth, spline_df = 4L,
+      standardize = FALSE,
+      label = "trajectory_preranked_gsea depth adjustment")$values else
+      raw_chunk
+    adjusted_chunk <- .trajectory_gsea_adjust(depth_chunk,
+      covariate_matrix, covariate_adjustment, spline_df)$values
     base_reason[feature_index] <- .trajectory_gsea_base_exclusions(
       raw_chunk, adjusted_chunk)
 
@@ -1034,6 +1059,9 @@
         membership_artifact_id = membership_artifact_id,
         sample_id_artifact_id = sample_id_artifact_id,
         covariates_artifact_id = covariates_artifact_id,
+        depth_artifact_id = depth_artifact_id,
+        depth_field = depth_field, adjust_depth = adjust_depth,
+        depth_spline_df = if (adjust_depth) 4L else NA_integer_,
         pseudotime_direction = pseudotime_direction,
         permutation_mode = actual_permutation_mode,
         n_permutations = permutations,
@@ -1086,6 +1114,7 @@
     global_rank_method = global_rank_method,
     permutation_mode = actual_permutation_mode,
     n_permutations = permutations, seed = seed,
+    adjust_depth = adjust_depth, depth_field = depth_field,
     p_adjust_method = p_adjust_method))
 }
 
@@ -1098,6 +1127,14 @@
       !anyDuplicated(all_features),
     "trajectory_preranked_gsea: authenticated matrix feature axis is invalid.")
   cells <- as.character(context$effective_cells)
+  depth_input <- .trajectory_regions_optional_reader(readers, "depth")
+  depth <- if (isTRUE(params$adjust_depth %||% FALSE)) {
+    .trajectory_assert(!is.null(depth_input), paste0(
+      "trajectory_preranked_gsea: adjust_depth=TRUE requires an ",
+      "authenticated depth input."))
+    .trajectory_depth_vector(depth_input, cells,
+      label = "trajectory_preranked_gsea")
+  } else NULL
   chunk_size <- as.integer(params$chunk_size %||% 128L)[1L]
   call_params <- params
   call_params$chunk_size <- NULL
@@ -1106,6 +1143,7 @@
         features = all_features, cells = cells),
       feature_chunk_size = chunk_size,
       registry = registry, effective_cells = cells,
+      depth = depth,
       pseudotime = readers$pseudotime(),
       membership = .trajectory_regions_optional_reader(readers,
         "membership"),
@@ -1121,7 +1159,9 @@
       sample_id_artifact_id = .trajectory_s2_source_artifact_id(readers,
         "sample_id_ancestry"),
       covariates_artifact_id = .trajectory_s2_source_artifact_id(readers,
-        "covariates_ancestry")), call_params)
+        "covariates_ancestry"),
+      depth_artifact_id = .trajectory_s2_source_artifact_id(readers,
+        "depth_ancestry")), call_params)
   .trajectory_s2_publish(result, writers, c("global_enrichment",
     "window_enrichment", "enrichment_intervals", "leading_edge",
     "ranked_features", "fit_summary"))

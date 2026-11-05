@@ -18,6 +18,7 @@ interval_operation <- list(
   inputs = list(input("signal", "cell_vector_family"),
     input("pseudotime", "cell_vector_family"),
     input("covariates", "cell_vector_family", FALSE),
+    input("depth", "cell_vector", FALSE),
     input("sample_id", "cell_vector", FALSE),
     input("membership", "cell_vector", FALSE)),
   params_schema = list(type = "object", properties = interval_params,
@@ -52,8 +53,8 @@ interval_operation <- list(
     retained_row("n_signal_intervals", "fit_summary",
       "n_signal_intervals"))),
   public_interface = interface(c("trajectory", "signal", "intervals",
-    "permutation"), c("signal", "pseudotime", "covariates", "sample_id",
-      "membership"), list(
+    "permutation"), c("signal", "pseudotime", "covariates", "depth",
+      "sample_id", "membership"), list(
       c("pseudotime_key", "string", "Required explicit lineage key."),
       c("signal_keys", "string_vec", "Optional signal keys."),
       c("covariate_keys", "string_vec", "Optional covariate keys."),
@@ -67,6 +68,8 @@ interval_operation <- list(
       c("seed", "int", "Deterministic base seed."),
       c("covariate_adjustment", "choice", "None, linear, or spline."),
       c("covariate_spline_df", "int", "Spline degrees of freedom."),
+      c("adjust_depth", "bool", "Remove only the fitted depth component."),
+      c("depth_field", "string", "Depth identity; defaults to nCount_RNA."),
       c("permutation_mode", "choice", "Automatic, blocked, or unblocked."),
       c("include_endpoint_extrema", "bool", "Allow endpoint extrema."),
       c("global_q_cutoff", "dbl", "Global signal-test q cutoff."),
@@ -97,6 +100,9 @@ gsea_params <- list(
   covariate_adjustment = string("none",
     c("none", "linear", "natural_spline"), FALSE),
   covariate_spline_df = integer(4L, 2L, 20L, FALSE),
+  adjust_depth = boolean(FALSE),
+  depth_field = list(type = c("string", "null"),
+    default = "nCount_RNA", minLength = 1L),
   min_set_size = integer(5L, 1L, 10000000L, FALSE),
   max_set_size = integer(5000L, 1L, 10000000L, FALSE),
   score_type = string("std", c("std", "pos", "neg"), FALSE),
@@ -111,7 +117,7 @@ gsea_params <- list(
   consensus_leading_edge_fraction = number(0.5, 1e-12, 1),
   chunk_size = integer(128L, 1L, 1000000L, FALSE))
 gsea_provenance <- lapply(c("pseudotime", "membership", "sample_id",
-  "covariates"), function(name) list(
+  "covariates", "depth"), function(name) list(
     name = paste0(name, "_ancestry"),
     category = "authenticated_core_provenance_snapshot",
     kind = "artifact_ancestry", reader = "read_artifact_ancestry",
@@ -138,7 +144,8 @@ gsea_operation <- list(
     input("pseudotime", "cell_vector_family"),
     input("membership", "cell_vector", FALSE),
     input("sample_id", "cell_vector", FALSE),
-    input("covariates", "cell_vector_family", FALSE)),
+    input("covariates", "cell_vector_family", FALSE),
+    input("depth", "cell_vector", FALSE)),
   params_schema = list(type = "object", properties = gsea_params,
     required = list("namespace", "pseudotime_key"),
     additionalProperties = FALSE),
@@ -174,7 +181,7 @@ gsea_operation <- list(
       "feature_universe_size"))),
   public_interface = interface(c("trajectory", "enrichment", "gsea",
     "permutation"), c("matrix", "pseudotime", "membership", "sample_id",
-    "covariates"), lapply(names(gsea_params), function(name)
+    "covariates", "depth"), lapply(names(gsea_params), function(name)
       c(name, gsea_public_type(gsea_params[[name]]),
         paste("Trajectory GSEA parameter", name))),
     gsea_output_names))

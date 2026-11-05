@@ -26,12 +26,22 @@ explicitly.
 
 The signal operations answer distinct questions. `trajectory_signal_dynamics`
 describes whole-trajectory curves for precomputed cell-level signals.
+`trajectory_geneset_dynamics` and its explicit-pseudotime counterpart adjust
+each gene for `nCount_RNA` by default using an authenticated `depth` cell
+vector. They jointly fit a natural pseudotime spline and centered
+`log1p(depth)`, subtract only the fitted depth component, standardize each
+adjusted gene, and average genes within each set. Cell-level scores and
+gene-level diagnostics are retained as `adjusted_scores` and
+`adjustment_diagnostics`.
 `trajectory_signal_intervals` tests whether a signal has globally qualified
 trajectory dynamics, performs local elevated and reduced tests, and merges
 supported adjacent local tests into signal intervals. Its terminals are
 `signal_curve`, `global_test`, `local_tests`, `signal_intervals`,
 `adjustment_summary`, and `fit_summary`. Optional continuous technical
-covariates are fitted without pseudotime. With sample identities,
+covariates are fitted without pseudotime. Depth adjustment is enabled by
+default and uses an authenticated `depth` cell vector representing
+`nCount_RNA`; a signal already marked with the same depth adjustment is reused
+without a second adjustment. With sample identities,
 `permutation_mode = "auto"` shuffles within samples; otherwise it records an
 unblocked analysis. `trajectory_signal_regions` is the deprecated 0.1.4
 compatibility identity and retains its historical terminal contract; it is not
@@ -39,7 +49,11 @@ a separate scientific method.
 
 `trajectory_preranked_gsea` performs gene-set enrichment from an authenticated
 expression matrix and the matrix-bound, checksummed feature-set registry
-snapshot. `analysis_scope = "global"` builds one full-trajectory ranking;
+snapshot. `SCT_data` is recommended. Optional partial depth adjustment is
+disabled by default because SCT expression is already depth-normalized; when
+enabled, it requires an authenticated `depth` cell vector and defaults its
+recorded field identity to `nCount_RNA`.
+`analysis_scope = "global"` builds one full-trajectory ranking;
 `"local"` builds rankings over a fixed grid of overlapping pseudotime windows;
 and `"both"` runs both under the same lineage, orientation, cell selection,
 covariate, sample-block, support, and feature-universe policies. It publishes
@@ -70,7 +84,7 @@ directions lets a strong up population carry a lone down breakpoint over
 run and names the feature and its count of missing values.
 
 The accepted pack that the standard profile qualified has 25 operations at version
-0.1.1. This branch carries 30 operations at 0.1.5 and is experimental; it is not
+0.1.1. This branch carries 30 operations at 0.1.6 and is experimental; it is not
 what that profile qualifies. Model-backed
 `trajectory_geneset_dynamics` and `trajectory_signal_dynamics` require `model`.
 Their separate `_explicit` operations require typed pseudotime and

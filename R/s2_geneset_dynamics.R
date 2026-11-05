@@ -1,6 +1,8 @@
 # Pack-side S2 method, with source selection supplied by authenticated readers.
 .trajectory_s2_geneset_dynamics <- function(matrix, registry, effective_cells,
                                               matrix_id,
+                                              depth = NULL,
+                                              depth_artifact_id = "",
                                               pseudotime = NULL,
                                               model_source = NULL,
                                               pseudotime_key = NULL,
@@ -11,6 +13,8 @@
                                               lineage = NULL,
                                               feature_sets = NULL,
                                               score_method = "mean",
+                                              adjust_depth = TRUE,
+                                              depth_field = "nCount_RNA",
                                               n_bins = 50L,
                                               summary_fun = "mean",
                                               min_cells_per_bin = 5L,
@@ -51,10 +55,27 @@
   .trajectory_assert(is.character(matrix_id) && length(matrix_id) == 1 && nzchar(matrix_id), "matrix_id invalid")
   .trajectory_assert(is.character(namespace) && length(namespace) == 1 && nzchar(namespace), "namespace invalid")
 
+  adjust_depth <- isTRUE(adjust_depth)
+  depth_field <- trimws(as.character(depth_field %||% "nCount_RNA")[1L])
+  .trajectory_assert(!is.na(depth_field) && nzchar(depth_field),
+    "trajectory_geneset_dynamics: depth_field is required.")
+  if (adjust_depth) {
+    depth <- as.numeric(depth[match(as.character(effective_cells),
+      names(depth))])
+    names(depth) <- as.character(effective_cells)
+    .trajectory_assert(length(depth) == length(effective_cells) &&
+        all(is.finite(depth)) && all(depth >= 0),
+      "trajectory_geneset_dynamics: depth must be complete, finite, non-negative, and cell-aligned.")
+  } else depth <- stats::setNames(rep(0, length(effective_cells)),
+    as.character(effective_cells))
+
   score_method <- as.character(score_method %||% "mean")[1]
   if (!nzchar(score_method)) score_method <- "mean"
   .trajectory_assert(score_method %in% c("mean", "sum", "rank_mean"),
              "trajectory_geneset_dynamics: score_method must be 'mean', 'sum', or 'rank_mean'.")
+  .trajectory_assert(!adjust_depth || identical(score_method, "mean"),
+    paste0("trajectory_geneset_dynamics: adjust_depth=TRUE requires ",
+      "score_method='mean'; use adjust_depth=FALSE for sum or rank_mean."))
   summary_fun <- .trajectory_s2_summary_fun(summary_fun)
   min_cells_per_bin <- suppressWarnings(as.integer(min_cells_per_bin))
   min_set_size <- suppressWarnings(as.integer(min_set_size))
@@ -138,11 +159,15 @@
   dyn_rows <- list()
   driver_rows <- list()
   driver_curve_rows <- list()
+  score_rows <- list()
+  adjustment_rows <- list()
   fit_rows <- list()
   ci <- 0L
   di <- 0L
   gi <- 0L
   dci <- 0L
+  sci <- 0L
+  ai <- 0L
   si <- 0L
   if (n_permutations > 0L) {
     had_seed <- exists(".Random.seed", envir = .GlobalEnv,
@@ -176,6 +201,26 @@
     n_bins_used <- bb$n_bins
     n_sets_with_rows <- 0L
     n_curve_rows <- 0L
+    adjusted_matrix <- NULL
+    if (adjust_depth) {
+      adjusted <- .trajectory_depth_adjust_matrix(
+        matrix[, cells_lin, drop = FALSE], pseudotime = pt,
+        depth = depth[cells_lin], spline_df = 4L, standardize = TRUE,
+        label = paste0("trajectory_geneset_dynamics lineage '", lin, "'"))
+      adjusted_matrix <- adjusted$values
+      diagnostics <- adjusted$diagnostics
+      diagnostics$lineage_id <- as.character(lin)
+      diagnostics$depth_field <- depth_field
+      diagnostics$adjustment_method <-
+        "expression~ns(pseudotime,df=4)+centered_log1p(depth);remove_depth_component;zscore"
+      diagnostics <- diagnostics[, c("lineage_id", "feature_id",
+        "depth_field", "status", "adjustment_method", "depth_coefficient",
+        "depth_partial_r_squared", "raw_mean", "raw_sd", "adjusted_mean",
+        "adjusted_sd", "standardized", "n_cells", "design_rank",
+        "design_columns", "spline_df"), drop = FALSE]
+      ai <- ai + 1L
+      adjustment_rows[[ai]] <- diagnostics
+    }
     rank_bg <- NULL
     if (identical(score_method, "rank_mean")) {
       bg_feats <- unique(unlist(set_members, use.names = FALSE))
@@ -185,11 +230,21 @@
 
     for (sn in names(set_members)) {
       feats <- set_members[[sn]]
-      x <- matrix[feats, cells_lin, drop = FALSE]
-      m <- as.matrix(x)
-      n_features_detected <- as.integer(sum(rowSums(m > 0, na.rm = TRUE) > 0))
+      raw_m <- as.matrix(matrix[feats, cells_lin, drop = FALSE])
+      m <- if (adjust_depth) adjusted_matrix[feats, , drop = FALSE] else raw_m
+      n_features_detected <- as.integer(sum(rowSums(raw_m > 0,
+        na.rm = TRUE) > 0))
       detected_fraction <- if (nrow(m) > 0L) n_features_detected / nrow(m) else 0
-      sig <- .trajectory_s2_score_values(m, score_method = score_method, rank_bg = rank_bg)
+      sig <- if (adjust_depth) colMeans(m) else
+        .trajectory_s2_score_values(m, score_method = score_method,
+          rank_bg = rank_bg)
+      sci <- sci + 1L
+      score_rows[[sci]] <- data.frame(
+        key = rep(paste(lin, sn, sep = "::"), length(cells_lin)),
+        cell_id = cells_lin, value = as.numeric(sig),
+        lineage_id = rep(as.character(lin), length(cells_lin)),
+        feature_set = rep(as.character(sn), length(cells_lin)),
+        stringsAsFactors = FALSE)
 
       agg <- .trajectory_s2_curve(
         entity_id = sn,
@@ -495,6 +550,18 @@
   top_tbl <- utils::head(eligible_dyn[order(as.character(eligible_dyn$lineage_id), eligible_dyn$rank), , drop = FALSE], top_n)
   fit_summary <- do.call(rbind, fit_rows[seq_len(si)])
   rownames(fit_summary) <- NULL
+  score_table <- do.call(rbind, score_rows[seq_len(sci)])
+  rownames(score_table) <- NULL
+  adjustment_table <- if (ai == 0L) data.frame(
+    lineage_id = character(), feature_id = character(),
+    depth_field = character(), status = character(),
+    adjustment_method = character(), depth_coefficient = numeric(),
+    depth_partial_r_squared = numeric(), raw_mean = numeric(),
+    raw_sd = numeric(), adjusted_mean = numeric(), adjusted_sd = numeric(),
+    standardized = logical(), n_cells = integer(), design_rank = integer(),
+    design_columns = integer(), spline_df = integer(),
+    stringsAsFactors = FALSE) else do.call(rbind, adjustment_rows[seq_len(ai)])
+  rownames(adjustment_table) <- NULL
 
   list(
     outputs = list(
@@ -587,6 +654,25 @@
           bootstrap_n = as.integer(bootstrap_n)
         )
       ),
+      adjusted_scores = scworkbench::wb_prim_cell_vector_family(
+        key = score_table$key, cell_id = score_table$cell_id,
+        value = score_table$value, value_type = "continuous",
+        meta = list(
+          depth_adjusted = adjust_depth,
+          depth_field = depth_field,
+          depth_artifact_id = as.character(depth_artifact_id),
+          adjustment_spline_df = if (adjust_depth) 4L else NA_integer_,
+          score_key_format = "lineage_id::feature_set",
+          effective_score_method = if (adjust_depth) "adjusted_z_mean" else
+            as.character(score_method))),
+      adjustment_diagnostics = scworkbench::wb_prim_obs_table(
+        table = adjustment_table,
+        table_type = "trajectory_geneset_depth_adjustment",
+        entity_kind = "feature",
+        meta = list(matrix_id = as.character(matrix_id),
+          depth_adjusted = adjust_depth, depth_field = depth_field,
+          depth_artifact_id = as.character(depth_artifact_id),
+          adjustment_spline_df = if (adjust_depth) 4L else NA_integer_)),
       fit_summary = scworkbench::wb_prim_obs_table(
         table = fit_summary,
         table_type = "trajectory_geneset_dynamics_summary",
@@ -605,6 +691,12 @@
       n_lineages = as.integer(length(lineages)),
       n_bins = as.integer(unique(fit_summary$n_bins %||% n_bins)[1] %||% n_bins),
       score_method = as.character(score_method),
+      effective_score_method = if (adjust_depth) "adjusted_z_mean" else
+        as.character(score_method),
+      adjust_depth = adjust_depth,
+      depth_field = depth_field,
+      depth_artifact_id = as.character(depth_artifact_id),
+      adjustment_spline_df = if (adjust_depth) 4L else NA_integer_,
       summary_fun = as.character(summary_fun),
       min_cells_per_bin = as.integer(min_cells_per_bin),
       min_set_size = as.integer(min_set_size),

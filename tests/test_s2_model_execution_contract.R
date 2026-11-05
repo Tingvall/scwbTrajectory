@@ -12,6 +12,7 @@ source(file.path(test_dir, "helper_s2_fixture.R"), local = .GlobalEnv)
     vector_smooth = list(lineage = "L1", signal_keys = "rising",
       n_bins = 5L, min_cells_per_bin = 1L),
     geneset_dynamics = list(namespace = "trajectory", lineage = "L1",
+      adjust_depth = FALSE,
       min_set_size = 1L, n_bins = 5L, min_cells_per_bin = 1L,
       min_bins_observed = 2L, bootstrap_n = 8L, bootstrap_seed = 17L,
       n_permutations = 8L, permutation_seed = 19L, chunk_size = 2L),

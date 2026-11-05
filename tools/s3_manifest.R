@@ -229,6 +229,8 @@ s3_regions_params <- list(
   covariate_adjustment = string("none",
     c("none", "linear", "natural_spline"), FALSE),
   covariate_spline_df = integer(4L, 2L, 20L, FALSE),
+  adjust_depth = boolean(TRUE),
+  depth_field = string("nCount_RNA", nullable = FALSE),
   permutation_mode = string("auto",
     c("auto", "blocked", "unblocked"), FALSE),
   include_endpoint_extrema = boolean(TRUE),
@@ -237,7 +239,7 @@ s3_regions_params <- list(
   merge_gap_fraction = list(type = c("number", "null"),
     minimum = 0, maximum = 1))
 s3_regions_provenance <- lapply(c("signal", "pseudotime", "covariates",
-  "sample_id", "membership"), function(name) list(
+  "depth", "sample_id", "membership"), function(name) list(
     name = paste0(name, "_ancestry"),
     category = "authenticated_core_provenance_snapshot",
     kind = "artifact_ancestry", reader = "read_artifact_ancestry",
@@ -255,6 +257,7 @@ s3_regions <- list(
   inputs = list(input("signal", "cell_vector_family"),
     input("pseudotime", "cell_vector_family"),
     input("covariates", "cell_vector_family", FALSE),
+    input("depth", "cell_vector", FALSE),
     input("sample_id", "cell_vector", FALSE),
     input("membership", "cell_vector", FALSE)),
   params_schema = list(type = "object", properties = s3_regions_params,
@@ -294,8 +297,8 @@ s3_regions <- list(
     retained_row("n_supported_regions", "fit_summary",
       "n_supported_regions")),
   public_interface = interface(c("trajectory", "signal", "regions",
-    "permutation"), c("signal", "pseudotime", "covariates", "sample_id",
-      "membership"), list(
+    "permutation"), c("signal", "pseudotime", "covariates", "depth",
+      "sample_id", "membership"), list(
       c("pseudotime_key", "string", "Required explicit lineage key."),
       c("signal_keys", "string_vec", "Optional signal keys."),
       c("covariate_keys", "string_vec", "Optional covariate keys."),
@@ -309,6 +312,8 @@ s3_regions <- list(
       c("seed", "int", "Deterministic base seed."),
       c("covariate_adjustment", "choice", "None, linear, or natural spline."),
       c("covariate_spline_df", "int", "Natural-spline degrees of freedom."),
+      c("adjust_depth", "bool", "Remove only the fitted depth component."),
+      c("depth_field", "string", "Depth identity; defaults to nCount_RNA."),
       c("permutation_mode", "choice", "Automatic, blocked, or unblocked."),
       c("include_endpoint_extrema", "bool", "Allow endpoint extrema."),
       c("dynamic_q_cutoff", "dbl", "Whole-trajectory BH cutoff."),

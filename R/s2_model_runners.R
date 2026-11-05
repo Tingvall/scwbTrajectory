@@ -96,17 +96,27 @@
     params$feature_sets %||% NULL, all_features, min_size, max_size)
   features <- unique(unlist(selected$members, use.names = FALSE))
   cells <- as.character(context$effective_cells)
+  depth_input <- .trajectory_regions_optional_reader(readers, "depth")
+  depth <- if (isTRUE(params$adjust_depth %||% TRUE)) {
+    .trajectory_assert(!is.null(depth_input), paste0(
+      "trajectory_geneset_dynamics: adjust_depth=TRUE requires an ",
+      "authenticated depth input."))
+    .trajectory_depth_vector(depth_input, cells,
+      label = "trajectory_geneset_dynamics")
+  } else NULL
   matrix <- as.matrix(.trajectory_chunked_matrix(readers$matrix_chunks,
     all_features, features, cells, cells,
     params$chunk_size %||% 128L))
   result <- .trajectory_s2_call(.trajectory_s2_geneset_dynamics,
     list(matrix = matrix, registry = registry, effective_cells = cells,
       matrix_id = as.character(registry$matrix_id)[1L],
-      model_source = source, membership = membership), params,
+      depth = depth, model_source = source, membership = membership,
+      depth_artifact_id = .trajectory_s2_source_artifact_id(readers,
+        "depth_ancestry")), params,
     extra_allowed = "chunk_size")
   .trajectory_s2_publish(result, writers, c("signature_table",
     "dynamics_table", "top_sets", "driver_table", "driver_curve_table",
-    "fit_summary"))
+    "adjusted_scores", "adjustment_diagnostics", "fit_summary"))
 }
 
 .run_trajectory_signal_dynamics_model <- function(readers, writers,

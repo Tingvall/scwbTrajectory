@@ -12,6 +12,12 @@ local tests are merged into `signal_intervals`; the global test is not a second
 global signal-analysis method. `trajectory_signal_regions` is the deprecated
 0.1.4 compatibility identity for this same scientific method.
 
+Both interval identities enable partial depth adjustment by default. A raw
+signal must supply an authenticated `depth` cell vector; `depth_field` defaults
+to `nCount_RNA`. The operation fits `signal ~ ns(pseudotime, df=4) +
+centered_log1p(depth)` and removes only the depth term. Signals already marked
+as depth-adjusted with the same field are not adjusted again.
+
 `scwbtrajectory::trajectory_preranked_gsea` ranks genes from the authenticated
 matrix feature universe. Its global scope produces one full-trajectory ranking.
 Its local scope produces one complete ranking for each supported window on a
@@ -36,6 +42,10 @@ unblocked otherwise. Covariate adjustment never includes pseudotime in the
 technical-covariate design.
 
 ## Preranked GSEA
+
+Use the authenticated `SCT_data` matrix for GSEA. `adjust_depth` defaults to
+`FALSE`; when enabled with an authenticated `depth` cell vector, the same joint
+pseudotime/depth model removes only the depth term before ranking.
 
 `analysis_scope` is `global`, `local`, or `both`; `both` is the default.
 `monotonic_association` uses a signed Spearman association, while

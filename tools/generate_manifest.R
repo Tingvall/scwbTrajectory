@@ -272,6 +272,46 @@ stopifnot(identical(length(manifest$operations), 17L),
         "trajectory_vector_smooth", "trajectory_signal_dynamics",
         "trajectory_geneset_dynamics_explicit",
         "trajectory_signal_dynamics_explicit")))))
+
+# The 0.1.6 depth-control update changes the two accepted S2 gene-set
+# consumers in lockstep while retaining their distinct pseudotime sources.
+upgrade_geneset_depth <- function(operation) {
+  operation$params_schema$properties$adjust_depth <- boolean(TRUE)
+  operation$params_schema$properties$depth_field <- list(
+    type = c("string", "null"), default = "nCount_RNA", minLength = 1L)
+  operation$inputs <- c(operation$inputs,
+    list(input("depth", "cell_vector", FALSE)))
+  operation$provenance_reads <- c(operation$provenance_reads, list(list(
+    name = "depth_ancestry",
+    category = "authenticated_core_provenance_snapshot",
+    kind = "artifact_ancestry", reader = "read_artifact_ancestry",
+    input = "depth", activation = "when_resolved_from_artifact",
+    lifecycle_policy = "require_current")))
+  extra_outputs <- list(
+    output("adjusted_scores", "cell_vector_family",
+      "trajectory_geneset_dynamics"),
+    output("adjustment_diagnostics", "obs_table",
+      "trajectory_geneset_dynamics",
+      "trajectory_geneset_depth_adjustment"))
+  fit_index <- match("fit_summary", vapply(operation$outputs, `[[`,
+    character(1), "name"))
+  operation$outputs <- append(operation$outputs, extra_outputs,
+    after = fit_index - 1L)
+  operation$dimension_policies <- c(operation$dimension_policies,
+    list(table_policy("adjustment_diagnostics")))
+  names <- vapply(operation$outputs, `[[`, character(1), "name")
+  operation$promotion_closure <- closure(names)
+  operation$replay_equivalence <- equivalence(names)
+  operation
+}
+for (qualified in c("scwbtrajectory::trajectory_geneset_dynamics",
+    "scwbtrajectory::trajectory_geneset_dynamics_explicit")) {
+  index <- match(qualified, vapply(manifest$operations, `[[`, character(1),
+    "qualified_name"))
+  stopifnot(!is.na(index))
+  manifest$operations[[index]] <- upgrade_geneset_depth(
+    manifest$operations[[index]])
+}
 monocle3_operations <- jsonlite::read_json(file.path(root, "tools",
   "accepted_s5_monocle3_operations.json"), simplifyVector = FALSE)
 definition_identity <- getFromNamespace(".wb_operation_pack_v3_id",
@@ -287,10 +327,9 @@ stopifnot(identical(vapply(monocle3_operations, `[[`, character(1),
 manifest$operations <- c(manifest$operations, s3_operations,
   monocle3_operations, palantir_operations, changepoint_operations,
   trajectory_analysis_operations)
-# Package and manifest versions move together. The accepted 28-operation
-# prefix is retained; 0.1.5 appends the canonical signal-interval identity and
-# trajectory-resolved preranked GSEA.
-manifest$package$version <- "0.1.5"
+# Package and manifest versions move together. Version 0.1.6 adds partial
+# depth adjustment to gene-set scoring, intervals, and optional GSEA.
+manifest$package$version <- "0.1.6"
 
 path <- file.path(root, "inst", "scworkbench", "operation-pack.json")
 dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)

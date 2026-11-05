@@ -32,6 +32,9 @@ test_trajectory_signal_intervals_manifest_contract <- function() {
         "adjustment_summary", "fit_summary")),
     canonical$params_schema$properties$global_q_cutoff$default == 0.05,
     canonical$params_schema$properties$local_q_cutoff$default == 0.05,
+    identical(canonical$params_schema$properties$adjust_depth$default, TRUE),
+    identical(canonical$params_schema$properties$depth_field$default,
+      "nCount_RNA"),
     all(vapply(canonical$replay_equivalence, identical, logical(1),
       "exact_canonical_value")))
   TRUE
@@ -49,6 +52,7 @@ test_trajectory_signal_intervals_numerical_alias_contract <- function() {
     pseudotime = x$pseudotime, pseudotime_key = "lineage",
     window_width_fraction = 0.12, window_step_fraction = 0.02,
     min_cells_per_window = 6L, n_permutations = 99L, seed = 31L,
+    adjust_depth = FALSE,
     dynamic_q_cutoff = 0.1, region_q_cutoff = 0.2)
   canonical <- translate(legacy)
   stopifnot(identical(before, .Random.seed),
@@ -85,6 +89,7 @@ test_trajectory_signal_intervals_registered_contract <- function() {
   result <- scworkbench::wb_session_run_op(scworkbench::wb_session_new(),
     x$bundle, "scwbtrajectory::trajectory_signal_intervals", inputs = list(
       signal = signal, pseudotime = pseudotime, pseudotime_key = "L1",
+      adjust_depth = FALSE,
       window_width_fraction = 0.3, window_step_fraction = 0.05,
       min_cells_per_window = 3L, n_permutations = 39L, seed = 37L,
       global_q_cutoff = 0.2, local_q_cutoff = 0.2, min_cells = 1L))

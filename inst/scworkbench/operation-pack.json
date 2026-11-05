@@ -5,7 +5,7 @@
   "namespace": "scwbtrajectory",
   "package": {
     "name": "scwbTrajectory",
-    "version": "0.1.5"
+    "version": "0.1.6"
   },
   "backend": "R",
   "compatibility": {
@@ -3620,6 +3620,12 @@
           "kind": "cell_vector",
           "required": false,
           "alignment": "cell_ordered"
+        },
+        {
+          "name": "depth",
+          "kind": "cell_vector",
+          "required": false,
+          "alignment": "cell_ordered"
         }
       ],
       "params_schema": {
@@ -3750,6 +3756,15 @@
           },
           "top_n": {
             "type": "integer"
+          },
+          "adjust_depth": {
+            "type": "boolean",
+            "default": true
+          },
+          "depth_field": {
+            "type": ["string", "null"],
+            "default": "nCount_RNA",
+            "minLength": 1
           }
         },
         "additionalProperties": false,
@@ -3837,6 +3852,10 @@
         {
           "output": "fit_summary",
           "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "adjustment_diagnostics",
+          "policy": "data_dependent_table_v1"
         }
       ],
       "outputs": [
@@ -3891,6 +3910,26 @@
           "table_type": "trajectory_geneset_dynamics_driver_curve"
         },
         {
+          "name": "adjusted_scores",
+          "category": "terminal_artifact",
+          "kind": "cell_vector_family",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "adjusted_scores_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "value_kind": "continuous"
+        },
+        {
+          "name": "adjustment_diagnostics",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "adjustment_diagnostics_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "table_type": "trajectory_geneset_depth_adjustment"
+        },
+        {
           "name": "fit_summary",
           "category": "terminal_artifact",
           "kind": "obs_table",
@@ -3916,6 +3955,8 @@
       ],
       "promotion_closure": {
         "signature_table": [
+          "adjusted_scores",
+          "adjustment_diagnostics",
           "driver_curve_table",
           "driver_table",
           "dynamics_table",
@@ -3924,6 +3965,8 @@
           "top_sets"
         ],
         "dynamics_table": [
+          "adjusted_scores",
+          "adjustment_diagnostics",
           "driver_curve_table",
           "driver_table",
           "dynamics_table",
@@ -3932,6 +3975,8 @@
           "top_sets"
         ],
         "top_sets": [
+          "adjusted_scores",
+          "adjustment_diagnostics",
           "driver_curve_table",
           "driver_table",
           "dynamics_table",
@@ -3940,6 +3985,8 @@
           "top_sets"
         ],
         "driver_table": [
+          "adjusted_scores",
+          "adjustment_diagnostics",
           "driver_curve_table",
           "driver_table",
           "dynamics_table",
@@ -3948,6 +3995,28 @@
           "top_sets"
         ],
         "driver_curve_table": [
+          "adjusted_scores",
+          "adjustment_diagnostics",
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ],
+        "adjusted_scores": [
+          "adjusted_scores",
+          "adjustment_diagnostics",
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ],
+        "adjustment_diagnostics": [
+          "adjusted_scores",
+          "adjustment_diagnostics",
           "driver_curve_table",
           "driver_table",
           "dynamics_table",
@@ -3956,6 +4025,8 @@
           "top_sets"
         ],
         "fit_summary": [
+          "adjusted_scores",
+          "adjustment_diagnostics",
           "driver_curve_table",
           "driver_table",
           "dynamics_table",
@@ -3970,8 +4041,21 @@
         "top_sets": "exact_canonical_value",
         "driver_table": "exact_canonical_value",
         "driver_curve_table": "exact_canonical_value",
+        "adjusted_scores": "exact_canonical_value",
+        "adjustment_diagnostics": "exact_canonical_value",
         "fit_summary": "exact_canonical_value"
-      }
+      },
+      "provenance_reads": [
+        {
+          "name": "depth_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "depth",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        }
+      ]
     },
     {
       "name": "trajectory_vector_smooth",
@@ -4369,6 +4453,12 @@
           "kind": "cell_vector",
           "required": false,
           "alignment": "cell_ordered"
+        },
+        {
+          "name": "depth",
+          "kind": "cell_vector",
+          "required": false,
+          "alignment": "cell_ordered"
         }
       ],
       "params_schema": {
@@ -4493,6 +4583,15 @@
           },
           "top_n": {
             "type": "integer"
+          },
+          "adjust_depth": {
+            "type": "boolean",
+            "default": true
+          },
+          "depth_field": {
+            "type": ["string", "null"],
+            "default": "nCount_RNA",
+            "minLength": 1
           }
         },
         "additionalProperties": false,
@@ -4517,6 +4616,15 @@
           "kind": "artifact_ancestry",
           "reader": "read_artifact_ancestry",
           "input": "membership",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        },
+        {
+          "name": "depth_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "depth",
           "activation": "when_resolved_from_artifact",
           "lifecycle_policy": "require_current"
         }
@@ -4580,6 +4688,10 @@
         {
           "output": "fit_summary",
           "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "adjustment_diagnostics",
+          "policy": "data_dependent_table_v1"
         }
       ],
       "outputs": [
@@ -4634,6 +4746,26 @@
           "table_type": "trajectory_geneset_dynamics_driver_curve"
         },
         {
+          "name": "adjusted_scores",
+          "category": "terminal_artifact",
+          "kind": "cell_vector_family",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "adjusted_scores_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "value_kind": "continuous"
+        },
+        {
+          "name": "adjustment_diagnostics",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "adjustment_diagnostics_id",
+          "required": true,
+          "promotion_group": "trajectory_geneset_dynamics",
+          "table_type": "trajectory_geneset_depth_adjustment"
+        },
+        {
           "name": "fit_summary",
           "category": "terminal_artifact",
           "kind": "obs_table",
@@ -4659,6 +4791,8 @@
       ],
       "promotion_closure": {
         "signature_table": [
+          "adjusted_scores",
+          "adjustment_diagnostics",
           "driver_curve_table",
           "driver_table",
           "dynamics_table",
@@ -4667,6 +4801,8 @@
           "top_sets"
         ],
         "dynamics_table": [
+          "adjusted_scores",
+          "adjustment_diagnostics",
           "driver_curve_table",
           "driver_table",
           "dynamics_table",
@@ -4675,6 +4811,8 @@
           "top_sets"
         ],
         "top_sets": [
+          "adjusted_scores",
+          "adjustment_diagnostics",
           "driver_curve_table",
           "driver_table",
           "dynamics_table",
@@ -4683,6 +4821,8 @@
           "top_sets"
         ],
         "driver_table": [
+          "adjusted_scores",
+          "adjustment_diagnostics",
           "driver_curve_table",
           "driver_table",
           "dynamics_table",
@@ -4691,6 +4831,28 @@
           "top_sets"
         ],
         "driver_curve_table": [
+          "adjusted_scores",
+          "adjustment_diagnostics",
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ],
+        "adjusted_scores": [
+          "adjusted_scores",
+          "adjustment_diagnostics",
+          "driver_curve_table",
+          "driver_table",
+          "dynamics_table",
+          "fit_summary",
+          "signature_table",
+          "top_sets"
+        ],
+        "adjustment_diagnostics": [
+          "adjusted_scores",
+          "adjustment_diagnostics",
           "driver_curve_table",
           "driver_table",
           "dynamics_table",
@@ -4699,6 +4861,8 @@
           "top_sets"
         ],
         "fit_summary": [
+          "adjusted_scores",
+          "adjustment_diagnostics",
           "driver_curve_table",
           "driver_table",
           "dynamics_table",
@@ -4713,6 +4877,8 @@
         "top_sets": "exact_canonical_value",
         "driver_table": "exact_canonical_value",
         "driver_curve_table": "exact_canonical_value",
+        "adjusted_scores": "exact_canonical_value",
+        "adjustment_diagnostics": "exact_canonical_value",
         "fit_summary": "exact_canonical_value"
       }
     },
@@ -5793,6 +5959,12 @@
           "alignment": "cell_ordered"
         },
         {
+          "name": "depth",
+          "kind": "cell_vector",
+          "required": false,
+          "alignment": "cell_ordered"
+        },
+        {
           "name": "sample_id",
           "kind": "cell_vector",
           "required": false,
@@ -5896,6 +6068,14 @@
             "minimum": 2,
             "maximum": 20
           },
+          "adjust_depth": {
+            "type": "boolean",
+            "default": true
+          },
+          "depth_field": {
+            "type": "string",
+            "default": "nCount_RNA"
+          },
           "permutation_mode": {
             "type": "string",
             "default": "auto",
@@ -5957,6 +6137,15 @@
           "kind": "artifact_ancestry",
           "reader": "read_artifact_ancestry",
           "input": "covariates",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        },
+        {
+          "name": "depth_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "depth",
           "activation": "when_resolved_from_artifact",
           "lifecycle_policy": "require_current"
         },
@@ -6200,6 +6389,11 @@
             "help": "Typed covariates input."
           },
           {
+            "name": "depth",
+            "label": "depth",
+            "help": "Typed depth input."
+          },
+          {
             "name": "sample_id",
             "label": "sample_id",
             "help": "Typed sample_id input."
@@ -6275,6 +6469,16 @@
             "name": "covariate_spline_df",
             "type": "int",
             "help": "Natural-spline degrees of freedom."
+          },
+          {
+            "name": "adjust_depth",
+            "type": "bool",
+            "help": "Remove only the fitted depth component."
+          },
+          {
+            "name": "depth_field",
+            "type": "string",
+            "help": "Depth identity; defaults to nCount_RNA."
           },
           {
             "name": "permutation_mode",
@@ -7687,6 +7891,12 @@
           "alignment": "cell_ordered"
         },
         {
+          "name": "depth",
+          "kind": "cell_vector",
+          "required": false,
+          "alignment": "cell_ordered"
+        },
+        {
           "name": "sample_id",
           "kind": "cell_vector",
           "required": false,
@@ -7790,6 +8000,14 @@
             "minimum": 2,
             "maximum": 20
           },
+          "adjust_depth": {
+            "type": "boolean",
+            "default": true
+          },
+          "depth_field": {
+            "type": "string",
+            "default": "nCount_RNA"
+          },
           "permutation_mode": {
             "type": "string",
             "default": "auto",
@@ -7851,6 +8069,15 @@
           "kind": "artifact_ancestry",
           "reader": "read_artifact_ancestry",
           "input": "covariates",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        },
+        {
+          "name": "depth_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "depth",
           "activation": "when_resolved_from_artifact",
           "lifecycle_policy": "require_current"
         },
@@ -8112,6 +8339,18 @@
           "parameter": "covariate_spline_df"
         },
         {
+          "name": "adjust_depth",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "adjust_depth"
+        },
+        {
+          "name": "depth_field",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "depth_field"
+        },
+        {
           "name": "permutation_mode",
           "source": "effective_parameter_value",
           "required": true,
@@ -8182,6 +8421,11 @@
             "name": "covariates",
             "label": "covariates",
             "help": "Typed covariates input."
+          },
+          {
+            "name": "depth",
+            "label": "depth",
+            "help": "Typed depth input."
           },
           {
             "name": "sample_id",
@@ -8259,6 +8503,16 @@
             "name": "covariate_spline_df",
             "type": "int",
             "help": "Spline degrees of freedom."
+          },
+          {
+            "name": "adjust_depth",
+            "type": "bool",
+            "help": "Remove only the fitted depth component."
+          },
+          {
+            "name": "depth_field",
+            "type": "string",
+            "help": "Depth identity; defaults to nCount_RNA."
           },
           {
             "name": "permutation_mode",
@@ -8348,6 +8602,12 @@
         {
           "name": "covariates",
           "kind": "cell_vector_family",
+          "required": false,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "depth",
+          "kind": "cell_vector",
           "required": false,
           "alignment": "cell_ordered"
         }
@@ -8457,6 +8717,15 @@
             "default": 4,
             "minimum": 2,
             "maximum": 20
+          },
+          "adjust_depth": {
+            "type": "boolean",
+            "default": false
+          },
+          "depth_field": {
+            "type": ["string", "null"],
+            "default": "nCount_RNA",
+            "minLength": 1
           },
           "min_set_size": {
             "type": "integer",
@@ -8598,6 +8867,15 @@
           "kind": "artifact_ancestry",
           "reader": "read_artifact_ancestry",
           "input": "covariates",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        },
+        {
+          "name": "depth_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "depth",
           "activation": "when_resolved_from_artifact",
           "lifecycle_policy": "require_current"
         }
@@ -8905,6 +9183,18 @@
           "parameter": "covariate_spline_df"
         },
         {
+          "name": "adjust_depth",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "adjust_depth"
+        },
+        {
+          "name": "depth_field",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "depth_field"
+        },
+        {
           "name": "min_set_size",
           "source": "effective_parameter_value",
           "required": true,
@@ -9033,6 +9323,11 @@
             "name": "covariates",
             "label": "covariates",
             "help": "Typed covariates input."
+          },
+          {
+            "name": "depth",
+            "label": "depth",
+            "help": "Typed depth input."
           }
         ],
         "parameters": [
@@ -9115,6 +9410,16 @@
             "name": "covariate_spline_df",
             "type": "int",
             "help": "Trajectory GSEA parameter covariate_spline_df"
+          },
+          {
+            "name": "adjust_depth",
+            "type": "bool",
+            "help": "Trajectory GSEA parameter adjust_depth"
+          },
+          {
+            "name": "depth_field",
+            "type": "string",
+            "help": "Trajectory GSEA parameter depth_field"
           },
           {
             "name": "min_set_size",

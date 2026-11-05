@@ -1,3 +1,19 @@
+# scwbTrajectory 0.1.6
+
+- Adds partial depth adjustment to both gene-set dynamics interfaces, enabled
+  by default with `depth_field = "nCount_RNA"`. Each gene retains its fitted
+  pseudotime spline while only the centered log-depth component is removed;
+  adjusted genes are standardized before set averaging.
+- Publishes cell-level adjusted gene-set scores and gene-level adjustment
+  diagnostics, and uses the adjusted values for curves, dynamics, drivers, and
+  permutation analyses.
+- Enables partial depth adjustment by default for signal intervals and the
+  deprecated signal-regions alias. Already-adjusted signals are recognized and
+  not adjusted twice.
+- Adds optional GSEA depth adjustment, disabled by default for the recommended
+  authenticated `SCT_data` input. Raw-count UCell remains an independent
+  comparison rather than the primary depth-controlled signal.
+
 # scwbTrajectory 0.1.5
 
 - Optimizes trajectory preranked GSEA by reusing deterministic permutation
