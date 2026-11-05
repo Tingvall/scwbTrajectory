@@ -1,3 +1,12 @@
+.trajectory_adjustment_spline_df <- function(value = 4L,
+                                             label = "depth adjustment") {
+  raw <- suppressWarnings(as.numeric(value)[1L])
+  .trajectory_assert(length(raw) == 1L && is.finite(raw) &&
+      raw == floor(raw) && raw >= 2L && raw <= 10L,
+    paste0(label, ": adjustment_spline_df must be an integer from 2 to 10."))
+  as.integer(raw)
+}
+
 .trajectory_depth_vector <- function(value, cells, label = "depth") {
   .trajectory_kind(value, "cell_vector")
   ids <- as.character(value$cell_id)

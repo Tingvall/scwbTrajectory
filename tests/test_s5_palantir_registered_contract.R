@@ -47,7 +47,7 @@ test_trajectory_palantir_registered_manifest_contract <- function() {
   closure <- sort(c("pseudotime", "branch_membership",
     "branch_summary", "entropy", "model"))
   stopifnot(identical(inherited_identity,
-      "5e4efa2fe46adca564a1a6aa95767e3cee42c38cb4735b6421efef5da28e2b46"),
+      "7d4286cbcc0bf1fbe2dbe1cce359af211db31fe9795fce8d92d6ebb775606130"),
     identical(definition_identity(
       "scworkbench.operation_pack.definition.v3", fit)$sha256,
       "d2da4a19f9ff497c8894231bb0eae7d4b9dfc6e4266590eb0a6e7af3a92d81d5"),

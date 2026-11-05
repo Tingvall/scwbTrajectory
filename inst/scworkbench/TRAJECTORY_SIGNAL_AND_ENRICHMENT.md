@@ -14,7 +14,8 @@ global signal-analysis method. `trajectory_signal_regions` is the deprecated
 
 Both interval identities enable partial depth adjustment by default. A raw
 signal must supply an authenticated `depth` cell vector; `depth_field` defaults
-to `nCount_RNA`. The operation fits `signal ~ ns(pseudotime, df=4) +
+to `nCount_RNA`. `adjustment_spline_df` defaults to 4 and accepts integers from
+2 to 10. The operation fits `signal ~ ns(pseudotime, df=adjustment_spline_df) +
 centered_log1p(depth)` and removes only the depth term. Signals already marked
 as depth-adjusted with the same field are not adjusted again.
 

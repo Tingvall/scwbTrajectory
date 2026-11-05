@@ -212,6 +212,8 @@ test_trajectory_preranked_gsea_manifest_contract <- function() {
       FALSE),
     identical(operation$params_schema$properties$depth_field$default,
       "nCount_RNA"),
+    identical(as.integer(operation$params_schema$properties$
+      adjustment_spline_df$default), 4L),
     length(operation$provenance_reads) == 5L,
     all(vapply(operation$promotion_closure, function(value)
       setequal(as.character(unlist(value)),

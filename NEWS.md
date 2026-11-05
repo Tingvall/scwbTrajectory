@@ -8,6 +8,9 @@
   intervals do not remove depth twice.
 - Refactors both established gene-set dynamics operations to use the same
   internal scoring kernel while retaining their public contracts.
+- Exposes `adjustment_spline_df` across gene-set scoring, gene-set dynamics,
+  signal intervals, and optional GSEA depth adjustment. The reproducible
+  default remains 4; accepted values are integers from 2 through 10.
 
 # scwbTrajectory 0.1.6
 

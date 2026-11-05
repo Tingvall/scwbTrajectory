@@ -15,6 +15,7 @@
                                               score_method = "mean",
                                               adjust_depth = TRUE,
                                               depth_field = "nCount_RNA",
+                                              adjustment_spline_df = 4L,
                                               n_bins = 50L,
                                               summary_fun = "mean",
                                               min_cells_per_bin = 5L,
@@ -59,6 +60,8 @@
   depth_field <- trimws(as.character(depth_field %||% "nCount_RNA")[1L])
   .trajectory_assert(!is.na(depth_field) && nzchar(depth_field),
     "trajectory_geneset_dynamics: depth_field is required.")
+  adjustment_spline_df <- .trajectory_adjustment_spline_df(
+    adjustment_spline_df, "trajectory_geneset_dynamics")
   if (adjust_depth) {
     depth <- as.numeric(depth[match(as.character(effective_cells),
       names(depth))])
@@ -202,8 +205,9 @@
     n_sets_with_rows <- 0L
     n_curve_rows <- 0L
     scored <- .trajectory_geneset_score_lineage(matrix, set_members,
-      cells_lin, pt, depth, adjust_depth, depth_field, score_method,
-      lin, label = "trajectory_geneset_dynamics")
+      cells_lin, pt, depth, adjust_depth, depth_field,
+      adjustment_spline_df, score_method, lin,
+      label = "trajectory_geneset_dynamics")
     adjusted_matrix <- scored$matrix
     sci <- sci + 1L
     score_rows[[sci]] <- scored$score_table
@@ -629,7 +633,8 @@
           depth_adjusted = adjust_depth,
           depth_field = depth_field,
           depth_artifact_id = as.character(depth_artifact_id),
-          adjustment_spline_df = if (adjust_depth) 4L else NA_integer_,
+          adjustment_spline_df = if (adjust_depth)
+            adjustment_spline_df else NA_integer_,
           score_key_format = "lineage_id::feature_set",
           effective_score_method = if (adjust_depth) "adjusted_z_mean" else
             as.character(score_method))),
@@ -640,7 +645,8 @@
         meta = list(matrix_id = as.character(matrix_id),
           depth_adjusted = adjust_depth, depth_field = depth_field,
           depth_artifact_id = as.character(depth_artifact_id),
-          adjustment_spline_df = if (adjust_depth) 4L else NA_integer_)),
+          adjustment_spline_df = if (adjust_depth)
+            adjustment_spline_df else NA_integer_)),
       fit_summary = scworkbench::wb_prim_obs_table(
         table = fit_summary,
         table_type = "trajectory_geneset_dynamics_summary",
@@ -664,7 +670,8 @@
       adjust_depth = adjust_depth,
       depth_field = depth_field,
       depth_artifact_id = as.character(depth_artifact_id),
-      adjustment_spline_df = if (adjust_depth) 4L else NA_integer_,
+      adjustment_spline_df = if (adjust_depth)
+        adjustment_spline_df else NA_integer_,
       summary_fun = as.character(summary_fun),
       min_cells_per_bin = as.integer(min_cells_per_bin),
       min_set_size = as.integer(min_set_size),

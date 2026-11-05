@@ -279,6 +279,8 @@ upgrade_geneset_depth <- function(operation) {
   operation$params_schema$properties$adjust_depth <- boolean(TRUE)
   operation$params_schema$properties$depth_field <- list(
     type = c("string", "null"), default = "nCount_RNA", minLength = 1L)
+  operation$params_schema$properties$adjustment_spline_df <-
+    integer(4L, 2L, 10L, FALSE)
   operation$inputs <- c(operation$inputs,
     list(input("depth", "cell_vector", FALSE)))
   operation$provenance_reads <- c(operation$provenance_reads, list(list(
@@ -320,6 +322,7 @@ geneset_score_params <- list(
   score_method = string("mean", c("mean", "sum", "rank_mean"), FALSE),
   adjust_depth = boolean(TRUE),
   depth_field = string("nCount_RNA", nullable = FALSE),
+  adjustment_spline_df = integer(4L, 2L, 10L, FALSE),
   min_set_size = integer(5L, 1L, 10000000L, FALSE),
   max_set_size = integer(5000L, 1L, 10000000L, FALSE),
   pseudotime_direction = string("as_is", c("as_is", "invert"), FALSE),
@@ -383,6 +386,8 @@ geneset_scores <- list(
       c("score_method", "choice", "Mean, sum, or rank-mean scoring."),
       c("adjust_depth", "bool", "Apply per-gene partial depth adjustment."),
       c("depth_field", "string", "Depth identity; defaults to nCount_RNA."),
+      c("adjustment_spline_df", "int",
+        "Pseudotime spline flexibility; defaults to 4."),
       c("min_set_size", "int", "Minimum retained feature-set size."),
       c("max_set_size", "int", "Maximum retained feature-set size."),
       c("pseudotime_direction", "choice", "As-is or inverted pseudotime."),

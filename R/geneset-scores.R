@@ -13,6 +13,7 @@
 .trajectory_geneset_score_lineage <- function(matrix, set_members, cells,
                                                pseudotime, depth,
                                                adjust_depth, depth_field,
+                                               adjustment_spline_df,
                                                score_method, lineage_id,
                                                label =
                                                  "trajectory_geneset_scores") {
@@ -21,7 +22,8 @@
   diagnostics <- .trajectory_geneset_empty_adjustment_table()
   if (adjust_depth) {
     adjusted <- .trajectory_depth_adjust_matrix(raw_matrix,
-      pseudotime = pseudotime, depth = depth[cells], spline_df = 4L,
+      pseudotime = pseudotime, depth = depth[cells],
+      spline_df = adjustment_spline_df,
       standardize = TRUE,
       label = paste0(label, " lineage '", lineage_id, "'"))
     adjusted_matrix <- adjusted$values
@@ -29,7 +31,8 @@
     diagnostics$lineage_id <- as.character(lineage_id)
     diagnostics$depth_field <- depth_field
     diagnostics$adjustment_method <- paste0(
-      "expression~ns(pseudotime,df=4)+centered_log1p(depth);",
+      "expression~ns(pseudotime,df=", adjustment_spline_df,
+      ")+centered_log1p(depth);",
       "remove_depth_component;zscore")
     diagnostics <- diagnostics[, c("lineage_id", "feature_id",
       "depth_field", "status", "adjustment_method", "depth_coefficient",
@@ -90,6 +93,7 @@
                                            score_method = "mean",
                                            adjust_depth = TRUE,
                                            depth_field = "nCount_RNA",
+                                           adjustment_spline_df = 4L,
                                            min_set_size = 5L,
                                            max_set_size = 5000L,
                                            pseudotime_direction = "as_is") {
@@ -110,6 +114,8 @@
   depth_field <- trimws(as.character(depth_field %||% "nCount_RNA")[1L])
   .trajectory_assert(!is.na(depth_field) && nzchar(depth_field),
     "trajectory_geneset_scores: depth_field is required.")
+  adjustment_spline_df <- .trajectory_adjustment_spline_df(
+    adjustment_spline_df, "trajectory_geneset_scores")
   if (adjust_depth) {
     depth <- as.numeric(depth[match(as.character(effective_cells),
       names(depth))])
@@ -171,7 +177,7 @@
         "' has zero pseudotime variance."))
     scored <- .trajectory_geneset_score_lineage(matrix,
       selected$members, cells, pseudotime_value, depth, adjust_depth,
-      depth_field, score_method, lineage_id)
+      depth_field, adjustment_spline_df, score_method, lineage_id)
     score_index <- score_index + 1L
     score_rows[[score_index]] <- scored$score_table
     if (nrow(scored$diagnostics)) {
@@ -198,7 +204,8 @@
       effective_score_method = if (adjust_depth) "adjusted_z_mean" else
         score_method,
       adjust_depth = adjust_depth, depth_field = depth_field,
-      adjustment_spline_df = if (adjust_depth) 4L else NA_integer_,
+      adjustment_spline_df = if (adjust_depth) adjustment_spline_df else
+        NA_integer_,
       pseudotime_direction = pseudotime_direction,
       min_set_size = min_set_size, max_set_size = max_set_size,
       matrix_id = matrix_id, stringsAsFactors = FALSE)
@@ -214,7 +221,8 @@
   score_meta <- list(matrix_id = matrix_id, namespace = namespace,
     depth_adjusted = adjust_depth, depth_field = depth_field,
     depth_artifact_id = as.character(depth_artifact_id),
-    adjustment_spline_df = if (adjust_depth) 4L else NA_integer_,
+    adjustment_spline_df = if (adjust_depth) adjustment_spline_df else
+      NA_integer_,
     pseudotime_artifact_id = as.character(
       source$meta$pseudotime_artifact_id),
     pseudotime_key = as.character(source$meta$pseudotime_key),

@@ -3765,6 +3765,12 @@
             "type": ["string", "null"],
             "default": "nCount_RNA",
             "minLength": 1
+          },
+          "adjustment_spline_df": {
+            "type": "integer",
+            "default": 4,
+            "minimum": 2,
+            "maximum": 10
           }
         },
         "additionalProperties": false,
@@ -4592,6 +4598,12 @@
             "type": ["string", "null"],
             "default": "nCount_RNA",
             "minLength": 1
+          },
+          "adjustment_spline_df": {
+            "type": "integer",
+            "default": 4,
+            "minimum": 2,
+            "maximum": 10
           }
         },
         "additionalProperties": false,
@@ -6076,6 +6088,12 @@
             "type": "string",
             "default": "nCount_RNA"
           },
+          "adjustment_spline_df": {
+            "type": "integer",
+            "default": 4,
+            "minimum": 2,
+            "maximum": 10
+          },
           "permutation_mode": {
             "type": "string",
             "default": "auto",
@@ -6479,6 +6497,11 @@
             "name": "depth_field",
             "type": "string",
             "help": "Depth identity; defaults to nCount_RNA."
+          },
+          {
+            "name": "adjustment_spline_df",
+            "type": "int",
+            "help": "Pseudotime spline flexibility; defaults to 4."
           },
           {
             "name": "permutation_mode",
@@ -7933,6 +7956,12 @@
             "type": "string",
             "default": "nCount_RNA"
           },
+          "adjustment_spline_df": {
+            "type": "integer",
+            "default": 4,
+            "minimum": 2,
+            "maximum": 10
+          },
           "min_set_size": {
             "type": "integer",
             "default": 5,
@@ -8145,6 +8174,12 @@
           "parameter": "depth_field"
         },
         {
+          "name": "adjustment_spline_df",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "adjustment_spline_df"
+        },
+        {
           "name": "min_set_size",
           "source": "effective_parameter_value",
           "required": true,
@@ -8257,6 +8292,11 @@
             "name": "depth_field",
             "type": "string",
             "help": "Depth identity; defaults to nCount_RNA."
+          },
+          {
+            "name": "adjustment_spline_df",
+            "type": "int",
+            "help": "Pseudotime spline flexibility; defaults to 4."
           },
           {
             "name": "min_set_size",
@@ -8437,6 +8477,12 @@
           "depth_field": {
             "type": "string",
             "default": "nCount_RNA"
+          },
+          "adjustment_spline_df": {
+            "type": "integer",
+            "default": 4,
+            "minimum": 2,
+            "maximum": 10
           },
           "permutation_mode": {
             "type": "string",
@@ -8781,6 +8827,12 @@
           "parameter": "depth_field"
         },
         {
+          "name": "adjustment_spline_df",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "adjustment_spline_df"
+        },
+        {
           "name": "permutation_mode",
           "source": "effective_parameter_value",
           "required": true,
@@ -8943,6 +8995,11 @@
             "name": "depth_field",
             "type": "string",
             "help": "Depth identity; defaults to nCount_RNA."
+          },
+          {
+            "name": "adjustment_spline_df",
+            "type": "int",
+            "help": "Pseudotime spline flexibility; defaults to 4."
           },
           {
             "name": "permutation_mode",
@@ -9156,6 +9213,12 @@
             "type": ["string", "null"],
             "default": "nCount_RNA",
             "minLength": 1
+          },
+          "adjustment_spline_df": {
+            "type": "integer",
+            "default": 4,
+            "minimum": 2,
+            "maximum": 10
           },
           "min_set_size": {
             "type": "integer",
@@ -9625,6 +9688,12 @@
           "parameter": "depth_field"
         },
         {
+          "name": "adjustment_spline_df",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "adjustment_spline_df"
+        },
+        {
           "name": "min_set_size",
           "source": "effective_parameter_value",
           "required": true,
@@ -9850,6 +9919,11 @@
             "name": "depth_field",
             "type": "string",
             "help": "Trajectory GSEA parameter depth_field"
+          },
+          {
+            "name": "adjustment_spline_df",
+            "type": "int",
+            "help": "Trajectory GSEA parameter adjustment_spline_df"
           },
           {
             "name": "min_set_size",

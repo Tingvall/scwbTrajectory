@@ -249,6 +249,7 @@
                                       covariate_spline_df = 4L,
                                       adjust_depth = TRUE,
                                       depth_field = "nCount_RNA",
+                                      adjustment_spline_df = 4L,
                                       permutation_mode = "auto",
                                       include_endpoint_extrema = TRUE,
                                       dynamic_q_cutoff = 0.05,
@@ -280,6 +281,8 @@
     "trajectory_signal_regions: invalid covariate_adjustment.")
   .trajectory_assert(!is.na(depth_field) && nzchar(depth_field),
     "trajectory_signal_regions: depth_field is required.")
+  adjustment_spline_df <- .trajectory_adjustment_spline_df(
+    adjustment_spline_df, "trajectory_signal_regions")
   .trajectory_assert(permutation_mode %in%
       c("auto", "blocked", "unblocked"),
     "trajectory_signal_regions: invalid permutation_mode.")
@@ -322,6 +325,13 @@
 
   signal_table <- .trajectory_regions_continuous(signal, "signal")
   already_depth_adjusted <- isTRUE(signal$meta$depth_adjusted)
+  effective_adjustment_spline_df <- if (adjust_depth &&
+      already_depth_adjusted) {
+    prior_df <- signal$meta$adjustment_spline_df %||% NA_integer_
+    if (length(prior_df) == 1L && !is.na(prior_df))
+      .trajectory_adjustment_spline_df(prior_df,
+        "trajectory_signal_regions adjusted signal") else NA_integer_
+  } else adjustment_spline_df
   if (adjust_depth && already_depth_adjusted) {
     prior_field <- as.character(signal$meta$depth_field %||% "")[1L]
     .trajectory_assert(!nzchar(prior_field) || identical(prior_field,
@@ -474,7 +484,8 @@
           if (already_depth_adjusted) "already_adjusted" else "not_fitted",
         depth_field = depth_field, depth_artifact_id = depth_artifact_id,
         depth_coefficient = NA_real_, depth_partial_r_squared = NA_real_,
-        depth_spline_df = if (adjust_depth) 4L else NA_integer_,
+        depth_spline_df = if (adjust_depth)
+          effective_adjustment_spline_df else NA_integer_,
         stringsAsFactors = FALSE)
       next
     }
@@ -483,7 +494,7 @@
     depth_adjusted <- raw
     if (adjust_depth && !already_depth_adjusted) {
       depth_adjustment <- .trajectory_depth_adjust_vector(raw, time,
-        signal_depth, spline_df = 4L,
+        signal_depth, spline_df = adjustment_spline_df,
         label = paste0("trajectory_signal_regions signal '", signal_key,
           "'"))
       depth_adjusted <- depth_adjustment$values
@@ -512,7 +523,8 @@
         depth_adjustment$diagnostics$depth_coefficient[[1L]],
       depth_partial_r_squared = if (is.null(depth_adjustment)) NA_real_ else
         depth_adjustment$diagnostics$depth_partial_r_squared[[1L]],
-      depth_spline_df = if (adjust_depth) 4L else NA_integer_,
+      depth_spline_df = if (adjust_depth)
+        effective_adjustment_spline_df else NA_integer_,
       stringsAsFactors = FALSE)
     if (length(windows$index) < 2L) {
       dynamic_n <- dynamic_n + 1L
@@ -795,7 +807,8 @@
     depth_field = depth_field,
     depth_adjustment_status = if (!adjust_depth) "disabled" else
       if (already_depth_adjusted) "already_adjusted" else "applied",
-    depth_spline_df = if (adjust_depth) 4L else NA_integer_,
+    depth_spline_df = if (adjust_depth)
+      effective_adjustment_spline_df else NA_integer_,
     covariate_keys = paste(covariate_keys %||% character(),
       collapse = ";"), pseudotime_direction = pseudotime_direction,
     include_endpoint_extrema = include_endpoint_extrema,
@@ -836,6 +849,7 @@
     permutation_mode = actual_permutation_mode,
     covariate_adjustment = covariate_adjustment,
     adjust_depth = adjust_depth, depth_field = depth_field,
+    adjustment_spline_df = adjustment_spline_df,
     n_supported_regions = nrow(region_table)))
 }
 

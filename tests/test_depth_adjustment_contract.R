@@ -102,6 +102,8 @@ test_trajectory_geneset_scores_reusable_contract <- function() {
     namespace = "synthetic", min_set_size = 1L,
     depth = stats::setNames(x$depth, x$cells), adjust_depth = TRUE)
   scores <- do.call(scoring, common)
+  scores_df3 <- do.call(scoring, c(common,
+    list(adjustment_spline_df = 3L)))
   dynamic <- do.call(dynamics, c(common, list(n_bins = 10L,
     min_cells_per_bin = 1L, top_driver_genes = 1L)))
   stopifnot(identical(names(scores$outputs), c("adjusted_scores",
@@ -113,7 +115,14 @@ test_trajectory_geneset_scores_reusable_contract <- function() {
     identical(scores$outputs$adjusted_scores$value,
       dynamic$outputs$adjusted_scores$value),
     identical(scores$outputs$adjustment_diagnostics$table,
-      dynamic$outputs$adjustment_diagnostics$table))
+      dynamic$outputs$adjustment_diagnostics$table),
+    identical(scores$outputs$adjusted_scores$meta$adjustment_spline_df,
+      4L),
+    identical(scores_df3$outputs$adjusted_scores$meta$
+      adjustment_spline_df, 3L),
+    all(scores_df3$outputs$adjustment_diagnostics$table$spline_df == 3L),
+    !identical(scores$outputs$adjusted_scores$value,
+      scores_df3$outputs$adjusted_scores$value))
 
   signal_dynamics <- getFromNamespace(".trajectory_s2_signal_dynamics",
     "scwbTrajectory")(effective_cells = x$cells,
@@ -147,11 +156,13 @@ test_trajectory_signal_interval_depth_and_reuse_contract <- function() {
   applied <- method(effective_cells = x$cells, signal = signal,
     pseudotime = pseudotime, pseudotime_key = "lineage", depth = depth,
     adjust_depth = TRUE, depth_field = "nCount_RNA",
+    adjustment_spline_df = 3L,
     window_width_fraction = 0.15, window_step_fraction = 0.05,
     min_cells_per_window = 8L, n_permutations = 19L, seed = 71L)
   summary <- applied$outputs$adjustment_summary$table
   stopifnot(identical(summary$depth_adjustment_status, "applied"),
-    abs(summary$depth_coefficient - 2.5) < 1e-8,
+    is.finite(summary$depth_coefficient),
+    identical(summary$depth_spline_df, 3L),
     identical(applied$outputs$fit_summary$table$depth_field,
       "nCount_RNA"))
 
@@ -183,6 +194,8 @@ test_trajectory_depth_manifest_defaults_contract <- function() {
     identical(scoring$params_schema$properties$adjust_depth$default, TRUE),
     identical(scoring$params_schema$properties$depth_field$default,
       "nCount_RNA"),
+    identical(scoring$params_schema$properties$adjustment_spline_df$default,
+      4L),
     identical(vapply(scoring$outputs, `[[`, character(1), "name"),
       c("adjusted_scores", "adjustment_diagnostics", "fit_summary")))
   for (name in c("trajectory_geneset_dynamics",
@@ -192,6 +205,8 @@ test_trajectory_depth_manifest_defaults_contract <- function() {
         adjust_depth$default, TRUE),
       identical(operation$params_schema$properties$depth_field$default,
         "nCount_RNA"),
+      identical(operation$params_schema$properties$
+        adjustment_spline_df$default, 4L),
       identical(vapply(utils::tail(operation$outputs, 3L), `[[`,
         character(1), "name"), c("adjusted_scores",
           "adjustment_diagnostics", "fit_summary")),
@@ -201,10 +216,16 @@ test_trajectory_depth_manifest_defaults_contract <- function() {
   }
   stopifnot(identical(operations$trajectory_signal_intervals$
       params_schema$properties$adjust_depth$default, TRUE),
+    identical(operations$trajectory_signal_intervals$params_schema$
+      properties$adjustment_spline_df$default, 4L),
     identical(operations$trajectory_signal_regions$params_schema$properties$
       adjust_depth$default, TRUE),
+    identical(operations$trajectory_signal_regions$params_schema$properties$
+      adjustment_spline_df$default, 4L),
     identical(operations$trajectory_preranked_gsea$params_schema$properties$
-      adjust_depth$default, FALSE))
+      adjust_depth$default, FALSE),
+    identical(operations$trajectory_preranked_gsea$params_schema$properties$
+      adjustment_spline_df$default, 4L))
   TRUE
 }
 
@@ -344,9 +365,14 @@ test_trajectory_depth_rejection_contract <- function() {
     dimnames = list("gene", x$cells))
   negative <- x$depth; negative[[3L]] <- -1
   missing <- x$depth; missing[[4L]] <- NA_real_
+  bad_df <- getFromNamespace(".trajectory_adjustment_spline_df",
+    "scwbTrajectory")
   stopifnot(inherits(try(method(matrix, x$pseudotime, negative),
       silent = TRUE), "try-error"),
     inherits(try(method(matrix, x$pseudotime, missing), silent = TRUE),
-      "try-error"))
+      "try-error"),
+    inherits(try(bad_df(1L), silent = TRUE), "try-error"),
+    inherits(try(bad_df(4.5), silent = TRUE), "try-error"),
+    inherits(try(bad_df(11L), silent = TRUE), "try-error"))
   TRUE
 }

@@ -619,6 +619,7 @@
                                        covariate_spline_df = 4L,
                                        adjust_depth = FALSE,
                                        depth_field = "nCount_RNA",
+                                       adjustment_spline_df = 4L,
                                        depth = NULL,
                                        min_set_size = 5L,
                                        max_set_size = 5000L,
@@ -645,6 +646,8 @@
   covariate_adjustment <- as.character(covariate_adjustment)[1L]
   adjust_depth <- isTRUE(adjust_depth)
   depth_field <- trimws(as.character(depth_field %||% "nCount_RNA")[1L])
+  adjustment_spline_df <- .trajectory_adjustment_spline_df(
+    adjustment_spline_df, "trajectory_preranked_gsea")
   score_type <- as.character(score_type)[1L]
   namespace <- trimws(as.character(namespace)[1L])
   pseudotime_key <- trimws(as.character(pseudotime_key)[1L])
@@ -923,7 +926,8 @@
         c(length(feature_index), length(cells))),
       "trajectory_preranked_gsea: authenticated matrix chunk has an unexpected shape.")
     depth_chunk <- if (adjust_depth) .trajectory_depth_adjust_matrix(
-      raw_chunk, pseudotime = pt, depth = depth, spline_df = 4L,
+      raw_chunk, pseudotime = pt, depth = depth,
+      spline_df = adjustment_spline_df,
       standardize = FALSE,
       label = "trajectory_preranked_gsea depth adjustment")$values else
       raw_chunk
@@ -1061,7 +1065,8 @@
         covariates_artifact_id = covariates_artifact_id,
         depth_artifact_id = depth_artifact_id,
         depth_field = depth_field, adjust_depth = adjust_depth,
-        depth_spline_df = if (adjust_depth) 4L else NA_integer_,
+        depth_spline_df = if (adjust_depth)
+          adjustment_spline_df else NA_integer_,
         pseudotime_direction = pseudotime_direction,
         permutation_mode = actual_permutation_mode,
         n_permutations = permutations,
@@ -1115,6 +1120,7 @@
     permutation_mode = actual_permutation_mode,
     n_permutations = permutations, seed = seed,
     adjust_depth = adjust_depth, depth_field = depth_field,
+    adjustment_spline_df = adjustment_spline_df,
     p_adjust_method = p_adjust_method))
 }
 

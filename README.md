@@ -29,13 +29,16 @@ describes whole-trajectory curves for precomputed cell-level signals.
 `trajectory_geneset_scores` is the canonical reusable score-construction
 operation. It adjusts each gene for `nCount_RNA` by default using an
 authenticated `depth` cell vector, jointly fitting a natural pseudotime spline
-and centered `log1p(depth)`, subtracting only the fitted depth component, standardizing each
-adjusted gene, and average genes within each set. Cell-level scores and
+and centered `log1p(depth)`, subtracting only the fitted depth component,
+standardizing each adjusted gene, and averaging genes within each set. Cell-level scores and
 gene-level diagnostics are retained as `adjusted_scores` and
 `adjustment_diagnostics`. Those scores can be sent independently to
 `trajectory_signal_dynamics_explicit`, `trajectory_signal_intervals`, or both.
 The established `trajectory_geneset_dynamics` operations retain their combined
 scoring-and-dynamics contracts and use the same scoring kernel.
+`adjustment_spline_df` controls the pseudotime spline flexibility for all
+depth-adjustable operations; it defaults to 4 and accepts integers from 2 to
+10. The selected value is retained in output provenance.
 `trajectory_signal_intervals` tests whether a signal has globally qualified
 trajectory dynamics, performs local elevated and reduced tests, and merges
 supported adjacent local tests into signal intervals. Its terminals are
