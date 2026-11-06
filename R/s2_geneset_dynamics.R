@@ -207,6 +207,7 @@
     scored <- .trajectory_geneset_score_lineage(matrix, set_members,
       cells_lin, pt, depth, adjust_depth, depth_field,
       adjustment_spline_df, score_method, lin,
+      output_cells = effective_cells,
       label = "trajectory_geneset_dynamics")
     adjusted_matrix <- scored$matrix
     sci <- sci + 1L

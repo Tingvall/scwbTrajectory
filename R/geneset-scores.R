@@ -48,8 +48,14 @@
                                                adjust_depth, depth_field,
                                                adjustment_spline_df,
                                                score_method, lineage_id,
+                                               output_cells = cells,
                                                label =
                                                  "trajectory_geneset_scores") {
+  output_cells <- as.character(output_cells)
+  .trajectory_assert(length(output_cells) > 0L && !anyNA(output_cells) &&
+      all(nzchar(output_cells)) && !anyDuplicated(output_cells) &&
+      all(output_cells %in% colnames(matrix)), paste0(label,
+        ": output cell axis is invalid."))
   raw_matrix <- as.matrix(matrix[, cells, drop = FALSE])
   adjusted_matrix <- raw_matrix
   diagnostics <- .trajectory_geneset_empty_adjustment_table()
@@ -74,10 +80,35 @@
       "design_columns", "spline_df"), drop = FALSE]
   }
 
+  output_raw_matrix <- as.matrix(matrix[, output_cells, drop = FALSE])
+  output_matrix <- output_raw_matrix
+  if (adjust_depth) {
+    centered_output_depth <- log1p(depth[output_cells]) -
+      mean(log1p(depth[cells]))
+    beta <- diagnostics$depth_coefficient[
+      match(rownames(output_raw_matrix), diagnostics$feature_id)]
+    adjusted_output <- output_raw_matrix -
+      tcrossprod(beta, centered_output_depth)
+    adjusted_mean <- diagnostics$adjusted_mean[
+      match(rownames(output_raw_matrix), diagnostics$feature_id)]
+    adjusted_sd <- diagnostics$adjusted_sd[
+      match(rownames(output_raw_matrix), diagnostics$feature_id)]
+    zero_variance <- !is.finite(adjusted_sd) | adjusted_sd <=
+      sqrt(.Machine$double.eps)
+    output_matrix <- sweep(adjusted_output, 1L, adjusted_mean, "-")
+    good <- !zero_variance
+    output_matrix[good, ] <- sweep(
+      output_matrix[good, , drop = FALSE], 1L, adjusted_sd[good], "/")
+    output_matrix[zero_variance, ] <- 0
+  }
+
   rank_background <- NULL
+  output_rank_background <- NULL
   if (identical(score_method, "rank_mean")) {
     features <- unique(unlist(set_members, use.names = FALSE))
     rank_background <- raw_matrix[features[nzchar(features)], , drop = FALSE]
+    output_rank_background <- output_raw_matrix[
+      features[nzchar(features)], , drop = FALSE]
   }
   scores <- list()
   detected <- integer(length(set_members))
@@ -97,12 +128,19 @@
       .trajectory_s2_score_values(effective, score_method = score_method,
         rank_bg = rank_background)
     scores[[name]] <- as.numeric(score)
+    output_effective <- if (adjust_depth)
+      output_matrix[features, , drop = FALSE] else
+        output_raw_matrix[features, , drop = FALSE]
+    output_score <- if (adjust_depth) colMeans(output_effective) else
+      .trajectory_s2_score_values(output_effective,
+        score_method = score_method, rank_bg = output_rank_background)
     index <- index + 1L
     rows[[index]] <- data.frame(
-      key = rep(paste(lineage_id, name, sep = "::"), length(cells)),
-      cell_id = as.character(cells), value = as.numeric(score),
-      lineage_id = rep(as.character(lineage_id), length(cells)),
-      feature_set = rep(as.character(name), length(cells)),
+      key = rep(paste(lineage_id, name, sep = "::"),
+        length(output_cells)),
+      cell_id = output_cells, value = as.numeric(output_score),
+      lineage_id = rep(as.character(lineage_id), length(output_cells)),
+      feature_set = rep(as.character(name), length(output_cells)),
       stringsAsFactors = FALSE)
   }
   score_table <- do.call(rbind, rows)

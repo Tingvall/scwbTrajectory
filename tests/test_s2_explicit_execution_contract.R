@@ -3,7 +3,8 @@ source(file.path(test_dir, "helper_s2_fixture.R"), local = .GlobalEnv)
 
 .trajectory_s2_explicit_params <- function(operation) {
   if (identical(operation, "geneset")) return(list(
-    namespace = "trajectory", pseudotime_key = "L1", min_set_size = 1L,
+    namespace = "trajectory", pseudotime_key = "L1",
+    feature_sets = "selected", min_set_size = 1L,
     adjust_depth = FALSE,
     n_bins = 5L, min_cells_per_bin = 1L, min_bins_observed = 2L,
     bootstrap_n = 8L, bootstrap_seed = 17L, n_permutations = 8L,
@@ -151,8 +152,10 @@ test_trajectory_s2_explicit_runners_rejection_and_rollback_contract <- function(
       mixed_selector$feature_sets <- c("selected", "missing") else
       mixed_selector$signal_keys <- c("rising", "missing")
     mixed <- .trajectory_s2_run_direct(x, operation, mixed_selector)
+    selector_message <- if (identical(operation, "geneset"))
+      "unknown feature_sets" else "requested .* not found"
     stopifnot(inherits(mixed$value, "error"),
-      grepl("requested .* not found", conditionMessage(mixed$value)),
+      grepl(selector_message, conditionMessage(mixed$value)),
       length(mixed$outputs) == 0L)
     bad_membership <- .trajectory_s2_run_direct(x, operation,
       membership = few)

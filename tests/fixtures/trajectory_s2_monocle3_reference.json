@@ -11,8 +11,8 @@
           "rows": 3,
           "identity": {
             "structural_fingerprint": "69f0e7709efef521f24c566bdf4ff351b1a24a3bc184756c4a9a75e3ed9fae27",
-            "content_sha256": "1008184918df6e785def5a546661932c572d6b9291c85820dea7bf68f60e3ba7",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "8a6e7597eee17abdd87ad089819a511df3c0bc19ff42b1cdbebcd55ae8e85599",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -23,8 +23,8 @@
           "rows": 1,
           "identity": {
             "structural_fingerprint": "229f445f612863eff19e10b3d631cef7b113ab1dc6098bd26f546b93dc3191d3",
-            "content_sha256": "6650b0d44c521fcd1f411f59a009e648eb2d809b1e7aa896562ad8afaedb13a0",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "378a79f1df242537ba0c1356c8e61b591a9fa7dfba1ce36c30b6c33487d46cda",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -52,8 +52,8 @@
           "rows": 3,
           "identity": {
             "structural_fingerprint": "69f0e7709efef521f24c566bdf4ff351b1a24a3bc184756c4a9a75e3ed9fae27",
-            "content_sha256": "db50fc62e35198548182516b74c11d94d26d32aeee576f59c97008f516481535",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "fce4045a3e8ff85f2f5fbe74ea02fbafe022670ab431d7cf08e99dceeb79eb57",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -64,8 +64,8 @@
           "rows": 1,
           "identity": {
             "structural_fingerprint": "229f445f612863eff19e10b3d631cef7b113ab1dc6098bd26f546b93dc3191d3",
-            "content_sha256": "5f1a7d61fe808803f0e618731e00a51c4c3f26593c659af6e26a16ecbb2332a1",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "241eee985cf1ef8c882117b1173ad5934bfc12939d2c4f6336bca7a7e2a69741",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -93,8 +93,8 @@
           "rows": 3,
           "identity": {
             "structural_fingerprint": "69f0e7709efef521f24c566bdf4ff351b1a24a3bc184756c4a9a75e3ed9fae27",
-            "content_sha256": "1dd60bf57f2952ed4fa875ff35fadcd61c2fc483c6f7570dcfa9000e92cc7d68",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "e532d3150be0433184c3d0e7fbb7c64ee033473e844cc9ccb958d3d6bacd217f",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -105,8 +105,8 @@
           "rows": 1,
           "identity": {
             "structural_fingerprint": "229f445f612863eff19e10b3d631cef7b113ab1dc6098bd26f546b93dc3191d3",
-            "content_sha256": "2eec3b17db407051d67db4ebbe33dedaada73fcc5a805be4ec5417dd92aa7d7a",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "6fd2c43726fad3a42bc11362dc7ef400d0850a95aba6b1346c4255ff4eb5cd7d",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -134,8 +134,8 @@
           "rows": 15,
           "identity": {
             "structural_fingerprint": "ccf432a7a35e2f6388c7138232442f8013a809852668e29e30c7a6b6c968b8e4",
-            "content_sha256": "6b23224caae7b0a21aff2b1e6f6ceefb176bd739ff25cb7315d4d8df934e6991",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "1b503e679e695fee404242493d95929bff6fdee03d40148e8f1409732ead2282",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -146,8 +146,8 @@
           "rows": 1,
           "identity": {
             "structural_fingerprint": "00d48c2c3edfe177a13feef044d0e631bcbf0a705f4a07e87a880126b24323cd",
-            "content_sha256": "92ce6a6dd6f1fbfcfdf1ee18c9f68df85143947bad7dcf093e4fa3091b599db5",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "b3d6e2abdb50d6a07f9e4ea76290e3324b051fea2bdf1ab3e1acb64103a75422",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -171,8 +171,8 @@
           "rows": 12,
           "identity": {
             "structural_fingerprint": "6f0af17c27cc0b1045325da3f83b1a9c858200d77047caa7a8c801030532a2cf",
-            "content_sha256": "609e53d5d7a8da9f9b27a69d536860a70c9536d17d3951709b085a123335fa53",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "d5f2211873b2dfa42eb62837112fec69995b2d573dd6be41044461b0c855988b",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -183,8 +183,8 @@
           "rows": 1,
           "identity": {
             "structural_fingerprint": "00d48c2c3edfe177a13feef044d0e631bcbf0a705f4a07e87a880126b24323cd",
-            "content_sha256": "0db09c7a40efe0f5731d161b098881ed61f93f6454beb89834138a4177e6dca5",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "48f2bcf632081a808dc98304d11cdd03624de7fcf83aed13308b8c78e2dbe8d0",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -208,8 +208,8 @@
           "rows": 15,
           "identity": {
             "structural_fingerprint": "ccf432a7a35e2f6388c7138232442f8013a809852668e29e30c7a6b6c968b8e4",
-            "content_sha256": "7faf5daa4e9b2f32c24aa46bec1a6b5f66b7935db2c6670bcc95ed943a7885b7",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "58f6b1ff9d006dd8abcf911a8028444f849d3fbef71017d690e5ea6fb5d4855a",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -220,8 +220,8 @@
           "rows": 1,
           "identity": {
             "structural_fingerprint": "00d48c2c3edfe177a13feef044d0e631bcbf0a705f4a07e87a880126b24323cd",
-            "content_sha256": "7f0624179cd19b209d1433b7958ca103789efd9ab7b796770ddc71eb8ae299f5",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "d712499846db08d165701f83d16f1357fdf9f3ddc04d60e330e15faf6172d88d",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -245,8 +245,8 @@
           "rows": 5,
           "identity": {
             "structural_fingerprint": "d52364ec3f36874a82e49fefee8bf82caff65572a6f148b95c242360b2514d74",
-            "content_sha256": "5774fc068e58953014a7cde55bcfd4e25708b87ff65110d2cfb983a2435e1216",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "e0bcddf04d5078b7cd424153457d1c4cc46c3e95887a4cfa4bdeeaadd0830edd",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -257,8 +257,8 @@
           "rows": 1,
           "identity": {
             "structural_fingerprint": "0e47d24a17de455c4c7b4167ee0adb3faca338acd338917e532ceeebc05c4607",
-            "content_sha256": "4dba6b06cd4eba30aeaf2f666081c4920267514804ceb1992f0c5eb8020db487",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "eefb9b1dee3b1f46f87bbcfc3731aebcdbc111b918809f1e7beb7c78198622c4",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -283,8 +283,8 @@
           "rows": 4,
           "identity": {
             "structural_fingerprint": "134cfe21d80f294a4bef1140a9814f4743070dfb555d142d53c1f80b912cd5e7",
-            "content_sha256": "6cef8caee7092b87c346e157b9a73e69680104f2a08b26c5e05f6504d14cc340",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "cde5ace8b2ac951084b146d9ecb0463f53353b4e339eae00fe20a430efda278a",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -295,8 +295,8 @@
           "rows": 1,
           "identity": {
             "structural_fingerprint": "0e47d24a17de455c4c7b4167ee0adb3faca338acd338917e532ceeebc05c4607",
-            "content_sha256": "2c00aa04b6159fbaa871313a952e0829aa59707253c0c42ecdad407694953555",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "7af93f22f296144936f7a65ed16701a68657026676e3484bb65135d0c94c5d7b",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -321,8 +321,8 @@
           "rows": 5,
           "identity": {
             "structural_fingerprint": "d52364ec3f36874a82e49fefee8bf82caff65572a6f148b95c242360b2514d74",
-            "content_sha256": "f06b7c041dbddaba90b8a753a26a0835d5ee1b7a7b4486395bdd18315c9a7843",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "65b9177fbe7d7a4e17d2659393f26bb934313aa9bf65a140e7a4974385c76cee",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -333,8 +333,8 @@
           "rows": 1,
           "identity": {
             "structural_fingerprint": "0e47d24a17de455c4c7b4167ee0adb3faca338acd338917e532ceeebc05c4607",
-            "content_sha256": "686e8dfb77a021be521cf59859ec5f9158c3e915756ce4842e83933016f265dd",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "871bef85b9636a6b7bf85e2a23f05b383a0fc1bede41db700998ab7921798c43",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -359,8 +359,8 @@
           "rows": 5,
           "identity": {
             "structural_fingerprint": "3f0a654a1f4cbe97fdf8affaa55ff2fe2cd0f0b6a5ff6cd4e96a971f1139a14e",
-            "content_sha256": "471b98770f0d4d9e6c41e9ec5f05582c0b6ce5ab87d589db2617aadefc495a04",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "cfb743694b7d021de2bd748a10256e1416e39d63d162e4a729151bd7d2106686",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -371,8 +371,8 @@
           "rows": 1,
           "identity": {
             "structural_fingerprint": "ec93f6bacc2eaf1e9b01c18e8c6a3516ebaef370107b0b9724ef42213f7c45b4",
-            "content_sha256": "2ec1ab5e4b4394497a442efe1e89b252a02f45d434bb9fca3c78067d0c40a70b",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "37f26821373ce51793366df3f2509ea34c87d937a9b39f58e9b850d50a1ba0f6",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -383,8 +383,8 @@
           "rows": 1,
           "identity": {
             "structural_fingerprint": "125bbbfa9cc80166fc9e8963d83db13a5fb436a650f595b4756c647a9d9634c5",
-            "content_sha256": "b307bd54eecfba583444f29d40bfa5e32a1f5e8c8da81232352a8d51ad4857a7",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "aa65e645844e06f87ecede2dec30c1321d5c31877888967c3f25902c657e84c8",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -395,8 +395,8 @@
           "rows": 2,
           "identity": {
             "structural_fingerprint": "0b934ff046cbe71c1f34b82466bf224392137d8033299a005ecf9690952b2394",
-            "content_sha256": "f0b3315bfca52737b017726800dca61555935f5b4b13c65b753f0f70fac004dd",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "019928a507a07e839a47b5d1671d2a252dc50a2bdf4aad1e5112bf3309c0f80e",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -407,8 +407,8 @@
           "rows": 10,
           "identity": {
             "structural_fingerprint": "ee87fe5781b46f7cd62238284489598a93646d23051f62bebdda731e55e8bec6",
-            "content_sha256": "8c32852b6505f4b4c668b709deaba0007ca3b80dc764888856c1f26b34591b28",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "99ab8941b37ff3b7afa3c3500e0a9f484e2f22aa024ec08e6153ffafc54a38a2",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -419,8 +419,8 @@
           "rows": 1,
           "identity": {
             "structural_fingerprint": "1351a78b941899996e5f6fd098fd1c54e5819ac272d41c411677f32b16562b9d",
-            "content_sha256": "70740184ff869aebff33d310593a9f1a8549d747b85fa52903f9c5eb4161e69e",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "e5d61b176e9e8cf8bd2ce4b6cf52c28a7eb4f7edef8c818514bc2e009ccb167e",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -475,8 +475,8 @@
           "rows": 4,
           "identity": {
             "structural_fingerprint": "1262862126570aeb91495efd721d0545cb447dc5bd9cb1ca070a894953279937",
-            "content_sha256": "3fd80c4e1680ce139baacbced7efff999b718beb4a7cabd945f241adbcd13fd6",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "8c6c52c1ad9833e9acc018b8e875f5f7bd9929b1819d290a50c0db789f5b1d39",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -487,8 +487,8 @@
           "rows": 1,
           "identity": {
             "structural_fingerprint": "ec93f6bacc2eaf1e9b01c18e8c6a3516ebaef370107b0b9724ef42213f7c45b4",
-            "content_sha256": "b6d8791bd9acd253e5146af2209688436ec59f190556151cee345be33c98bb0e",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "daf774307ab857693a9f8a5125781fc7edc7e2649107aac6edff763f8cc796c5",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -499,8 +499,8 @@
           "rows": 1,
           "identity": {
             "structural_fingerprint": "125bbbfa9cc80166fc9e8963d83db13a5fb436a650f595b4756c647a9d9634c5",
-            "content_sha256": "99d280df6b5a1d8e7edf54491375716cbb67bbc88c564448acf75dfa1bd3b1eb",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "87f733e87aab4e0bed5ee00c646cb718f55aa31343e723071390dd6de09f6e33",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -511,8 +511,8 @@
           "rows": 2,
           "identity": {
             "structural_fingerprint": "0b934ff046cbe71c1f34b82466bf224392137d8033299a005ecf9690952b2394",
-            "content_sha256": "e1227128fec5c78b486b709ae633457a442669beb8d88080097bddc59f4d0ea6",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "d984f4d4b076e5750692c32cee6ce538bee9ffc3b34878424553737e38382d03",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -523,8 +523,8 @@
           "rows": 8,
           "identity": {
             "structural_fingerprint": "717aaa36676445bd29b86bacd4604cdaf96cebe2e05bbf72327b82bad9002a1e",
-            "content_sha256": "516c7f8e18d15cd663b63f0ba88a2148688f568c357effde10c82d3480e89dc5",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "a46abe0d1272aaa7b1a1e52ec397e806ee0c57766c89de3cfda913274aea100c",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -535,8 +535,8 @@
           "rows": 1,
           "identity": {
             "structural_fingerprint": "1351a78b941899996e5f6fd098fd1c54e5819ac272d41c411677f32b16562b9d",
-            "content_sha256": "a1721db5f374304a281b41118d20306bbcf2062082a5b44c5875d3c7b5f00580",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "2e9a53bbcf143d4c9ee0d8a00ecef876a530edcd4f1d5736c8513424bdfe4281",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -591,8 +591,8 @@
           "rows": 5,
           "identity": {
             "structural_fingerprint": "3f0a654a1f4cbe97fdf8affaa55ff2fe2cd0f0b6a5ff6cd4e96a971f1139a14e",
-            "content_sha256": "2e9829b0bab1808eada182a0649642517aacf34eb9ac9dd31e406e662642a8e2",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "1e7e968d0b71db372760b273e55ec9ef408eb5526a109cb33e92657a98bbb7ad",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -603,8 +603,8 @@
           "rows": 1,
           "identity": {
             "structural_fingerprint": "ec93f6bacc2eaf1e9b01c18e8c6a3516ebaef370107b0b9724ef42213f7c45b4",
-            "content_sha256": "354ee6424b1cef54b872b83d0987677326f167751b76a2475596d49047b53f00",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "244948d93b2ea5e4e60055dd42b38efcfd1704a34178ad216c1109bdf20020d6",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -615,8 +615,8 @@
           "rows": 1,
           "identity": {
             "structural_fingerprint": "125bbbfa9cc80166fc9e8963d83db13a5fb436a650f595b4756c647a9d9634c5",
-            "content_sha256": "c8eb0fd83fa0f78ade5c6655ba256ca1ed46302c466c194c064fcbffc8e559ba",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "e6e4147d6a89d3f66ca7c0b085587e264705972d8e54ec6df61fc6d298dbe557",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -627,8 +627,8 @@
           "rows": 2,
           "identity": {
             "structural_fingerprint": "0b934ff046cbe71c1f34b82466bf224392137d8033299a005ecf9690952b2394",
-            "content_sha256": "2d13ec970cb0305dddd3ae2c3004f3cb3fd064496194b26bce0bd23d32f46504",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "0aa1191df14151f58f149ad162775d714e9926f0e91d353f0ced8c9c92e31fb3",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -639,8 +639,8 @@
           "rows": 10,
           "identity": {
             "structural_fingerprint": "ee87fe5781b46f7cd62238284489598a93646d23051f62bebdda731e55e8bec6",
-            "content_sha256": "37a6cc1f70229152677863c7b9d05d88c8f04b4d897610a96acbc1c659baadff",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "826f8667e903b1285c300c29508316fef75158cf7ac6430a5106a257899e9207",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -651,8 +651,8 @@
           "rows": 1,
           "identity": {
             "structural_fingerprint": "1351a78b941899996e5f6fd098fd1c54e5819ac272d41c411677f32b16562b9d",
-            "content_sha256": "50e72041cd2c698e9f47d27f22caac7ca0cb804d353b5d31fc827060bd22da1b",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "071382d3b03bc41e5d8ab4253ad9cbab4adf9437a09b9933d6a6e7b1e5878e8f",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -707,8 +707,8 @@
           "rows": 5,
           "identity": {
             "structural_fingerprint": "5575f06b00bbb276771688642a98d78f7ee213b8e96459cd12469c6cc24cb4a6",
-            "content_sha256": "45919d8ce1a45b03e44635c4dcc9b612eedb7a840782aa33b92e3d7f1cb1f2e7",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "ae8d6c64ae2b542ed81147347a1a3cef779b0a7c624d92c7ee6608942858fec0",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -719,8 +719,8 @@
           "rows": 1,
           "identity": {
             "structural_fingerprint": "05b9a8b5374ca531f67966c8fe740441ee0d532ab1838de19f6657b76d4c0c2e",
-            "content_sha256": "517002cb53b33ad08467bf2e867038c8e6b1c787d3b9911df54d77812993dd56",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "f0342f18094f2d29a4ffc1a380ab80e70a59558df3ed713e102f1b3f7626c4be",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -744,8 +744,8 @@
           "rows": 4,
           "identity": {
             "structural_fingerprint": "62b91928528bfa54d46bca3bb10ebcc5b79e8ff8b86d50becae568310ee4ba59",
-            "content_sha256": "6b6100d0d79102a0d633420c9820cc2252cfd62dcbb66a91f0fc50ccc0dc3f33",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "ca880c47937bbb40d8512e1d8f931f7607b126564fa8ea92c11442ab59fc6b0c",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -756,8 +756,8 @@
           "rows": 1,
           "identity": {
             "structural_fingerprint": "05b9a8b5374ca531f67966c8fe740441ee0d532ab1838de19f6657b76d4c0c2e",
-            "content_sha256": "723fa51f9ba7e2e65c073336a968e21e6e2ca0358402c5a32c9000f78c2bb2f2",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "554376b0814f5f6dac1050c587cc80057ba1382cb5e164f9742b2a2118c77d69",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -781,8 +781,8 @@
           "rows": 5,
           "identity": {
             "structural_fingerprint": "5575f06b00bbb276771688642a98d78f7ee213b8e96459cd12469c6cc24cb4a6",
-            "content_sha256": "0790b5a501f70e641085525fd81da0783c4db6e2f5e273e41cc088356d0de4b2",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "bf2d40d6f1e3188b4e07954f48ed506f0ebec913123349879e9e97cefbd01898",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -793,8 +793,8 @@
           "rows": 1,
           "identity": {
             "structural_fingerprint": "05b9a8b5374ca531f67966c8fe740441ee0d532ab1838de19f6657b76d4c0c2e",
-            "content_sha256": "ae373efa3ba2f96e62393cf269cd2a3491f73948a35851afb5b66928cf4e612f",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "d23d645ad87d4d874cfe74f830203ae33447df8f65264ee72c12b5c3bfe4cc5f",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -818,8 +818,8 @@
           "rows": 10,
           "identity": {
             "structural_fingerprint": "e25229b54ac0ea3321824b1059ba9ebf741779d1ad963e983f1846b91d960d9e",
-            "content_sha256": "fc1af9bbfe8f49dbafed64abf5b51d18b16527c729601ecb8e43589f35d19e00",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "cfb2f36de012e7f8dcd76a3f22ff1b5c3021a938614a068a9e07c2167a802ce4",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -830,8 +830,8 @@
           "rows": 2,
           "identity": {
             "structural_fingerprint": "b83501f3ed2f7e7dd987b521b5b239735c90c813742400280b44a8dd7998dbe8",
-            "content_sha256": "a876eb8747c5d2104c82c541fe58a7bd3aeaebd5e3fcfdc4bcf9dd178d2d01a0",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "d47aa99e31305cda93d1f2b0fcc7548cdf66a601935f8a48a8d974b4b2bbd651",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -842,8 +842,8 @@
           "rows": 2,
           "identity": {
             "structural_fingerprint": "c9f1ef94a836414bfc37034cd6acc632aa1f2db445c0beb30a7c3b8d759a9cc0",
-            "content_sha256": "74baf0bbe663e75cb5d15e5608378279f2d78f4368cd0944e31105a1a4ae4cc6",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "1c1d747f1e97842dc9a0a0a69fb1c40d265612082dcf230591f9c552832d7399",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -854,8 +854,8 @@
           "rows": 1,
           "identity": {
             "structural_fingerprint": "b9ddbde11e902ba221dd223e6a0dc083cad073d0b615c2d19c8f0a0210af0f19",
-            "content_sha256": "b45a2831fc8537bf0aad56f6f52a933fd75a75afa71ce1cc798a3deb993b9488",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "90bd25fa3865d4329422df2360546c7cd4728c82f52f98f0c6cae26f53304974",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -896,8 +896,8 @@
           "rows": 8,
           "identity": {
             "structural_fingerprint": "ff704581aa3cbaeaefbbce8e598f5ee36efa1577998a14ec23162365dcd89def",
-            "content_sha256": "a59561cd315857b32fa45a53f1604a1d5b99f426eeb87827c920daf19e7cbaf7",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "acff2c05eecd0738209beb8eb7815c622dd5ac62a64fcfdf617bfecb155e037d",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -908,8 +908,8 @@
           "rows": 2,
           "identity": {
             "structural_fingerprint": "b83501f3ed2f7e7dd987b521b5b239735c90c813742400280b44a8dd7998dbe8",
-            "content_sha256": "58bcf8c1213178fc48df256f760037ef45c873c4ef445be2ec3272df4275fdd7",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "a817b4ee8b5265e232e62d7c2f9d6e886bcbff0e9f0c0f75bf49138707b1dc59",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -920,8 +920,8 @@
           "rows": 2,
           "identity": {
             "structural_fingerprint": "c9f1ef94a836414bfc37034cd6acc632aa1f2db445c0beb30a7c3b8d759a9cc0",
-            "content_sha256": "b05cdbfc57487c463838a851cb93288d7f90a6a7d391d90af569552ef7b74aa3",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "48fc0c88d8bb7a252c9524d0d23268f7897a03c6eb7872e9c8432c00d2243f30",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -932,8 +932,8 @@
           "rows": 1,
           "identity": {
             "structural_fingerprint": "b9ddbde11e902ba221dd223e6a0dc083cad073d0b615c2d19c8f0a0210af0f19",
-            "content_sha256": "f010494f4f46266922705f6be5b3136acc567798d00491cd11b965b375ee327b",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "5812bd63ec72d085c7b3c49046e31a5acaf889db1105890011424208b7d0303d",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -974,8 +974,8 @@
           "rows": 10,
           "identity": {
             "structural_fingerprint": "e25229b54ac0ea3321824b1059ba9ebf741779d1ad963e983f1846b91d960d9e",
-            "content_sha256": "92d2f1724395c1e106f42e6f4848c98c6ac43f7267b319ef99ce19be8a972e35",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "513fc84900841ca6a6081cf39ba665801b3cf474dd064e3ae4260ce3587dad5f",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -986,8 +986,8 @@
           "rows": 2,
           "identity": {
             "structural_fingerprint": "b83501f3ed2f7e7dd987b521b5b239735c90c813742400280b44a8dd7998dbe8",
-            "content_sha256": "66b17b9374ba1d6b3dd671708ab0d6c003a036a937cbf34f424ba830cce6fcfe",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "fa6123a133c9d7306a9515427c23fc3d7df5892ff7cce6382e69e516b3763f45",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -998,8 +998,8 @@
           "rows": 2,
           "identity": {
             "structural_fingerprint": "c9f1ef94a836414bfc37034cd6acc632aa1f2db445c0beb30a7c3b8d759a9cc0",
-            "content_sha256": "6d7ddd2712ee2249a0347684ddd59d76eb82dffc6c050f86443d8e129ca3a49b",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "58773d2ba1b404988dae8118351b6af874b9bfa7ced109ae6ddc6abbfc49d22e",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -1010,8 +1010,8 @@
           "rows": 1,
           "identity": {
             "structural_fingerprint": "b9ddbde11e902ba221dd223e6a0dc083cad073d0b615c2d19c8f0a0210af0f19",
-            "content_sha256": "9f9d1f85aa6c6531d7e690c7e6c2a97cd73a901994d051d0f0d0ca966b3d5b5e",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "ca332121fcabb276a7d702326f88ab6823b9763e12ef5db3c3570d29a142e76b",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }

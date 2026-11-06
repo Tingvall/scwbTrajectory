@@ -10,8 +10,8 @@
           "rows": 12,
           "identity": {
             "structural_fingerprint": "6af545fffa0f843d35fdefe1e3663828bcc81bf7648c8395e248d4368783f681",
-            "content_sha256": "8b1f80fb097f807e0af2ffa5326310525ceaa4047371f37f900367c198e031c6",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "e2bb9a17199b2da5dc79bf736bed36e4e03cecb3948702c69b3a87ae881f02cd",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -22,8 +22,8 @@
           "rows": 2,
           "identity": {
             "structural_fingerprint": "af0b91ebc1b4e30c6d0387b2376f6c016baa04c3587e0f7cccf062b876c9f6a3",
-            "content_sha256": "8ddb609334dee052ab46919fbdbfd93d12087bef13bb993cf431dcc98375ffeb",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "7d4b209b4d6604f4a0bc23180859ec31f7e80c3c83a6ce250a593ebc3f5e6129",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -51,8 +51,8 @@
           "rows": 3,
           "identity": {
             "structural_fingerprint": "69f0e7709efef521f24c566bdf4ff351b1a24a3bc184756c4a9a75e3ed9fae27",
-            "content_sha256": "66095d61005c2ec976685f0874898b7c0cd6861c164f58a94f4c5804e44c1a4b",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "e901aca249d85ddb562af9b66672966db1e28e7bfbe511668a675760c093bc92",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }
@@ -63,8 +63,8 @@
           "rows": 1,
           "identity": {
             "structural_fingerprint": "229f445f612863eff19e10b3d631cef7b113ab1dc6098bd26f546b93dc3191d3",
-            "content_sha256": "60e97e04e634b93ed396ece6a78ebe7e3a7d1b92dd206123d1c7ebab53e245ad",
-            "content_identity_scheme": "scworkbench.content.table.row-json-fold.v1",
+            "content_sha256": "f194ed17fcbee1be894ad10970d80e10f6c1511a529a87b94739f557eac7cd48",
+            "content_identity_scheme": "scworkbench.content.table.typed-row-json-fold.v1",
             "verification_level": "content",
             "verification_status": "content_verified"
           }

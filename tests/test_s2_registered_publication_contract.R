@@ -92,7 +92,7 @@ test_trajectory_s2_registered_explicit_publication_contract <- function() {
         "exact_canonical_value"))
     artifacts <- c(artifacts, promoted$promoted$artifact_id)
   }
-  stopifnot(length(artifacts) == 10L,
+  stopifnot(length(artifacts) == 12L,
     all(vapply(artifacts, function(id)
       inherits(scworkbench::wb_art_load(x$bundle, id), "wb_primitive"),
       logical(1))),
@@ -397,6 +397,8 @@ test_trajectory_s2_registered_model_promoted_oracles_contract <-
       trajectory_s2_compare_outputs(x$bundle, key,
         list(outputs = result$run$outputs), reference)
       closure <- names(reference$cases[[key]]$outputs)
+      if (identical(operation, "trajectory_geneset_dynamics"))
+        closure <- c(closure, "adjusted_scores", "adjustment_diagnostics")
       stopifnot(setequal(names(result$run$outputs), closure))
       if (identical(engine, "slingshot")) {
         before <- .trajectory_s2_registered_durable_snapshot(x)
@@ -427,7 +429,7 @@ test_trajectory_s2_registered_model_promoted_oracles_contract <-
       terminal_ids <- c(terminal_ids, publication$promoted$artifact_id)
     }
     stopifnot(length(terminal_ids) == if (identical(engine, "slingshot"))
-      18L else 36L,
+      20L else 40L,
       all(vapply(terminal_ids, function(id)
         inherits(scworkbench::wb_art_load(x$bundle, id), "wb_primitive"),
         logical(1))))

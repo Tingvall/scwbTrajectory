@@ -71,18 +71,31 @@ test_trajectory_s2_monocle3_model_oracle_contract <- function() {
     actual <- .trajectory_s2_run_model_direct(x, operation, params,
       model = cds)
     stopifnot(!inherits(actual$value, "error"))
+    if (identical(operation, "geneset_dynamics")) stopifnot(
+      identical(actual$outputs$adjusted_scores$key,
+        rep("root:A::lineage:C::selected", length(x$cells))),
+      identical(actual$outputs$adjusted_scores$cell_id, x$cells))
     check_reference(paste(operation, "C", "full", sep = "__"), actual)
     alternate <- params
     alternate$lineage <- "root:A::lineage:D"
     actual_alt <- .trajectory_s2_run_model_direct(x, operation,
       alternate, model = cds)
     stopifnot(!inherits(actual_alt$value, "error"))
+    if (identical(operation, "geneset_dynamics")) stopifnot(
+      identical(actual_alt$outputs$adjusted_scores$key,
+        rep("root:A::lineage:D::selected", length(x$cells))),
+      identical(actual_alt$outputs$adjusted_scores$cell_id, x$cells))
     check_reference(paste(operation, "D", "full", sep = "__"),
       actual_alt)
     session_cells <- x$cells[-(13:16)]
     actual_subset <- .trajectory_s2_run_model_direct(x, operation,
       params, model = cds, effective_cells = session_cells)
     stopifnot(!inherits(actual_subset$value, "error"))
+    if (identical(operation, "geneset_dynamics")) stopifnot(
+      identical(actual_subset$outputs$adjusted_scores$key,
+        rep("root:A::lineage:C::selected", length(session_cells))),
+      identical(actual_subset$outputs$adjusted_scores$cell_id,
+        session_cells))
     check_reference(paste(operation, "C", "subset", sep = "__"),
       actual_subset)
   }

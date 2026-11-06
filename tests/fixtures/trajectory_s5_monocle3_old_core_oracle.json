@@ -179,11 +179,11 @@
       "pseudotime": {
         "direct": {
           "scheme": "scworkbench.cell_vector.content.v1",
-          "sha256": "3456da49a233aa75e6900a9891fbb7d801d660447cc230589cba4eba3b850a24"
+          "sha256": "9314a76b361e69ebdbb654ead75f75543fa8773b0e84885c9e0c6abf0e1cb4db"
         },
         "reopened": {
           "scheme": "scworkbench.cell_vector.content.v1",
-          "sha256": "3456da49a233aa75e6900a9891fbb7d801d660447cc230589cba4eba3b850a24"
+          "sha256": "9314a76b361e69ebdbb654ead75f75543fa8773b0e84885c9e0c6abf0e1cb4db"
         }
       },
       "branch_membership": {

@@ -7,6 +7,9 @@
   the core can grant and audit dynamic score-family keys before execution.
 - Registered model-backed gene-set dynamics now also requires one explicit
   `lineage`, keeping its score-family prefix statically auditable.
+- For branched model trajectories, adjusted scores retain the lineage-fitted
+  depth component and dynamics while publishing the complete authenticated
+  effective-cell axis required by the Cartesian output grant.
 
 # scwbTrajectory 0.1.7
 

@@ -43,7 +43,8 @@ trajectory_s2_compare_outputs <- function(bundle, operation, result, reference) 
   expected <- reference$cases[[operation]]$outputs
   if (is.null(expected)) stop("Unknown S2 reference case: ", operation)
   actual <- result$outputs
-  allowed_extra <- if (grepl("geneset_dynamics", operation, fixed = TRUE))
+  allowed_extra <- if (grepl("geneset_dynamics", operation, fixed = TRUE) ||
+      identical(operation, "geneset_membership"))
     c("adjusted_scores", "adjustment_diagnostics") else character()
   if (!setequal(intersect(names(actual), names(expected)), names(expected)) ||
       length(setdiff(names(actual), names(expected))) > length(allowed_extra) ||
