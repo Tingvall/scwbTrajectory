@@ -5,12 +5,12 @@
   "namespace": "scwbtrajectory",
   "package": {
     "name": "scwbTrajectory",
-    "version": "0.1.7"
+    "version": "0.1.8"
   },
   "backend": "R",
   "compatibility": {
     "scworkbench": {
-      "minimum": "0.1.0",
+      "minimum": "0.1.1",
       "maximum_exclusive": "0.2.0"
     },
     "pack_abi": {
@@ -3656,24 +3656,17 @@
             ]
           },
           "feature_sets": {
-            "type": [
-              "array",
-              "null"
-            ],
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
             "items": {
               "type": "string",
               "minLength": 1
             }
           },
           "lineage": {
-            "type": [
-              "array",
-              "null"
-            ],
-            "items": {
-              "type": "string",
-              "minLength": 1
-            }
+            "type": "string",
+            "minLength": 1
           },
           "loess_span": {
             "type": "number"
@@ -3775,7 +3768,9 @@
         },
         "additionalProperties": false,
         "required": [
-          "namespace"
+          "namespace",
+          "feature_sets",
+          "lineage"
         ]
       },
       "registry_reads": [
@@ -3858,6 +3853,23 @@
         {
           "output": "fit_summary",
           "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "adjusted_scores",
+          "policy": "authenticated_output_axes_v1",
+          "shape": "cell_key_cartesian",
+          "cell_axis": {
+            "source": "effective_cells_v1",
+            "input": "matrix"
+          },
+          "key_axis": {
+            "source": "parameter_keys_with_optional_prefix_v1",
+            "keys_parameter": "feature_sets",
+            "prefix_parameter": "lineage",
+            "separator": "::"
+          },
+          "row_order": "key_major_then_cell_v1",
+          "missing_values": "forbidden"
         },
         {
           "output": "adjustment_diagnostics",
@@ -3953,7 +3965,7 @@
           "name": "scworkbench",
           "version": {
             "scheme": "r_package_version_constraint_v1",
-            "specifier": ">=0.1.0,<0.2.0"
+            "specifier": ">=0.1.1,<0.2.0"
           },
           "disposition": "required",
           "import_probe": "wb_prim_feature_table"
@@ -4061,7 +4073,8 @@
           "activation": "when_resolved_from_artifact",
           "lifecycle_policy": "require_current"
         }
-      ]
+      ],
+      "retained_parameters": []
     },
     {
       "name": "trajectory_vector_smooth",
@@ -4495,10 +4508,9 @@
             ]
           },
           "feature_sets": {
-            "type": [
-              "array",
-              "null"
-            ],
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
             "items": {
               "type": "string",
               "minLength": 1
@@ -4609,7 +4621,8 @@
         "additionalProperties": false,
         "required": [
           "namespace",
-          "pseudotime_key"
+          "pseudotime_key",
+          "feature_sets"
         ]
       },
       "provenance_reads": [
@@ -4700,6 +4713,23 @@
         {
           "output": "fit_summary",
           "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "adjusted_scores",
+          "policy": "authenticated_output_axes_v1",
+          "shape": "cell_key_cartesian",
+          "cell_axis": {
+            "source": "effective_cells_v1",
+            "input": "matrix"
+          },
+          "key_axis": {
+            "source": "parameter_keys_with_optional_prefix_v1",
+            "keys_parameter": "feature_sets",
+            "prefix_parameter": "pseudotime_key",
+            "separator": "::"
+          },
+          "row_order": "key_major_then_cell_v1",
+          "missing_values": "forbidden"
         },
         {
           "output": "adjustment_diagnostics",
@@ -4795,7 +4825,7 @@
           "name": "scworkbench",
           "version": {
             "scheme": "r_package_version_constraint_v1",
-            "specifier": ">=0.1.0,<0.2.0"
+            "specifier": ">=0.1.1,<0.2.0"
           },
           "disposition": "required",
           "import_probe": "wb_prim_feature_table"
@@ -4892,7 +4922,8 @@
         "adjusted_scores": "exact_canonical_value",
         "adjustment_diagnostics": "exact_canonical_value",
         "fit_summary": "exact_canonical_value"
-      }
+      },
+      "retained_parameters": []
     },
     {
       "name": "trajectory_signal_dynamics_explicit",
@@ -7932,7 +7963,8 @@
             "minLength": 1
           },
           "feature_sets": {
-            "type": ["array", "null"],
+            "type": "array",
+            "minItems": 1,
             "uniqueItems": true,
             "items": {
               "type": "string",
@@ -7991,7 +8023,8 @@
         },
         "required": [
           "namespace",
-          "pseudotime_key"
+          "pseudotime_key",
+          "feature_sets"
         ],
         "additionalProperties": false
       },
@@ -8061,6 +8094,23 @@
       ],
       "dimension_policies": [
         {
+          "output": "adjusted_scores",
+          "policy": "authenticated_output_axes_v1",
+          "shape": "cell_key_cartesian",
+          "cell_axis": {
+            "source": "effective_cells_v1",
+            "input": "matrix"
+          },
+          "key_axis": {
+            "source": "parameter_keys_with_optional_prefix_v1",
+            "keys_parameter": "feature_sets",
+            "prefix_parameter": "pseudotime_key",
+            "separator": "::"
+          },
+          "row_order": "key_major_then_cell_v1",
+          "missing_values": "forbidden"
+        },
+        {
           "output": "adjustment_diagnostics",
           "policy": "data_dependent_table_v1"
         },
@@ -8108,7 +8158,7 @@
           "name": "scworkbench",
           "version": {
             "scheme": "r_package_version_constraint_v1",
-            "specifier": ">=0.1.0,<0.2.0"
+            "specifier": ">=0.1.1,<0.2.0"
           },
           "disposition": "required",
           "import_probe": "wb_prim_cell_vector_family"
@@ -8152,7 +8202,7 @@
         {
           "name": "feature_sets",
           "source": "effective_parameter_value",
-          "required": false,
+          "required": true,
           "parameter": "feature_sets"
         },
         {
@@ -8276,7 +8326,7 @@
           {
             "name": "feature_sets",
             "type": "string_vec",
-            "help": "Optional feature-set names."
+            "help": "Ordered feature-set names."
           },
           {
             "name": "score_method",

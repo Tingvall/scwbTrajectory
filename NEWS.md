@@ -1,3 +1,13 @@
+# scwbTrajectory 0.1.8
+
+- Authenticates multi-feature-set `adjusted_scores` output from
+  `trajectory_geneset_scores` and the two gene-set dynamics operations as an
+  exact lineage/feature-set by effective-cell Cartesian product.
+- Requires an explicit, ordered, unique, nonempty `feature_sets` parameter so
+  the core can grant and audit dynamic score-family keys before execution.
+- Registered model-backed gene-set dynamics now also requires one explicit
+  `lineage`, keeping its score-family prefix statically auditable.
+
 # scwbTrajectory 0.1.7
 
 - Adds `trajectory_geneset_scores` as the canonical reusable gene-set scoring

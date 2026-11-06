@@ -99,7 +99,8 @@ test_trajectory_geneset_scores_reusable_contract <- function() {
   common <- list(matrix = matrix, registry = registry,
     effective_cells = x$cells, matrix_id = "SCT_data",
     pseudotime = pseudotime, pseudotime_key = "lineage",
-    namespace = "synthetic", min_set_size = 1L,
+    namespace = "synthetic", feature_sets = "depth_test",
+    min_set_size = 1L,
     depth = stats::setNames(x$depth, x$cells), adjust_depth = TRUE)
   scores <- do.call(scoring, common)
   scores_df3 <- do.call(scoring, c(common,
@@ -189,8 +190,21 @@ test_trajectory_depth_manifest_defaults_contract <- function() {
   operations <- stats::setNames(manifest$operations,
     vapply(manifest$operations, `[[`, character(1), "name"))
   scoring <- operations$trajectory_geneset_scores
+  score_axis <- scoring$dimension_policies[[match("adjusted_scores",
+    vapply(scoring$dimension_policies, `[[`, character(1), "output"))]]
   stopifnot(identical(vapply(scoring$inputs, `[[`, character(1), "name"),
       c("matrix", "pseudotime", "membership", "depth")),
+    "feature_sets" %in% as.character(unlist(
+      scoring$params_schema$required, use.names = FALSE)),
+    identical(scoring$params_schema$properties$feature_sets$type, "array"),
+    identical(score_axis$shape, "cell_key_cartesian"),
+    identical(score_axis$key_axis$source,
+      "parameter_keys_with_optional_prefix_v1"),
+    identical(score_axis$key_axis$keys_parameter, "feature_sets"),
+    identical(score_axis$key_axis$prefix_parameter, "pseudotime_key"),
+    identical(score_axis$key_axis$separator, "::"),
+    identical(score_axis$row_order, "key_major_then_cell_v1"),
+    identical(score_axis$missing_values, "forbidden"),
     identical(scoring$params_schema$properties$adjust_depth$default, TRUE),
     identical(scoring$params_schema$properties$depth_field$default,
       "nCount_RNA"),
@@ -201,8 +215,17 @@ test_trajectory_depth_manifest_defaults_contract <- function() {
   for (name in c("trajectory_geneset_dynamics",
       "trajectory_geneset_dynamics_explicit")) {
     operation <- operations[[name]]
+    score_axis <- operation$dimension_policies[[match("adjusted_scores",
+      vapply(operation$dimension_policies, `[[`, character(1), "output"))]]
+    prefix <- if (grepl("_explicit$", name)) "pseudotime_key" else "lineage"
     stopifnot(identical(operation$params_schema$properties$
         adjust_depth$default, TRUE),
+      "feature_sets" %in% as.character(unlist(
+        operation$params_schema$required, use.names = FALSE)),
+      identical(score_axis$key_axis$source,
+        "parameter_keys_with_optional_prefix_v1"),
+      identical(score_axis$key_axis$keys_parameter, "feature_sets"),
+      identical(score_axis$key_axis$prefix_parameter, prefix),
       identical(operation$params_schema$properties$depth_field$default,
         "nCount_RNA"),
       identical(operation$params_schema$properties$
@@ -231,6 +254,10 @@ test_trajectory_depth_manifest_defaults_contract <- function() {
 
 test_trajectory_geneset_scores_registered_composition_contract <- function() {
   x <- trajectory_fixture(); on.exit(trajectory_close(x), add = TRUE)
+  scworkbench::wb_feature_set_import_list(x$bundle, "RNA",
+    sets = list(comparison = x$features[3:4]), namespace = "trajectory",
+    created_by = "scores-contract", strict = TRUE, origin = "imported",
+    is_readonly = FALSE)
   pseudotime <- scworkbench::wb_prim_cell_vector_family(
     rep("L1", length(x$cells)), x$cells,
     seq(0, 1, length.out = length(x$cells)), value_type = "continuous")
@@ -241,28 +268,57 @@ test_trajectory_geneset_scores_registered_composition_contract <- function() {
     x$bundle, "scwbtrajectory::trajectory_geneset_scores", inputs = list(
       matrix = "RNA", pseudotime = pseudotime, depth = depth,
       namespace = "trajectory", pseudotime_key = "L1",
+      feature_sets = c("comparison", "selected"),
       min_set_size = 1L, min_cells = 1L))
   outputs <- scored$run$outputs
   replay <- scworkbench::wb_session_run_op(scworkbench::wb_session_new(),
     x$bundle, "scwbtrajectory::trajectory_geneset_scores", inputs = list(
       matrix = "RNA", pseudotime = pseudotime, depth = depth,
       namespace = "trajectory", pseudotime_key = "L1",
+      feature_sets = c("comparison", "selected"),
       min_set_size = 1L, min_cells = 1L))
   missing_depth <- try(scworkbench::wb_session_run_op(
     scworkbench::wb_session_new(), x$bundle,
     "scwbtrajectory::trajectory_geneset_scores", inputs = list(
       matrix = "RNA", pseudotime = pseudotime,
       namespace = "trajectory", pseudotime_key = "L1",
+      feature_sets = c("comparison", "selected"),
       min_set_size = 1L, min_cells = 1L)), silent = TRUE)
   raw <- scworkbench::wb_session_run_op(scworkbench::wb_session_new(),
     x$bundle, "scwbtrajectory::trajectory_geneset_scores", inputs = list(
       matrix = "RNA", pseudotime = pseudotime,
       namespace = "trajectory", pseudotime_key = "L1",
+      feature_sets = "selected",
       min_set_size = 1L, adjust_depth = FALSE, min_cells = 1L))
+  invalid_feature_sets <- lapply(list(character(),
+      c("selected", "selected"), "unknown"), function(feature_sets)
+    try(scworkbench::wb_session_run_op(scworkbench::wb_session_new(),
+      x$bundle, "scwbtrajectory::trajectory_geneset_scores", inputs = list(
+        matrix = "RNA", pseudotime = pseudotime, depth = depth,
+        namespace = "trajectory", pseudotime_key = "L1",
+        feature_sets = feature_sets, min_set_size = 1L,
+        min_cells = 1L)), silent = TRUE))
+  omitted_feature_sets <- try(scworkbench::wb_session_run_op(
+    scworkbench::wb_session_new(), x$bundle,
+    "scwbtrajectory::trajectory_geneset_scores", inputs = list(
+      matrix = "RNA", pseudotime = pseudotime, depth = depth,
+      namespace = "trajectory", pseudotime_key = "L1",
+      min_set_size = 1L, min_cells = 1L)), silent = TRUE)
+  expected_keys <- c("L1::comparison", "L1::selected")
+  expected_key <- rep(expected_keys, each = length(x$cells))
+  expected_cell <- rep(x$cells, times = length(expected_keys))
   stopifnot(identical(names(outputs), c("adjusted_scores",
       "adjustment_diagnostics", "fit_summary")),
+    identical(outputs$adjusted_scores$key, expected_key),
+    identical(outputs$adjusted_scores$cell_id, expected_cell),
+    identical(length(outputs$adjusted_scores$value),
+      length(expected_keys) * length(x$cells)),
     identical(outputs, replay$run$outputs),
     inherits(missing_depth, "try-error"),
+    all(vapply(invalid_feature_sets, inherits, logical(1), "try-error")),
+    inherits(omitted_feature_sets, "try-error"),
+    identical(raw$run$outputs$adjusted_scores$key,
+      rep("L1::selected", each = length(x$cells))),
     !isTRUE(raw$run$outputs$adjusted_scores$meta$depth_adjusted),
     identical(before, scworkbench::wb_art_list(x$bundle)),
     isTRUE(outputs$adjusted_scores$meta$depth_adjusted))
@@ -277,18 +333,21 @@ test_trajectory_geneset_scores_registered_composition_contract <- function() {
     x$bundle, "scwbtrajectory::trajectory_signal_dynamics_explicit",
     inputs = list(signal = score_reference,
       pseudotime = pseudotime, pseudotime_key = "L1",
-      signal_keys = "L1::selected", n_bins = 6L,
+      signal_keys = expected_keys, n_bins = 6L,
       min_cells_per_bin = 1L, min_cells = 1L))
   intervals <- scworkbench::wb_session_run_op(scworkbench::wb_session_new(),
     x$bundle, "scwbtrajectory::trajectory_signal_intervals", inputs = list(
       signal = score_reference, pseudotime = pseudotime,
-      pseudotime_key = "L1", signal_keys = "L1::selected",
+      pseudotime_key = "L1", signal_keys = expected_keys,
       window_width_fraction = 0.3, window_step_fraction = 0.05,
       min_cells_per_window = 3L, n_permutations = 19L, seed = 89L,
       global_q_cutoff = 1, local_q_cutoff = 1, min_cells = 1L))
   stopifnot(nrow(dynamics$run$outputs$signal_table$table) > 0L,
-    identical(intervals$run$outputs$adjustment_summary$table$
-      depth_adjustment_status, "already_adjusted"),
+    all(expected_keys %in% dynamics$run$outputs$signal_table$table$signal_key),
+    all(intervals$run$outputs$adjustment_summary$table$
+      depth_adjustment_status == "already_adjusted"),
+    all(expected_keys %in% intervals$run$outputs$adjustment_summary$table$
+      signal_key),
     length(score_artifact) == 1L,
     nrow(promoted$promoted) == length(outputs),
     all(promoted$promoted$status == "ok"))
@@ -315,6 +374,7 @@ test_trajectory_geneset_depth_registered_lifecycle_contract <- function() {
     x$bundle, "scwbtrajectory::trajectory_geneset_dynamics_explicit",
     inputs = list(matrix = "RNA", pseudotime = pseudotime, depth = depth,
       namespace = "trajectory", pseudotime_key = "L1",
+      feature_sets = "selected",
       min_set_size = 1L, n_bins = 6L, min_cells_per_bin = 1L,
       min_cells = 1L))
   outputs <- result$run$outputs

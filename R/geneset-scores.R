@@ -10,6 +10,39 @@
     stringsAsFactors = FALSE)
 }
 
+.trajectory_geneset_score_registry_sets <- function(snapshot, namespace,
+    feature_sets, universe, min_set_size, max_set_size,
+    label = "trajectory_geneset_scores") {
+  valid_container <- is.character(feature_sets) || is.list(feature_sets) &&
+    all(vapply(feature_sets, function(value) is.character(value) &&
+      length(value) == 1L, logical(1)))
+  feature_sets <- if (valid_container) as.character(unlist(feature_sets,
+    use.names = FALSE)) else character()
+  .trajectory_assert(valid_container && length(feature_sets) > 0L &&
+      !anyNA(feature_sets) && all(nzchar(feature_sets)) &&
+      !anyDuplicated(feature_sets), paste0(label,
+        ": feature_sets must be an explicit, ",
+        "ordered vector of unique nonempty names."))
+  matches <- Filter(function(item) identical(
+    as.character(item$namespace %||% "")[1L], namespace), snapshot$sets)
+  available <- vapply(matches, function(item)
+    as.character(item$feature_set)[1L], character(1))
+  unknown <- setdiff(feature_sets, available)
+  .trajectory_assert(!length(unknown), paste0(label,
+    ": unknown feature_sets in namespace '",
+    namespace, "': ", paste(unknown, collapse = ", "), "."))
+  selected <- .trajectory_s2_registry_sets(snapshot, namespace,
+    feature_sets, universe, min_set_size, max_set_size)
+  excluded <- setdiff(feature_sets, names(selected$members))
+  .trajectory_assert(!length(excluded), paste0(label,
+    ": requested feature_sets fail the configured ",
+    "size bounds after matrix matching: ", paste(excluded,
+      collapse = ", "), "."))
+  selected$names <- feature_sets
+  selected$members <- selected$members[feature_sets]
+  selected
+}
+
 .trajectory_geneset_score_lineage <- function(matrix, set_members, cells,
                                                pseudotime, depth,
                                                adjust_depth, depth_field,
@@ -148,7 +181,7 @@
   universe <- as.character(rownames(matrix))
   .trajectory_assert(length(universe) && !anyDuplicated(universe),
     "trajectory_geneset_scores: matrix feature universe is invalid.")
-  selected <- .trajectory_s2_registry_sets(registry, namespace,
+  selected <- .trajectory_geneset_score_registry_sets(registry, namespace,
     feature_sets, universe, min_set_size, max_set_size)
   source <- .trajectory_s2_explicit_source(pseudotime = pseudotime,
     pseudotime_key = pseudotime_key, membership = membership,
@@ -212,6 +245,16 @@
   }
   score_table <- do.call(rbind, score_rows)
   rownames(score_table) <- NULL
+  expected_keys <- paste0(as.character(pseudotime_key)[1L], "::",
+    selected$names)
+  expected_key <- rep(expected_keys, each = length(effective_cells))
+  expected_cell <- rep(as.character(effective_cells),
+    times = length(expected_keys))
+  .trajectory_assert(identical(as.character(score_table$key), expected_key) &&
+      identical(as.character(score_table$cell_id), expected_cell), paste0(
+        "trajectory_geneset_scores: adjusted_scores must contain the exact ",
+        "authenticated feature-set by effective-cell Cartesian product in ",
+        "key-major order."))
   adjustment_table <- if (adjustment_index)
     do.call(rbind, adjustment_rows) else
       .trajectory_geneset_empty_adjustment_table()

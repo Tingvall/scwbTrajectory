@@ -28,7 +28,11 @@ and `fit_summary`. The score family retains its matrix, pseudotime, membership,
 and depth identities and can be supplied independently to
 `trajectory_signal_dynamics_explicit`, `trajectory_signal_intervals`, or both.
 Intervals recognize the adjustment metadata and do not adjust these scores a
-second time.
+second time. `feature_sets` is required, ordered, unique, and nonempty; the
+published family uses `pseudotime_key::feature_set` keys in parameter order and
+effective cells in authenticated input order.
+The combined gene-set dynamics operations use the same authenticated key rule;
+their registered model-backed form additionally requires one explicit lineage.
 
 `scwbtrajectory::trajectory_preranked_gsea` ranks genes from the authenticated
 matrix feature universe. Its global scope produces one full-trajectory ranking.

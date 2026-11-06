@@ -21,7 +21,7 @@
       "trajectory_geneset_dynamics: feature_sets is empty after cleaning.")
     .trajectory_assert(!length(setdiff(requested, names_all)),
       "trajectory_geneset_dynamics: requested feature_set not found.")
-    names_all <- intersect(names_all, requested)
+    names_all <- requested
   }
   .trajectory_assert(length(names_all) > 0L,
     "trajectory_geneset_dynamics: no feature sets remain after filtering.")

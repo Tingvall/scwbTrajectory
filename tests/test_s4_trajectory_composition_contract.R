@@ -205,7 +205,7 @@ test_trajectory_s4_metadata_identity_change_ledger_contract <- function() {
   # S3 and both S5 slices append to the manifest. Freeze the current S1/S2/S4
   # prefix, including the intentional depth-aware gene-set definitions.
   # The registered-model operations retain their established positions; the
-  # change-point and 0.1.7 analysis slices append after them.
+  # change-point and 0.1.8 analysis slices append after them.
   stopifnot(length(manifest$operations) == 31L,
     identical(vapply(manifest$operations[24:27], `[[`,
       character(1), "name"), c("monocle3_fit", "monocle3_project",
@@ -214,11 +214,11 @@ test_trajectory_s4_metadata_identity_change_ledger_contract <- function() {
   accepted_prefix$operations <- manifest$operations[seq_len(17L)]
   manifest_identity <- identity(
     "scworkbench.operation_pack.manifest.v3", accepted_prefix)$sha256
-  stopifnot(identical(manifest$package$version, "0.1.7"),
+  stopifnot(identical(manifest$package$version, "0.1.8"),
     identical(manifest_identity,
-      "fd0df680b67f16f60ba85ce90bc1442eeb8f95ac3912ee4677614f9785185ff9"),
+      "1b01976af75bfd0609e195c737652336bdceb21b78e83d39c146f34bc42cd369"),
     identical(as.character(utils::packageVersion("scwbTrajectory")),
-      "0.1.7"))
+      "0.1.8"))
   expected <- c(
     trajectory_segment_from_artifacts =
       "5b255d889af5efabe7178faefbb22e854b91f54f1b0146e8d91f226471bc5052",

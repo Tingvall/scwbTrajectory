@@ -32,10 +32,14 @@ authenticated `depth` cell vector, jointly fitting a natural pseudotime spline
 and centered `log1p(depth)`, subtracting only the fitted depth component,
 standardizing each adjusted gene, and averaging genes within each set. Cell-level scores and
 gene-level diagnostics are retained as `adjusted_scores` and
-`adjustment_diagnostics`. Those scores can be sent independently to
+`adjustment_diagnostics`. Callers must provide an explicit ordered
+`feature_sets` vector; score keys are authenticated as
+`pseudotime_key::feature_set` in that order. Those scores can be sent independently to
 `trajectory_signal_dynamics_explicit`, `trajectory_signal_intervals`, or both.
 The established `trajectory_geneset_dynamics` operations retain their combined
-scoring-and-dynamics contracts and use the same scoring kernel.
+scoring-and-dynamics contracts and use the same scoring kernel. They also
+require explicit ordered `feature_sets`; model-backed gene-set dynamics
+requires one explicit `lineage` so its adjusted-score keys are fully granted.
 `adjustment_spline_df` controls the pseudotime spline flexibility for all
 depth-adjustable operations; it defaults to 4 and accepts integers from 2 to
 10. The selected value is retained in output provenance.
@@ -90,7 +94,7 @@ directions lets a strong up population carry a lone down breakpoint over
 run and names the feature and its count of missing values.
 
 The accepted pack that the standard profile qualified has 25 operations at version
-0.1.1. This branch carries 31 operations at 0.1.7 and is experimental; it is not
+0.1.1. This branch carries 31 operations at 0.1.8 and is experimental; it is not
 what that profile qualifies. Model-backed
 `trajectory_geneset_dynamics` and `trajectory_signal_dynamics` require `model`.
 Their separate `_explicit` operations require typed pseudotime and

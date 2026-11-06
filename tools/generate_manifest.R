@@ -24,6 +24,8 @@ integer <- function(default, minimum = NULL, maximum = NULL,
 }
 strings <- function() list(type = c("array", "null"), uniqueItems = TRUE,
   items = list(type = "string", minLength = 1L))
+required_strings <- function() list(type = "array", minItems = 1L,
+  uniqueItems = TRUE, items = list(type = "string", minLength = 1L))
 boolean <- function(default = FALSE) list(type = "boolean", default = default)
 endpoint <- function() list(type = c("object", "string", "null"))
 artifact_ref <- function() list(type = c("object", "string", "null"))
@@ -262,6 +264,7 @@ source(file.path(root, "tools", "preranked_gsea_manifest.R"), local = TRUE)
 # never regenerate or reinterpret them while appending Palantir.
 manifest <- jsonlite::read_json(file.path(root, "tools",
   "integrated_s1_s2_s4_manifest.json"), simplifyVector = FALSE)
+manifest$compatibility$scworkbench$minimum <- "0.1.1"
 stopifnot(identical(length(manifest$operations), 17L),
   identical(vapply(manifest$operations, `[[`, character(1),
     "qualified_name"), c(vapply(list(branch, route, score, project),
@@ -276,6 +279,14 @@ stopifnot(identical(length(manifest$operations), 17L),
 # The 0.1.6 depth-control update changes the two accepted S2 gene-set
 # consumers in lockstep while retaining their distinct pseudotime sources.
 upgrade_geneset_depth <- function(operation) {
+  explicit <- grepl("_explicit$", operation$name)
+  prefix_parameter <- if (explicit) "pseudotime_key" else "lineage"
+  operation$params_schema$properties$feature_sets <- required_strings()
+  if (!explicit) operation$params_schema$properties$lineage <- list(
+    type = "string", minLength = 1L)
+  operation$params_schema$required <- unique(c(
+    operation$params_schema$required %||% list(), "feature_sets",
+    if (explicit) list() else "lineage"))
   operation$params_schema$properties$adjust_depth <- boolean(TRUE)
   operation$params_schema$properties$depth_field <- list(
     type = c("string", "null"), default = "nCount_RNA", minLength = 1L)
@@ -300,7 +311,27 @@ upgrade_geneset_depth <- function(operation) {
   operation$outputs <- append(operation$outputs, extra_outputs,
     after = fit_index - 1L)
   operation$dimension_policies <- c(operation$dimension_policies,
-    list(table_policy("adjustment_diagnostics")))
+    list(list(output = "adjusted_scores",
+      policy = "authenticated_output_axes_v1",
+      shape = "cell_key_cartesian",
+      cell_axis = list(source = "effective_cells_v1", input = "matrix"),
+      key_axis = list(source = "parameter_keys_with_optional_prefix_v1",
+        keys_parameter = "feature_sets",
+        prefix_parameter = prefix_parameter, separator = "::"),
+      row_order = "key_major_then_cell_v1", missing_values = "forbidden"),
+      table_policy("adjustment_diagnostics")))
+  operation$retained_parameters <- lapply(
+    operation$retained_parameters %||% list(), function(item) {
+      if (as.character(item$name %||% "")[1L] %in%
+          c("feature_sets", prefix_parameter)) item$required <- TRUE
+      item
+    })
+  operation$dependencies <- lapply(operation$dependencies, function(item) {
+    if (identical(as.character(item$kind)[1L], "r_package") &&
+        identical(as.character(item$name)[1L], "scworkbench"))
+      item$version$specifier <- ">=0.1.1,<0.2.0"
+    item
+  })
   names <- vapply(operation$outputs, `[[`, character(1), "name")
   operation$promotion_closure <- closure(names)
   operation$replay_equivalence <- equivalence(names)
@@ -318,7 +349,7 @@ for (qualified in c("scwbtrajectory::trajectory_geneset_dynamics",
 geneset_score_params <- list(
   namespace = list(type = "string", minLength = 1L),
   pseudotime_key = list(type = "string", minLength = 1L),
-  feature_sets = strings(),
+  feature_sets = required_strings(),
   score_method = string("mean", c("mean", "sum", "rank_mean"), FALSE),
   adjust_depth = boolean(TRUE),
   depth_field = string("nCount_RNA", nullable = FALSE),
@@ -348,12 +379,19 @@ geneset_scores <- list(
     input("membership", "cell_vector", FALSE),
     input("depth", "cell_vector", FALSE)),
   params_schema = list(type = "object", properties = geneset_score_params,
-    required = list("namespace", "pseudotime_key"),
+    required = list("namespace", "pseudotime_key", "feature_sets"),
     additionalProperties = FALSE),
   registry_reads = list(feature_registry),
   provenance_reads = geneset_score_provenance,
   typed_slice_reads = list(matrix_read("chunk_size")),
-  dimension_policies = list(table_policy("adjustment_diagnostics"),
+  dimension_policies = list(list(output = "adjusted_scores",
+    policy = "authenticated_output_axes_v1", shape = "cell_key_cartesian",
+    cell_axis = list(source = "effective_cells_v1", input = "matrix"),
+    key_axis = list(source = "parameter_keys_with_optional_prefix_v1",
+      keys_parameter = "feature_sets", prefix_parameter = "pseudotime_key",
+      separator = "::"), row_order = "key_major_then_cell_v1",
+    missing_values = "forbidden"),
+    table_policy("adjustment_diagnostics"),
     table_policy("fit_summary")),
   outputs = list(
     output("adjusted_scores", "cell_vector_family",
@@ -363,12 +401,12 @@ geneset_scores <- list(
     output("fit_summary", "obs_table", "trajectory_geneset_scores",
       "trajectory_geneset_scores_summary")),
   dependencies = list(dependency("scworkbench",
-    "wb_prim_cell_vector_family")),
+    "wb_prim_cell_vector_family", ">=0.1.1,<0.2.0")),
   promotion_closure = closure(geneset_score_outputs),
   replay_equivalence = equivalence(geneset_score_outputs),
   retained_parameters = c(lapply(names(geneset_score_params), function(name)
     retained_parameter(name, "effective_parameter_value",
-      required = name %in% c("namespace", "pseudotime_key") ||
+      required = name %in% c("namespace", "pseudotime_key", "feature_sets") ||
         !is.null(geneset_score_params[[name]]$default))), list(
     retained_meta("matrix_id", "adjusted_scores", "matrix_id"),
     retained_meta("pseudotime_artifact_id", "adjusted_scores",
@@ -382,7 +420,7 @@ geneset_scores <- list(
     c("matrix", "pseudotime", "membership", "depth"), list(
       c("namespace", "string", "Feature-set registry namespace."),
       c("pseudotime_key", "string", "Selected pseudotime lineage key."),
-      c("feature_sets", "string_vec", "Optional feature-set names."),
+      c("feature_sets", "string_vec", "Ordered feature-set names."),
       c("score_method", "choice", "Mean, sum, or rank-mean scoring."),
       c("adjust_depth", "bool", "Apply per-gene partial depth adjustment."),
       c("depth_field", "string", "Depth identity; defaults to nCount_RNA."),
@@ -408,9 +446,9 @@ stopifnot(identical(vapply(monocle3_operations, `[[`, character(1),
 manifest$operations <- c(manifest$operations, s3_operations,
   monocle3_operations, palantir_operations, changepoint_operations,
   list(geneset_scores), trajectory_analysis_operations)
-# Package and manifest versions move together. Version 0.1.7 separates
-# reusable gene-set score construction from optional downstream analyses.
-manifest$package$version <- "0.1.7"
+# Package and manifest versions move together. Version 0.1.8 authenticates
+# dynamic multi-feature-set score-family axes.
+manifest$package$version <- "0.1.8"
 
 path <- file.path(root, "inst", "scworkbench", "operation-pack.json")
 dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)

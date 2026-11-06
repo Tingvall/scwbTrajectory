@@ -92,8 +92,9 @@
   .trajectory_assert(nzchar(namespace) && is.finite(min_size) &&
       min_size >= 1L && is.finite(max_size) && max_size >= min_size,
     "trajectory_geneset_dynamics: invalid namespace or set bounds.")
-  selected <- .trajectory_s2_registry_sets(registry, namespace,
-    params$feature_sets %||% NULL, all_features, min_size, max_size)
+  selected <- .trajectory_geneset_score_registry_sets(registry, namespace,
+    params$feature_sets %||% NULL, all_features, min_size, max_size,
+    label = "trajectory_geneset_dynamics")
   features <- unique(unlist(selected$members, use.names = FALSE))
   cells <- as.character(context$effective_cells)
   depth_input <- .trajectory_regions_optional_reader(readers, "depth")
