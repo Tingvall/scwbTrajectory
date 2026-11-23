@@ -59,7 +59,8 @@ register_operation_pack <- function() {
       `scwbtrajectory::palantir_fit` = .run_palantir_fit,
       `scwbtrajectory::palantir_project` = .run_palantir_project,
       `scwbtrajectory::trajectory_single_changepoint_regions` =
-        .run_trajectory_single_changepoint_regions
+        .run_trajectory_single_changepoint_regions,
+      `scwbtrajectory::trajectory_occupancy` = .run_trajectory_occupancy
     )
   )
 }

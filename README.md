@@ -24,6 +24,14 @@ fallback when fitted lineage output is unavailable or scalar pseudotime is
 specifically requested; downstream consumers must still select its lineage key
 explicitly.
 
+`trajectory_occupancy` describes where support-qualified cells fall along one
+explicit pseudotime key. It applies global equal-width bins, reports counts and
+within-group fractions, optionally adds group-by-sample strata, and preserves
+complete accepted, withheld, and accepted-but-missing accounting. The raw
+pseudotime input must retain the complete analysis-cell axis; only cells marked
+accepted with finite pseudotime enter bins. The operation is descriptive-only
+and does not perform cell-level inferential comparisons.
+
 The signal operations answer distinct questions. `trajectory_signal_dynamics`
 describes whole-trajectory curves for precomputed cell-level signals.
 `trajectory_geneset_scores` is the canonical reusable score-construction
@@ -94,7 +102,7 @@ directions lets a strong up population carry a lone down breakpoint over
 run and names the feature and its count of missing values.
 
 The accepted pack that the standard profile qualified has 25 operations at version
-0.1.1. This branch carries 31 operations at 0.1.8 and is experimental; it is not
+0.1.1. This branch carries 32 operations at 0.1.9 and is experimental; it is not
 what that profile qualifies. Model-backed
 `trajectory_geneset_dynamics` and `trajectory_signal_dynamics` require `model`.
 Their separate `_explicit` operations require typed pseudotime and

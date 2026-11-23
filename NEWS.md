@@ -1,3 +1,12 @@
+# scwbTrajectory 0.1.9
+
+- Adds descriptive `trajectory_occupancy` for deterministic global
+  pseudotime-bin counts and within-group or within-sample fractions.
+- Uses complete mapping-acceptance status for accepted, withheld, and
+  accepted-but-missing pseudotime accounting; withheld cells never enter bins.
+- Restricts the operation to descriptive analysis so cell-level occupancy is
+  not presented as replicate-level inference.
+
 # scwbTrajectory 0.1.8
 
 - Authenticates multi-feature-set `adjusted_scores` output from

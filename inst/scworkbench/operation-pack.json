@@ -5,12 +5,12 @@
   "namespace": "scwbtrajectory",
   "package": {
     "name": "scwbTrajectory",
-    "version": "0.1.8"
+    "version": "0.1.9"
   },
   "backend": "R",
   "compatibility": {
     "scworkbench": {
-      "minimum": "0.1.1",
+      "minimum": "0.1.2",
       "maximum_exclusive": "0.2.0"
     },
     "pack_abi": {
@@ -10065,6 +10065,312 @@
           {
             "name": "fit_summary",
             "description": "Declared fit_summary terminal."
+          }
+        ]
+      }
+    },
+    {
+      "name": "trajectory_occupancy",
+      "qualified_name": "scwbtrajectory::trajectory_occupancy",
+      "title": "Support-aware Trajectory Occupancy",
+      "description": "Describe accepted cell occupancy over deterministic global pseudotime bins while retaining complete accepted and withheld accounting.",
+      "runner": ".run_trajectory_occupancy",
+      "inputs": [
+        {
+          "name": "pseudotime",
+          "kind": "cell_vector_family",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "group_id",
+          "kind": "cell_vector",
+          "required": true,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "sample_id",
+          "kind": "cell_vector",
+          "required": false,
+          "alignment": "cell_ordered"
+        },
+        {
+          "name": "mapping_acceptance",
+          "kind": "obs_table",
+          "required": true,
+          "alignment": "none",
+          "effective_cell_coverage": "reference_only"
+        }
+      ],
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "pseudotime_key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "acceptance_output_key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "n_bins": {
+            "type": "integer",
+            "default": 10,
+            "minimum": 2,
+            "maximum": 1000
+          },
+          "analysis_mode": {
+            "type": "string",
+            "default": "descriptive",
+            "enum": [
+              "descriptive"
+            ]
+          }
+        },
+        "required": [
+          "pseudotime_key",
+          "acceptance_output_key"
+        ],
+        "additionalProperties": false
+      },
+      "provenance_reads": [
+        {
+          "name": "pseudotime_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "pseudotime",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        },
+        {
+          "name": "group_id_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "group_id",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        },
+        {
+          "name": "sample_id_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "sample_id",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        },
+        {
+          "name": "mapping_acceptance_ancestry",
+          "category": "authenticated_core_provenance_snapshot",
+          "kind": "artifact_ancestry",
+          "reader": "read_artifact_ancestry",
+          "input": "mapping_acceptance",
+          "activation": "when_resolved_from_artifact",
+          "lifecycle_policy": "require_current"
+        }
+      ],
+      "dimension_policies": [
+        {
+          "output": "bin_occupancy",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "acceptance_accounting",
+          "policy": "data_dependent_table_v1"
+        },
+        {
+          "output": "run_summary",
+          "policy": "data_dependent_table_v1"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "bin_occupancy",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "bin_occupancy_id",
+          "required": true,
+          "promotion_group": "trajectory_occupancy",
+          "table_type": "trajectory_occupancy_bins"
+        },
+        {
+          "name": "acceptance_accounting",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "acceptance_accounting_id",
+          "required": true,
+          "promotion_group": "trajectory_occupancy",
+          "table_type": "trajectory_occupancy_acceptance_accounting"
+        },
+        {
+          "name": "run_summary",
+          "category": "terminal_artifact",
+          "kind": "obs_table",
+          "storage_profile": "terminal_primitive_v1",
+          "allocated_id_key": "run_summary_id",
+          "required": true,
+          "promotion_group": "trajectory_occupancy",
+          "table_type": "trajectory_occupancy_summary"
+        }
+      ],
+      "dependencies": [
+        {
+          "requirement_id": "scworkbench_runtime",
+          "kind": "r_package",
+          "name": "scworkbench",
+          "version": {
+            "scheme": "r_package_version_constraint_v1",
+            "specifier": ">=0.1.2,<0.2.0"
+          },
+          "disposition": "required",
+          "import_probe": "wb_prim_obs_table"
+        }
+      ],
+      "promotion_closure": {
+        "bin_occupancy": [
+          "acceptance_accounting",
+          "bin_occupancy",
+          "run_summary"
+        ],
+        "acceptance_accounting": [
+          "acceptance_accounting",
+          "bin_occupancy",
+          "run_summary"
+        ],
+        "run_summary": [
+          "acceptance_accounting",
+          "bin_occupancy",
+          "run_summary"
+        ]
+      },
+      "replay_equivalence": {
+        "bin_occupancy": "exact_canonical_value",
+        "acceptance_accounting": "exact_canonical_value",
+        "run_summary": "exact_canonical_value"
+      },
+      "retained_parameters": [
+        {
+          "name": "pseudotime_key",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "pseudotime_key"
+        },
+        {
+          "name": "acceptance_output_key",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "acceptance_output_key"
+        },
+        {
+          "name": "n_bins",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "n_bins"
+        },
+        {
+          "name": "analysis_mode",
+          "source": "effective_parameter_value",
+          "required": true,
+          "parameter": "analysis_mode"
+        },
+        {
+          "name": "n_cells_input",
+          "source": "output_first_row",
+          "output": "run_summary",
+          "field": "n_cells_input"
+        },
+        {
+          "name": "n_cells_accepted",
+          "source": "output_first_row",
+          "output": "run_summary",
+          "field": "n_cells_accepted"
+        },
+        {
+          "name": "n_cells_withheld",
+          "source": "output_first_row",
+          "output": "run_summary",
+          "field": "n_cells_withheld"
+        },
+        {
+          "name": "n_groups",
+          "source": "output_first_row",
+          "output": "run_summary",
+          "field": "n_groups"
+        },
+        {
+          "name": "n_samples",
+          "source": "output_first_row",
+          "output": "run_summary",
+          "field": "n_samples"
+        }
+      ],
+      "public_interface": {
+        "intent": [
+          "trajectory",
+          "occupancy",
+          "descriptive",
+          "support_aware"
+        ],
+        "inputs": [
+          {
+            "name": "pseudotime",
+            "label": "pseudotime",
+            "help": "Typed pseudotime input."
+          },
+          {
+            "name": "group_id",
+            "label": "group_id",
+            "help": "Typed group_id input."
+          },
+          {
+            "name": "sample_id",
+            "label": "sample_id",
+            "help": "Typed sample_id input."
+          },
+          {
+            "name": "mapping_acceptance",
+            "label": "mapping_acceptance",
+            "help": "Typed mapping_acceptance input."
+          }
+        ],
+        "parameters": [
+          {
+            "name": "pseudotime_key",
+            "type": "string",
+            "help": "Selected raw pseudotime key."
+          },
+          {
+            "name": "acceptance_output_key",
+            "type": "string",
+            "help": "Selected mapping-acceptance output key."
+          },
+          {
+            "name": "n_bins",
+            "type": "int",
+            "help": "Number of global equal-width pseudotime bins."
+          },
+          {
+            "name": "analysis_mode",
+            "type": "choice",
+            "help": "Descriptive-only analysis; inference is not admitted."
+          }
+        ],
+        "outputs": [
+          {
+            "name": "bin_occupancy",
+            "description": "Declared bin_occupancy terminal."
+          },
+          {
+            "name": "acceptance_accounting",
+            "description": "Declared acceptance_accounting terminal."
+          },
+          {
+            "name": "run_summary",
+            "description": "Declared run_summary terminal."
           }
         ]
       }

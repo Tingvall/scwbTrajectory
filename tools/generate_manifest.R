@@ -258,13 +258,14 @@ source(file.path(root, "tools", "s3_manifest.R"), local = TRUE)
 source(file.path(root, "tools", "palantir_manifest.R"), local = TRUE)
 source(file.path(root, "tools", "changepoint_manifest.R"), local = TRUE)
 source(file.path(root, "tools", "preranked_gsea_manifest.R"), local = TRUE)
+source(file.path(root, "tools", "occupancy_manifest.R"), local = TRUE)
 
 # Preserve the independently accepted S1/S2/S4 and S3 definitions. The
 # accepted Monocle3 definitions are frozen from integrated commit 7e8c3fc;
 # never regenerate or reinterpret them while appending Palantir.
 manifest <- jsonlite::read_json(file.path(root, "tools",
   "integrated_s1_s2_s4_manifest.json"), simplifyVector = FALSE)
-manifest$compatibility$scworkbench$minimum <- "0.1.1"
+manifest$compatibility$scworkbench$minimum <- "0.1.2"
 stopifnot(identical(length(manifest$operations), 17L),
   identical(vapply(manifest$operations, `[[`, character(1),
     "qualified_name"), c(vapply(list(branch, route, score, project),
@@ -445,10 +446,10 @@ stopifnot(identical(vapply(monocle3_operations, `[[`, character(1),
         "c6fd76e839d7d473b933d9edc7ada746998c73b5ad9750d1d82ce34916d8576e")))
 manifest$operations <- c(manifest$operations, s3_operations,
   monocle3_operations, palantir_operations, changepoint_operations,
-  list(geneset_scores), trajectory_analysis_operations)
-# Package and manifest versions move together. Version 0.1.8 authenticates
-# dynamic multi-feature-set score-family axes.
-manifest$package$version <- "0.1.8"
+  list(geneset_scores), trajectory_analysis_operations, occupancy_operations)
+# Package and manifest versions move together. Version 0.1.9 adds
+# support-aware descriptive trajectory occupancy.
+manifest$package$version <- "0.1.9"
 
 path <- file.path(root, "inst", "scworkbench", "operation-pack.json")
 dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
